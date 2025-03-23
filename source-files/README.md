@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# SECFC <img src="C:\Users\22561\Nutstore\1\GitHub\buildsecfc\SECFC\source-files\logo.png" align="right" height="139" />
+# SECFC <img src="logo.png" align="right" height="139" />
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 [![Website](https://img.shields.io/badge/Website-Jianing_Ding-skyblue)](https://jianing-ding.netlify.app/)
