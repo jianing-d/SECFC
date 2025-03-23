@@ -294,4 +294,8 @@ export responses from Qualtrics: ~StartDate, ~EndDate, ~Status,
 
 For questions, bug reports, or suggestions, please reach out to:
 
-**Jianing Ding** <jianing.research@gmail.com> Tongji University
+**Jianing Ding**
+
+<jianing.research@gmail.com>
+
+Tongji University

@@ -255,6 +255,8 @@ The following columns are automatically generated when you export responses from
 For questions, bug reports, or suggestions, please reach out to:
 
 **Jianing Ding**
+
 jianing.research@gmail.com
+
 Tongji University
 
