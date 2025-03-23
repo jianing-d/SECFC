@@ -1,0 +1,6 @@
+url: https://jianing-d.github.io/SECFC/
+template:
+  bootstrap: 5
+  params:
+  bootswatch: flatly
+  logo: man/figures/logo.png
