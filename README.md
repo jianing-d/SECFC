@@ -31,7 +31,7 @@ reproducibility, transparency, and process-level emissions output.
 - Ideal for environmental psychology, behavioral science, and carbon
   impact studies.
 
-<img src="source-files/flowchart.png" align="right" />
+<img src="https://github.com/jianing-d/SECFC/blob/main/source-files/flowchart.png?raw=true" align="right" />
 
 ## ️ Functions Overview
 
