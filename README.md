@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# SECFC <img src="source-files/logo.png" align="right" height="139" />
+# SECFC <img src="source-files/logo.png" align="right" height="139"/>
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 [![Website](https://img.shields.io/badge/Website-Jianing_Ding-skyblue)](https://jianing-ding.netlify.app/)
@@ -30,6 +30,8 @@ reproducibility, transparency, and process-level emissions output.
 - Designed with survey data structure in mind.
 - Ideal for environmental psychology, behavioral science, and carbon
   impact studies.
+
+<img src="source-files/flowchart.png" align="right" />
 
 ## ️ Functions Overview
 

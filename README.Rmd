@@ -1,5 +1,10 @@
 ---
 output: github_document
+editor_options: 
+  markdown: 
+    wrap: 72
+assets:
+  - "source-files/" 
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -14,62 +19,73 @@ knitr::opts_chunk$set(
 )
 ```
 
-# SECFC  <img src="source-files/logo.png" align="right" height="139" />
+# SECFC <img src="source-files/logo.png" align="right" height="139"/>
+
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 [![Website](https://img.shields.io/badge/Website-Jianing_Ding-skyblue)](https://jianing-ding.netlify.app/)
 [![Website](https://img.shields.io/badge/Website-Ziqian_Xia-red)](https://ziqian-xia.tech/)
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
-SECFC (Survey-Embedded Carbon Footprint Calculator) is a transparent, open-source R package designed to assist researchers in environmental psychology with survey-based carbon footprint estimation.
+SECFC (Survey-Embedded Carbon Footprint Calculator) is a transparent,
+open-source R package designed to assist researchers in environmental
+psychology with survey-based carbon footprint estimation.
 
-It provides a modular structure that makes it easy to calculate and analyze emissions from various domains such as consumption, food, housing, transport, and pets.
+It provides a modular structure that makes it easy to calculate and
+analyze emissions from various domains such as consumption, food,
+housing, transport, and pets.
 
-SECFC is particularly suitable for academic studies requiring reproducibility, transparency, and process-level emissions output.
+SECFC is particularly suitable for academic studies requiring
+reproducibility, transparency, and process-level emissions output.
 
-##  Key Features
+## Key Features
 
--  Twelve core functions to estimate individual-level carbon footprint based on survey data.
-- ️ Transparent processing: Choose between total emissions or detailed calculation steps.
--  Designed with survey data structure in mind.
--  Ideal for environmental psychology, behavioral science, and carbon impact studies.
+-   Twelve core functions to estimate individual-level carbon footprint
+    based on survey data.
+-   ️ Transparent processing: Choose between total emissions or detailed
+    calculation steps.
+-   Designed with survey data structure in mind.
+-   Ideal for environmental psychology, behavioral science, and carbon
+    impact studies.
+
+<img src="source-files/flowchart.png" align="right" />
+
 
 ## ️ Functions Overview
 
 SECFC contains twelve main functions, divided into two groups:
 
 ### ➤ Simple Output Functions
-These functions calculate total emissions by domain and append one new column to the dataset:
-- `calc_cons_emissions()`: consumption-related emissions
-- `calc_food_emissions()`: food-related emissions
-- `calc_housing_emissions()`: housing-related emissions
-- `calc_pet_emissions()`: pet-related emissions
-- `calc_transport_emissions()`: transport-related emissions
-- `calc_total_emissions()`: total emissions across all domains
 
-Each function:
-- Takes a data frame as input
-- Appends a new column with calculated emissions
-- Returns the updated data frame and prints results
+These functions calculate total emissions by domain and append one new
+column to the dataset: - `calc_cons_emissions()`: consumption-related
+emissions - `calc_food_emissions()`: food-related emissions -
+`calc_housing_emissions()`: housing-related emissions -
+`calc_pet_emissions()`: pet-related emissions -
+`calc_transport_emissions()`: transport-related emissions -
+`calc_total_emissions()`: total emissions across all domains
+
+Each function: - Takes a data frame as input - Appends a new column with
+calculated emissions - Returns the updated data frame and prints results
 
 ### ➤ Process-Level Functions
-These functions provide detailed emissions breakdowns, appending multiple columns with intermediate steps:
-- `calc_cons_emissions_process()`
-- `calc_food_emissions_process()`
-- `calc_housing_emissions_process()`
-- `calc_pet_emissions_process()`
-- `calc_transport_emissions_process()`
-- `calc_total_emissions_process()`
 
-Each function:
-- Adds multiple columns explaining the step-by-step calculation
-- Enhances transparency for research and teaching purposes
-- Also returns and prints the final emission result
+These functions provide detailed emissions breakdowns, appending
+multiple columns with intermediate steps: -
+`calc_cons_emissions_process()` - `calc_food_emissions_process()` -
+`calc_housing_emissions_process()` - `calc_pet_emissions_process()` -
+`calc_transport_emissions_process()` - `calc_total_emissions_process()`
 
+Each function: - Adds multiple columns explaining the step-by-step
+calculation - Enhances transparency for research and teaching purposes -
+Also returns and prints the final emission result
 
 ### Example Usage
+
 Here’s a simple example of how to use the **SECFC** package in practice:
+
 ```{r}
 # Step 1: Load the package
 library(SECFC)
@@ -97,19 +113,18 @@ transport_process <- calc_transport_emissions_process(df)
 total_process <- calc_total_emissions_process(df)
 ```
 
-
-## 📫 Contact  
+## 📫 Contact
 
 For questions, bug reports, or suggestions, please reach out to:
 
 **Jianing Ding**
 
-jianing.research@gmail.com
+[jianing.research\@gmail.com](mailto:jianing.research@gmail.com){.email}
 
 Tongji University
 
 **Ziqian Xia**
 
-ziqianx@stanford.edu
+[ziqianx\@stanford.edu](mailto:ziqianx@stanford.edu){.email}
 
 Stanford University
