@@ -18,7 +18,8 @@ Imports:
     magrittr,
     purrr,
     tibble,
-    tidyr
+    tidyr,
+    usethis
 Depends: 
     R (>= 3.5)
 LazyData: true
