@@ -39,6 +39,13 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/Get-Started.html">Get Started</a></li>
+    <li><a class="dropdown-item" href="articles/Survey-Template.html">Survey Template</a></li>
+  </ul>
+</li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -79,7 +86,7 @@
 <div class="section level3">
 <h3 id="id_-simple-output-functions">➤ Simple Output Functions<a class="anchor" aria-label="anchor" href="#id_-simple-output-functions"></a>
 </h3>
-<p>These functions calculate total emissions by domain and append one new column to the dataset: - <code><a href="reference/calc_cons_emissions.html">calc_cons_emissions()</a></code> – consumption-related emissions - <code><a href="reference/calc_food_emissions.html">calc_food_emissions()</a></code> – food-related emissions - <code><a href="reference/calc_housing_emissions.html">calc_housing_emissions()</a></code> – housing-related emissions - <code><a href="reference/calc_pet_emissions.html">calc_pet_emissions()</a></code> – pet-related emissions - <code><a href="reference/calc_transport_emissions.html">calc_transport_emissions()</a></code> – transport-related emissions - <code><a href="reference/calc_total_emissions.html">calc_total_emissions()</a></code> – total emissions across all domains</p>
+<p>These functions calculate total emissions by domain and append one new column to the dataset: - <code><a href="reference/calc_cons_emissions.html">calc_cons_emissions()</a></code>: consumption-related emissions - <code><a href="reference/calc_food_emissions.html">calc_food_emissions()</a></code>: food-related emissions - <code><a href="reference/calc_housing_emissions.html">calc_housing_emissions()</a></code>: housing-related emissions - <code><a href="reference/calc_pet_emissions.html">calc_pet_emissions()</a></code>: pet-related emissions - <code><a href="reference/calc_transport_emissions.html">calc_transport_emissions()</a></code>: transport-related emissions - <code><a href="reference/calc_total_emissions.html">calc_total_emissions()</a></code>: total emissions across all domains</p>
 <p>Each function: - Takes a data frame as input - Appends a new column with calculated emissions - Returns the updated data frame and prints results</p>
 </div>
 <div class="section level3">
@@ -88,123 +95,11 @@
 <p>These functions provide detailed emissions breakdowns, appending multiple columns with intermediate steps: - <code><a href="reference/calc_cons_emissions_process.html">calc_cons_emissions_process()</a></code> - <code><a href="reference/calc_food_emissions_process.html">calc_food_emissions_process()</a></code> - <code><a href="reference/calc_housing_emissions_process.html">calc_housing_emissions_process()</a></code> - <code><a href="reference/calc_pet_emissions_process.html">calc_pet_emissions_process()</a></code> - <code><a href="reference/calc_transport_emissions_process.html">calc_transport_emissions_process()</a></code> - <code><a href="reference/calc_total_emissions_process.html">calc_total_emissions_process()</a></code></p>
 <p>Each function: - Adds multiple columns explaining the step-by-step calculation - Enhances transparency for research and teaching purposes - Also returns and prints the final emission result</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
-</h2>
-<p>Install the package</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"jianing-d/SECFC"</span>, subdir <span class="op">=</span> <span class="st">"SECFC"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="how-to-use-secfc">How to Use SECFC<a class="anchor" aria-label="anchor" href="#how-to-use-secfc"></a>
-</h2>
-<p>Follow these steps to calculate survey-based carbon footprints using SECFC.</p>
-<div class="section level3">
-<h3 id="step-1-load-the-package">Step 1: Load the Package<a class="anchor" aria-label="anchor" href="#step-1-load-the-package"></a>
-</h3>
-<p>After installation, load the package with:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jianing-d.github.io/SECFC/">SECFC</a></span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="step-2-import-your-survey-dataset">Step 2: Import Your Survey Dataset<a class="anchor" aria-label="anchor" href="#step-2-import-your-survey-dataset"></a>
-</h3>
-<p>Make sure your dataset is in a data frame or tibble format. If you’re using the Qualtrics template we provided, ensure that variable names match exactly. Here is an example of the expected data structure:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html" class="external-link">tribble</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span><span class="va">StartDate</span>, <span class="op">~</span><span class="va">EndDate</span>, <span class="op">~</span><span class="va">Status</span>, <span class="op">~</span><span class="va">IPAddress</span>, <span class="op">~</span><span class="va">Progress</span>, <span class="op">~</span><span class="va">`Duration (in seconds)`</span>, <span class="op">~</span><span class="va">Finished</span>, <span class="op">~</span><span class="va">RecordedDate</span>, <span class="op">~</span><span class="va">ResponseId</span>,</span>
-<span>  <span class="op">~</span><span class="va">RecipientLastName</span>, <span class="op">~</span><span class="va">RecipientFirstName</span>, <span class="op">~</span><span class="va">RecipientEmail</span>, <span class="op">~</span><span class="va">ExternalReference</span>, <span class="op">~</span><span class="va">LocationLatitude</span>, <span class="op">~</span><span class="va">LocationLongitude</span>,</span>
-<span>  <span class="op">~</span><span class="va">DistributionChannel</span>, <span class="op">~</span><span class="va">UserLanguage</span>, <span class="op">~</span><span class="va">Q39</span>, <span class="op">~</span><span class="va">CL_01_ClothingPurcha</span>, <span class="op">~</span><span class="va">CL_03_MonthlyEx_9</span>, <span class="op">~</span><span class="va">CL_03_MonthlyEx_10</span>, <span class="op">~</span><span class="va">CL_03_MonthlyEx_11</span>,</span>
-<span>  <span class="op">~</span><span class="va">CL_03_MonthlyEx_12</span>, <span class="op">~</span><span class="va">CL_03_MonthlyEx_13</span>, <span class="op">~</span><span class="va">CL_03_MonthlyEx_14</span>, <span class="op">~</span><span class="va">CL_03_MonthlyEx_15</span>, <span class="op">~</span><span class="va">F_01_DietaryHabits_5</span>,</span>
-<span>  <span class="op">~</span><span class="va">F_01_DietaryHabits_6</span>, <span class="op">~</span><span class="va">F_01_DietaryHabits_7</span>, <span class="op">~</span><span class="va">F_01_DietaryHabits_4</span>, <span class="op">~</span><span class="va">T_01_CarUsage</span>, <span class="op">~</span><span class="va">T_02_CarType</span>, <span class="op">~</span><span class="va">T_03_CarDistance</span>,</span>
-<span>  <span class="op">~</span><span class="va">T_04_PublicTransport</span>, <span class="op">~</span><span class="va">T_05_PublicTransport</span>, <span class="op">~</span><span class="va">T_06_AirTravelLong</span>, <span class="op">~</span><span class="va">T_07_AirTravelShort</span>, <span class="op">~</span><span class="va">T_08_LongDistanceTra</span>,</span>
-<span>  <span class="op">~</span><span class="va">EH_02_ElectricityBil_1</span>, <span class="op">~</span><span class="va">EH_03_ElectricityBil_1</span>, <span class="op">~</span><span class="va">EH_05_NaturalGasBill_1</span>, <span class="op">~</span><span class="va">EH_06_NaturalGasBill_1</span>, <span class="op">~</span><span class="va">PETS_4</span>, <span class="op">~</span><span class="va">PETS_5</span>,</span>
-<span>  <span class="op">~</span><span class="va">SD_06_HouseholdSize_17</span>, <span class="op">~</span><span class="va">SD_06_HouseholdSize_18</span>, <span class="op">~</span><span class="va">SD_06_HouseholdSize_19</span>, <span class="op">~</span><span class="va">SD_07_Country</span>, <span class="op">~</span><span class="va">SD_08_ZipCode</span>,</span>
-<span>  </span>
-<span>  <span class="st">"3/20/25 9:43"</span>, <span class="st">"3/20/25 9:47"</span>, <span class="st">"IP Address"</span>, <span class="st">"111.187.123.25"</span>, <span class="fl">100</span>, <span class="fl">240</span>, <span class="cn">TRUE</span>, <span class="st">"3/20/25 9:47"</span>, <span class="st">"R_3lENNCNKNsOdbgd"</span>,</span>
-<span>  <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">31.2222</span>, <span class="fl">121.4581</span>, <span class="st">"anonymous"</span>, <span class="st">"EN"</span>, <span class="st">"Yes, I accept to proceed to the study"</span>,</span>
-<span>  <span class="st">"7-12 times (About every 1-2 months)"</span>, <span class="fl">30</span>, <span class="fl">250</span>, <span class="fl">50</span>, <span class="fl">0</span>, <span class="fl">50</span>, <span class="fl">100</span>, <span class="fl">200</span>, <span class="fl">7</span>, <span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">6</span>, <span class="st">"5-6 days"</span>,</span>
-<span>  <span class="st">"Gasoline Vehicle"</span>, <span class="st">"11-50 km or 6.2-31 miles"</span>, <span class="st">"Weekly"</span>, <span class="st">"5-10 km or 3.1-6.2 miles"</span>, <span class="st">"1-3 flights"</span>,</span>
-<span>  <span class="st">"1-3 flights"</span>, <span class="st">"Monthly"</span>, <span class="fl">120</span>, <span class="fl">1440</span>, <span class="fl">50</span>, <span class="fl">600</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span>, <span class="fl">0</span>, <span class="st">"United States"</span>, <span class="fl">10001</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>✅ Note The following columns are automatically generated when you export responses from Qualtrics: ~StartDate, ~EndDate, ~Status, ~IPAddress, ~Progress, ~<code>Duration (in seconds)</code>, ~Finished, ~RecordedDate, ~ResponseId,<br>
-~RecipientLastName, ~RecipientFirstName, ~RecipientEmail, ~ExternalReference, ~LocationLatitude, ~LocationLongitude,<br>
-~DistributionChannel, ~UserLanguage</p>
-</div>
-<div class="section level3">
-<h3 id="step-3-run-emission-calculations">Step 3: Run Emission Calculations<a class="anchor" aria-label="anchor" href="#step-3-run-emission-calculations"></a>
-</h3>
-<p>Now you’re ready to calculate emissions. Choose the functions depending on whether you want only the calculation results or also the process data.</p>
-<div class="section level4">
-<h4 id="consumption-emissions">🛒Consumption Emissions<a class="anchor" aria-label="anchor" href="#consumption-emissions"></a>
-</h4>
-<p>Calculate the carbon footprint from general consumption.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cons</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_cons_emissions.html">calc_cons_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<p>With process details:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cons_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_cons_emissions_process.html">calc_cons_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="id_-food-emissions-️">🍽 Food Emissions ️<a class="anchor" aria-label="anchor" href="#id_-food-emissions-%EF%B8%8F"></a>
-</h4>
-<p>Calculate the carbon footprint from food consumption.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">food</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_food_emissions.html">calc_food_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<p>With process details:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">food_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_food_emissions_process.html">calc_food_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="id_-housing-emissions">🏠 Housing Emissions<a class="anchor" aria-label="anchor" href="#id_-housing-emissions"></a>
-</h4>
-<p>Calculate the carbon footprint from housing energy use.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">housing</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_housing_emissions.html">calc_housing_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<p>With process details:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">housing_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_housing_emissions_process.html">calc_housing_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="id_-pet-emissions">🐶 Pet Emissions<a class="anchor" aria-label="anchor" href="#id_-pet-emissions"></a>
-</h4>
-<p>Calculate the carbon footprint from pet ownership.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pet</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_pet_emissions.html">calc_pet_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<p>With process details:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pet_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_pet_emissions_process.html">calc_pet_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="id_-transport-emissions">🚗 Transport Emissions<a class="anchor" aria-label="anchor" href="#id_-transport-emissions"></a>
-</h4>
-<p>Calculate the carbon footprint from daily and long-distance transportation.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">transport</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_transport_emissions.html">calc_transport_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<p>With process details:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">transport_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_transport_emissions_process.html">calc_transport_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="id_-total-emissions">🌍 Total Emissions<a class="anchor" aria-label="anchor" href="#id_-total-emissions"></a>
-</h4>
-<p>Calculate the total carbon footprint across all domains.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">total</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_total_emissions.html">calc_total_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<p>With process details:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">total_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_total_emissions_process.html">calc_total_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
 <div class="section level3">
 <h3 id="example-usage">Example Usage<a class="anchor" aria-label="anchor" href="#example-usage"></a>
 </h3>
 <p>Here’s a simple example of how to use the <strong>SECFC</strong> package in practice:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Step 1: Load the package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jianing-d.github.io/SECFC/">SECFC</a></span><span class="op">)</span></span>
 <span></span>
@@ -230,154 +125,6 @@
 <span><span class="va">transport_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_transport_emissions_process.html">calc_transport_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="va">total_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_total_emissions_process.html">calc_total_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="survey-template">Survey Template<a class="anchor" aria-label="anchor" href="#survey-template"></a>
-</h3>
-<p>To ensure accurate carbon footprint calculations, your dataset should follow the Qualtrics-compatible format we provide. Please do not change variable names unless you update the function internals. Below is a list of key columns expected by SECFC, along with their corresponding survey question descriptions:</p>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr class="header">
-<th>Variable Name</th>
-<th>Description</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>Q39</td>
-<td>Consent and agreement to participate</td>
-</tr>
-<tr class="even">
-<td>CL_01_ClothingPurcha</td>
-<td>Frequency of clothing purchases</td>
-</tr>
-<tr class="odd">
-<td>CL_03_MonthlyEx_9</td>
-<td>Monthly spending on food delivery (USD)</td>
-</tr>
-<tr class="even">
-<td>CL_03_MonthlyEx_10</td>
-<td>Monthly spending on dining out (USD)</td>
-</tr>
-<tr class="odd">
-<td>CL_03_MonthlyEx_11</td>
-<td>Monthly spending on hotel stays (USD)</td>
-</tr>
-<tr class="even">
-<td>CL_03_MonthlyEx_12</td>
-<td>Monthly spending on tobacco (USD)</td>
-</tr>
-<tr class="odd">
-<td>CL_03_MonthlyEx_13</td>
-<td>Monthly spending on alcohol and beverages (USD)</td>
-</tr>
-<tr class="even">
-<td>CL_03_MonthlyEx_14</td>
-<td>Monthly spending on entertainment (USD)</td>
-</tr>
-<tr class="odd">
-<td>CL_03_MonthlyEx_15</td>
-<td>Monthly spending on healthcare (USD)</td>
-</tr>
-<tr class="even">
-<td>F_01_DietaryHabits_5</td>
-<td>Weekly frequency of meat-based meals (0–14)</td>
-</tr>
-<tr class="odd">
-<td>F_01_DietaryHabits_6</td>
-<td>Weekly frequency of vegan meals (0–14)</td>
-</tr>
-<tr class="even">
-<td>F_01_DietaryHabits_7</td>
-<td>Weekly frequency of vegetarian meals (0–14)</td>
-</tr>
-<tr class="odd">
-<td>F_01_DietaryHabits_4</td>
-<td>Weekly frequency of dairy meals (0–14)</td>
-</tr>
-<tr class="even">
-<td>T_01_CarUsage</td>
-<td>Frequency of car use (e.g., “5-6 days”)</td>
-</tr>
-<tr class="odd">
-<td>T_02_CarType</td>
-<td>Type of car (e.g., Gasoline, EV)</td>
-</tr>
-<tr class="even">
-<td>T_03_CarDistance</td>
-<td>Average car distance on driving days</td>
-</tr>
-<tr class="odd">
-<td>T_04_PublicTransport</td>
-<td>Frequency of public transport use</td>
-</tr>
-<tr class="even">
-<td>T_05_PublicTransport</td>
-<td>Commute distance using public transport</td>
-</tr>
-<tr class="odd">
-<td>T_06_AirTravelLong</td>
-<td>Long-distance flights per year</td>
-</tr>
-<tr class="even">
-<td>T_07_AirTravelShort</td>
-<td>Short-distance flights per year</td>
-</tr>
-<tr class="odd">
-<td>T_08_LongDistanceTra</td>
-<td>Frequency of long-distance transport use (rail, intercity bus)</td>
-</tr>
-<tr class="even">
-<td>EH_02_ElectricityBil_1</td>
-<td>Monthly electricity bill (USD)</td>
-</tr>
-<tr class="odd">
-<td>EH_03_ElectricityBil_1</td>
-<td>Annual electricity bill (USD)</td>
-</tr>
-<tr class="even">
-<td>EH_05_NaturalGasBill_1</td>
-<td>Monthly natural gas bill (USD)</td>
-</tr>
-<tr class="odd">
-<td>EH_06_NaturalGasBill_1</td>
-<td>Annual natural gas bill (USD)</td>
-</tr>
-<tr class="even">
-<td>PETS_4</td>
-<td>Number of cats owned</td>
-</tr>
-<tr class="odd">
-<td>PETS_5</td>
-<td>Number of dogs owned</td>
-</tr>
-<tr class="even">
-<td>SD_06_HouseholdSize_17</td>
-<td>Number of adults in household</td>
-</tr>
-<tr class="odd">
-<td>SD_06_HouseholdSize_18</td>
-<td>Number of children in household</td>
-</tr>
-<tr class="even">
-<td>SD_06_HouseholdSize_19</td>
-<td>Number of seniors in household</td>
-</tr>
-<tr class="odd">
-<td>SD_07_Country</td>
-<td>Country of residence</td>
-</tr>
-<tr class="even">
-<td>SD_08_ZipCode</td>
-<td>U.S. Zip code (for regional analysis)</td>
-</tr>
-</tbody>
-</table>
-<p>✅ Note The following columns are automatically generated when you export responses from Qualtrics: ~StartDate, ~EndDate, ~Status, ~IPAddress, ~Progress, ~<code>Duration (in seconds)</code>, ~Finished, ~RecordedDate, ~ResponseId,<br>
-~RecipientLastName, ~RecipientFirstName, ~RecipientEmail, ~ExternalReference, ~LocationLatitude, ~LocationLongitude,<br>
-~DistributionChannel, ~UserLanguage</p>
-</div>
 </div>
 <div class="section level2">
 <h2 id="id_-contact">📫 Contact<a class="anchor" aria-label="anchor" href="#id_-contact"></a>
@@ -386,6 +133,9 @@
 <p><strong>Jianing Ding</strong></p>
 <p><a href="mailto:jianing.research@gmail.com" class="email">jianing.research@gmail.com</a></p>
 <p>Tongji University</p>
+<p><strong>Ziqian Xia</strong></p>
+<p><a href="mailto:ziqianx@stanford.edu" class="email">ziqianx@stanford.edu</a></p>
+<p>Stanford University</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="license">
