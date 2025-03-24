@@ -17,6 +17,7 @@ Imports:
     dplyr,
     magrittr,
     purrr,
+    remotes,
     tibble,
     tidyr,
     usethis
