@@ -1,0 +1,26 @@
+{
+    "id": "AE6E4D5D",
+    "path": "C:/Users/22561/Nutstore/1/GitHub/buildsecfc/SECFC/R/calc_transport_emissions_process.R",
+    "project_path": "R/calc_transport_emissions_process.R",
+    "type": "r_source",
+    "hash": "144059853",
+    "contents": "",
+    "dirty": true,
+    "created": 1743156118494.0,
+    "source_on_save": false,
+    "relative_order": 11,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "191,0",
+        "scrollLine": "160"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1743158818,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1743158818,
+    "read_only": false,
+    "read_only_alternatives": []
+}

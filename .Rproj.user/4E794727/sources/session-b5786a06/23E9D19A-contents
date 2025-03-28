@@ -1,0 +1,3929 @@
+---
+title: "Creating the ``SECFC`` R package"
+author: "Jianing Ding"
+date: "2025-03-23"
+knit: litr::render
+output: litr::litr_html_document
+params:
+  package_name: "SECFC"
+  package_parent_dir: "." # <-- relative to this file's location
+---
+
+
+
+## Package setup
+
+We start by specifying the information needed in the DESCRIPTION file of the R package.
+
+```{r package-setup, message=FALSE, results='hide'}
+usethis::create_package(
+  path = ".",
+  fields = list(
+    Package = params$package_name,
+    Version = "0.0.1",
+    Title = "The Survey-Embedded Carbon Footprint Calculator (SECFC)",
+    Description = "SECFC is a transparent and open-source R package designed for survey-embedded carbon footprint calculation.It provides a standardized approach for estimating carbon emissions based on survey responses, focusing on environmental psychology applications.",
+    `Authors@R` = c(
+      person("Jianing", "Ding", email = "jianing.research@gmail.com",
+             role = c("aut", "cre")),
+      person("Ziqian", "Xia", email = "ziqian.research@gmail.com",
+             role = c("aut"))
+      )
+  )
+)
+usethis::use_mit_license(copyright_holder = "Jianing Ding")
+```
+
+## Add required dependencies to DESCRIPTION
+
+```{r}
+# Add only the specific packages needed
+usethis::use_package("dplyr", type = "Imports")
+usethis::use_package("tidyr", type = "Imports")
+usethis::use_package("tibble", type = "Imports")
+usethis::use_package("purrr", type = "Imports")
+usethis::use_package("magrittr", type = "Imports")
+
+.onLoad <- function(libname, pkgname) {
+  required_packages <- c("dplyr", "tidyr", "tibble", "purrr", "magrittr")
+
+  for (pkg in required_packages) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      warning(paste("Package", pkg, "is required but not installed. Please install it using install.packages('", pkg, "')", sep = ""))
+    }
+  }
+}
+
+# Create a startup script for package loading
+usethis::use_r("zzz")
+
+```
+
+
+### Define twelve functions
+
+This R package contains twelve functions,including `calc_cons_emissions`,`calc_food_emissions`,`calc_housing_emissions`,`calc_pet_emissions`,`calc_transport_emissions`,`calc_total_emissions`,`calc_cons_emissions_process`,`calc_food_emissions_process`,`calc_housing_emissions_process`,`calc_pet_emissions_process`,`calc_transport_emissions_process`,`calc_total_emissions_process`:
+
+**ATTENTION!!!** 
+**First you need to set the location of the buildsecfc folder as the working directory.**
+
+1. `calc_cons_emissions`
+
+Create the Internal Dataset:
+
+```{R}
+# Create a built-in dataset for emission factors
+cons_emission_factors <- tibble::tibble(
+  Country = c("United States", "United States", "United States", "United States", "United States", 
+              "United States", "United States", "United States", "United States",
+              "China", "China", "China", "China", "China", "China", "China", "China", "China",
+              "European Union", "European Union", "European Union", "European Union", 
+              "European Union", "European Union", "European Union", "European Union", "European Union"),
+  FactorName = c("FoodDelivery", "DiningOut", "HotelStays", "TobaccoProducts", 
+                 "AlcoholDrinks", "Entertainment", "Healthcare", "Clothing",
+                 "Other",
+                 "FoodDelivery", "DiningOut", "HotelStays", "TobaccoProducts", 
+                 "AlcoholDrinks", "Entertainment", "Healthcare", "Clothing",
+                 "Other",
+                 "FoodDelivery", "DiningOut", "HotelStays", "TobaccoProducts", 
+                 "AlcoholDrinks", "Entertainment", "Healthcare", "Clothing",
+                 "Other"),
+  Value = c(0.349757961, 0.010974672, 0.016436699, 0.009542055, 
+            0.042726645, 0.009474576, 0.014611029, 0.018380588, NA, 
+            NA, NA, NA, NA, NA, NA, NA, NA, NA,
+            NA, NA, NA, NA, NA, NA, NA, NA, NA)
+)
+
+# Save as an R dataset
+usethis::use_data(cons_emission_factors, overwrite = TRUE)
+
+```
+
+Define the function:
+
+```{r}
+library(dplyr)
+library(tidyverse)
+
+#' Get country-specific emission factors from the built-in dataset
+#'
+#' Fetches consumption emission factors from the dataset stored in the package.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A named list of consumption emission factors.
+get_cons_emission_factors <- function(country) {
+  
+  # Filter the dataset for the given country
+  factors <- cons_emission_factors %>%
+    filter(Country == country) %>%
+    select(FactorName, Value)
+
+  # Convert the dataset into a named list
+  if (nrow(factors) > 0) {
+    emission_list <- setNames(factors$Value, factors$FactorName)
+  } else {
+    # Return NA for all factors if the country is not found
+    emission_list <- list(
+      "FoodDelivery" = NA,  
+      "DiningOut" = NA,  
+      "HotelStays" = NA,  
+      "TobaccoProducts" = NA,  
+      "AlcoholDrinks" = NA,  
+      "Entertainment" = NA,  
+      "Healthcare" = NA,  
+      "Clothing" = NA  
+    )
+  }
+
+  return(emission_list)
+}
+
+#' Calculate Consumption-Based Emissions using internal dataset
+#'
+#' This function computes consumption-based emissions by converting expenditure data into estimated carbon emissions.
+#'
+#' @param df A data frame containing the consumption data.
+#' @return A data frame with a new column `ConsEmissions` representing total consumption emissions.
+#' @export
+calc_cons_emissions <- function(df) {
+  
+  # Get country-specific emission factors from the dataset
+  emission_factors_cons <- get_cons_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure expenditure columns are numeric
+  df <- df %>%
+    mutate(
+      CL_03_MonthlyEx_9 = as.numeric(CL_03_MonthlyEx_9),
+      CL_03_MonthlyEx_10 = as.numeric(CL_03_MonthlyEx_10),
+      CL_03_MonthlyEx_11 = as.numeric(CL_03_MonthlyEx_11),
+      CL_03_MonthlyEx_12 = as.numeric(CL_03_MonthlyEx_12),
+      CL_03_MonthlyEx_13 = as.numeric(CL_03_MonthlyEx_13),
+      CL_03_MonthlyEx_14 = as.numeric(CL_03_MonthlyEx_14),
+      CL_03_MonthlyEx_15 = as.numeric(CL_03_MonthlyEx_15)
+    )
+  
+  # Assign estimated clothing spending based on categorical responses
+  clothing_spending_map <- c(
+    "More than 12 times (At least once a month)" = 600,
+    "7-12 times (About every 1-2 months)" = 420,
+    "4-6 times (About every 2-3 months)" = 300,
+    "1-3 times (Less than every 3 months)" = 120,
+    "Rarely" = 60
+  )
+  
+  df <- df %>%
+    mutate(
+      annual_clothing_spending = clothing_spending_map[CL_01_ClothingPurcha],
+      annual_clothing_spending = ifelse(is.na(annual_clothing_spending), 0, annual_clothing_spending),
+      
+      ClothingEm = annual_clothing_spending * emission_factors_cons[["Clothing"]]
+    )
+  
+  # Calculate annual emissions for each category
+  df <- df %>%
+    mutate(
+      FoodDeliveryEm = CL_03_MonthlyEx_9 * 12 * emission_factors_cons[["FoodDelivery"]],
+      DiningOutEm = CL_03_MonthlyEx_10 * 12 * emission_factors_cons[["DiningOut"]],
+      HotelStaysEm = CL_03_MonthlyEx_11 * 12 * emission_factors_cons[["HotelStays"]],
+      TobaccoEm = CL_03_MonthlyEx_12 * 12 * emission_factors_cons[["TobaccoProducts"]],
+      AlcoholEm = CL_03_MonthlyEx_13 * 12 * emission_factors_cons[["AlcoholDrinks"]],
+      EntertainmentEm = CL_03_MonthlyEx_14 * 12 * emission_factors_cons[["Entertainment"]],
+      HealthcareEm = CL_03_MonthlyEx_15 * 12 * emission_factors_cons[["Healthcare"]]
+    )
+  
+  # Compute total consumption emissions
+  df <- df %>%
+    mutate(
+      ConsEmissions = rowSums(cbind(
+        FoodDeliveryEm, DiningOutEm, HotelStaysEm,
+        TobaccoEm, AlcoholEm, EntertainmentEm,
+        HealthcareEm, ClothingEm
+      ), na.rm = TRUE)
+    )
+  
+  df <- df %>% 
+    mutate(
+      annual_clothing_spending = as.numeric(annual_clothing_spending),
+      ClothingEm = as.numeric(ClothingEm),
+      ConsEmissions = as.numeric(ConsEmissions)
+    )
+  
+  df <- df %>% 
+    select(-annual_clothing_spending,-ClothingEm,-FoodDeliveryEm,-DiningOutEm,-HotelStaysEm,-TobaccoEm,-AlcoholEm,-EntertainmentEm,-HealthcareEm)
+  
+  # Notify the user and print results
+  message("New column `ConsEmissions` representing total consumption emissions has been added to the dataset.")
+
+  
+  print(df$ConsEmissions)
+  
+  return(df)
+}
+
+
+```
+
+2. `calc_food_emissions`
+
+Create the Internal Dataset for Food Emission Factors:
+
+```{r}
+# Create a built-in dataset for food emission factors
+food_emission_factors <- tibble::tibble(
+  Country = c("United States", "United States", "United States", "United States",
+              "China", "China", "China", "China",
+              "European Union", "European Union", "European Union", "European Union"),
+  FactorName = c("MeatMeals", "VeganMeals", "VegetarianMeals", "DairyProducts",
+                 "MeatMeals", "VeganMeals", "VegetarianMeals", "DairyProducts",
+                 "MeatMeals", "VeganMeals", "VegetarianMeals", "DairyProducts"),
+  Value = c(3.07, 0.25, 0.68, 327.1728 / 1000,  
+            NA, NA, NA, NA,
+            NA, NA, NA, NA)
+)
+
+# Save as an R dataset inside the package
+usethis::use_data(food_emission_factors, overwrite = TRUE)
+
+```
+
+Define the function:
+
+```{r}
+library(dplyr)
+library(tidyverse)
+
+#' Get country-specific food emission factors from the built-in dataset
+#'
+#' Fetches food emission factors from the dataset stored in the package.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A named list of food emission factors.
+get_food_emission_factors <- function(country) {
+  
+  # Filter the dataset for the given country
+  factors <- food_emission_factors %>%
+    filter(Country == country) %>%
+    select(FactorName, Value)
+
+  # Convert the dataset into a named list
+  if (nrow(factors) > 0) {
+    emission_list <- setNames(factors$Value, factors$FactorName)
+  } else {
+    # Return NA for all factors if the country is not found
+    emission_list <- list(
+      "MeatMeals" = NA,  
+      "VeganMeals" = NA,  
+      "VegetarianMeals" = NA,  
+      "DairyProducts" = NA  
+    )
+  }
+
+  return(emission_list)
+}
+
+#' Calculate Food-Based Emissions using internal dataset
+#'
+#' This function computes food-based emissions by converting food intake data into estimated carbon emissions.
+#'
+#' @param df A data frame containing the food consumption data.
+#' @return A data frame with a new column `FoodEmissions` representing total food emissions.
+#' @export
+calc_food_emissions <- function(df) {
+  
+  # Get country-specific food emission factors from the dataset
+  emission_factors_food <- get_food_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert food intake columns to numeric and replace NA values with 0
+  df <- df %>%
+    mutate(
+      F_01_DietaryHabits_5 = as.numeric(F_01_DietaryHabits_5),
+      F_01_DietaryHabits_6 = as.numeric(F_01_DietaryHabits_6),
+      F_01_DietaryHabits_7 = as.numeric(F_01_DietaryHabits_7),
+      F_01_DietaryHabits_4 = as.numeric(F_01_DietaryHabits_4)
+    ) %>%
+    replace(is.na(.), 0)
+  
+  # Calculate emissions for each food category
+  df <- df %>%
+    mutate(
+      MeatEmissions = F_01_DietaryHabits_5 * 52 * emission_factors_food[["MeatMeals"]],
+      VeganEmissions = F_01_DietaryHabits_6 * 52 * emission_factors_food[["VeganMeals"]],
+      VegetarianEmissions = F_01_DietaryHabits_7 * 52 * emission_factors_food[["VegetarianMeals"]],
+      DairyEmissions = F_01_DietaryHabits_4 * 52 * emission_factors_food[["DairyProducts"]],
+      
+      # Total food emissions
+      FoodEmissions = rowSums(cbind(MeatEmissions, VeganEmissions, VegetarianEmissions, DairyEmissions), na.rm = TRUE)
+    )
+  
+  df <- df %>% 
+    select(-MeatEmissions,-VeganEmissions,-VegetarianEmissions,-DairyEmissions)
+  
+    # Notify the user and print results
+  message("New column `FoodEmissions` representing total food emissions has been added to the dataset.")
+
+
+  print(df$FoodEmissions)
+  
+  return(df)
+}
+
+
+
+```
+
+3. `calc_housing_emissions`
+
+Update the Internal Dataset:
+
+```{r}
+# Create a built-in dataset for housing emission factors
+housing_emission_factors <- tibble::tibble(
+  Country = c("United States", "United States", "United States", "United States", "United States", "United States",
+              "China", "China", "China", "China", "China",
+              "European Union", "European Union", "European Union", "European Union", "European Union"),
+  FactorName = c("WaterCFC", "NaturalGas", "Electricity_Average", "Electricity_Texas", "Electricity_Western", "Electricity_Eastern",
+                 "WaterCFC", "NaturalGas", "Electricity_Group1", "Electricity_Group2", "Electricity_Group3",
+                 "WaterCFC", "NaturalGas", "Electricity_Group1", "Electricity_Group2", "Electricity_Group3"),
+  Value = c(26.5, 0.055, 0.513, 0.641855, 0.461226, 0.572386,  
+            NA, NA, NA, NA, NA,  
+            NA, NA, NA, NA, NA)
+)
+
+# Save as an internal dataset inside the package
+usethis::use_data(housing_emission_factors, overwrite = TRUE)
+
+# Load required package
+library(tibble)
+
+# Create the zip_data dataset
+zip_data <- tibble::tibble(
+  ID = c(6,5,69,8,7,9,10,11,73,13,74,63,12,14,15,65,16,20,66,17,18,19,21,22,68,23,26,58,77,78,25,24,27,28,57,29,59,31,38,39,67,32,34,35,36,33,60,37,40,70,41,42,43,44,45,46,47,48,49,71,72,61,50,64,75,76,52,51,62,53,55,54,56),
+  State_Name = c("Alaska", "Alabama", "Arkansas", "Arkansas (Texarkana)", "Arizona", "California", "Colorado", "Connecticut", "Connecticut", "Dist of Columbia", "Dist of Columbia", "Dist of Columbia", "Delaware", "Florida", "Georgia", "Georga (Atlanta)", "Hawaii", "Iowa", "Iowa (OMAHA)", "Idaho", "Illinois", "Indiana", "Kansas", "Kentucky", "Louisiana", "Louisiana", "Massachusetts", "Massachusetts (Andover)", "Maryland", "Maryland", "Maryland", "Maine", "Michigan", "Minnesota", "kc96 DataMO", "Mississippi", "Mississippi(Warren)", "Montana", "North Carolina", "North Dakota", "Nebraska", "Nebraska", "New Hampshire", "New Jersey", "New Mexico", "Nevada", "New York (Fishers Is)", "New York", "Ohio", "Oklahoma", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas (Austin)", "Texas", "Texas", "Texas (El Paso)", "Utah", "Virginia", "Virginia", "Virginia", "Virginia", "Vermont", "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"),
+  ST = c("AK","AL","AR","AR","AZ","CA","CO","CT","CT","DC","DC","DC","DE","FL","GA","GA","HI","IA","IA","ID","IL","IN","KS","KY","LA","LA","MA","MA","MD","MD","MD","ME","MI","MN","MO","MS","MS","MT","NC","ND","NE","NE","NH","NJ","NM","NV","NY","NY","OH","OK","OK","OR","PA","PR","RI","SC","SD","TN","TX","TX","TX","TX","UT","VA","VA","VA","VA","VT","VT","WA","WI","WV","WY"),
+  Zip_Min = c(99501,35004,71601,75502,85001,90001,80001,6001,6401,20001,20042,20799,19701,32004,30001,39901,96701,50001,68119,83201,60001,46001,66002,40003,70001,71234,1001,5501,20331,20335,20812,3901,48001,55001,63001,38601,71233,59001,27006,58001,68001,68122,3031,7001,87001,88901,6390,10001,43001,73001,73401,97001,15001,0,2801,29001,57001,37010,73301,75001,75503,88510,84001,20040,20040,20042,22001,5001,5601,98001,53001,24701,82001),
+  Zip_Max = c(99950,36925,72959,75502,86556,96162,81658,6389,6928,20039,20599,20799,19980,34997,31999,39901,96898,52809,68120,83876,62999,47997,67954,42788,71232,71497,2791,5544,20331,20797,21930,4992,49971,56763,65899,39776,71233,59937,28909,58856,68118,69367,3897,8989,88441,89883,6390,14975,45999,73199,74966,97920,19640,0,2940,29948,57799,38589,73301,75501,79999,88589,84784,20041,20167,20042,24658,5495,5907,99403,54990,26886,83128)
+)
+
+# Save it as an internal dataset inside the package
+usethis::use_data(zip_data, overwrite = TRUE)
+
+
+```
+
+Define the function:
+
+```{r}
+.onLoad <- function(libname, pkgname) {
+  # Load package data into the global environment
+  data_env <- globalenv()
+  utils::data("zip_data", package = pkgname, envir = data_env)
+  utils::data("housing_emission_factors", package = pkgname, envir = data_env)
+}
+
+#' Get country-specific housing emission factors from dataset
+#'
+#' Returns a list of housing emission factors based on the country.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A list of housing emission factors.
+get_housing_emission_factors <- function(country) {
+  # Ensure dataset is available
+  if (!exists("housing_emission_factors", where = globalenv())) {
+    stop("Error: housing_emission_factors dataset not found.")
+  }
+
+  # Filter dataset for the selected country
+  factors <- housing_emission_factors %>% filter(Country == country)
+
+  # Set default values to prevent NULLs
+  default_values <- list(
+    "WaterCFC" = 26.5,
+    "NaturalGas" = 0.055,
+    "Electricity" = list(
+      "Average" = 0.513,
+      "Texas" = 0.641855,
+      "Western" = 0.461226,
+      "Eastern" = 0.572386
+    )
+  )
+
+  # Ensure values exist, otherwise, use defaults
+  return(list(
+    "WaterCFC" = ifelse(any(factors$FactorName == "WaterCFC"), factors$Value[factors$FactorName == "WaterCFC"], default_values$WaterCFC),
+    "NaturalGas" = ifelse(any(factors$FactorName == "NaturalGas"), factors$Value[factors$FactorName == "NaturalGas"], default_values$NaturalGas),
+    "Electricity" = list(
+      "Average" = ifelse(any(factors$FactorName == "Electricity_Average"), factors$Value[factors$FactorName == "Electricity_Average"], default_values$Electricity$Average),
+      "Texas" = ifelse(any(factors$FactorName == "Electricity_Texas"), factors$Value[factors$FactorName == "Electricity_Texas"], default_values$Electricity$Texas),
+      "Western" = ifelse(any(factors$FactorName == "Electricity_Western"), factors$Value[factors$FactorName == "Electricity_Western"], default_values$Electricity$Western),
+      "Eastern" = ifelse(any(factors$FactorName == "Electricity_Eastern"), factors$Value[factors$FactorName == "Electricity_Eastern"], default_values$Electricity$Eastern)
+    )
+  ))
+}
+
+
+#' Calculate Housing Emissions
+#'
+#' Computes housing emissions by converting energy and utility expenditure data into estimated annual carbon emissions.
+#'
+#' @param df A data frame containing housing-related data.
+#' @return A data frame with a new column `HousingEmissions` representing total housing emissions.
+#' @export
+calc_housing_emissions <- function(df) {
+  
+  # Ensure built-in datasets are available
+  if (!exists("zip_data")) stop("Error: zip_data dataset not found.")
+  
+  # Get country-specific housing emission factors
+  emission_factors_housing <- get_housing_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure ZIP code exists and is numeric
+  df <- df %>%
+    mutate(SD_08_ZipCode = as.numeric(SD_08_ZipCode))
+  
+  # Define function to classify state based on ZIP code
+  classify_state <- function(zip_code) {
+    matched_state <- zip_data %>%
+      filter(zip_code >= Zip_Min & zip_code <= Zip_Max) %>%
+      pull(ST)
+    
+    if (length(matched_state) == 1) {
+      return(matched_state)
+    } else {
+      return(NA)  # Return NA if no match or multiple matches found
+    }
+  }
+  
+  # Define function to classify region based on state
+  classify_zip_code <- function(zip_code) {
+    state <- classify_state(zip_code)
+    
+    west_states <- c("WA", "OR", "CA", "ID", "NV", "UT", "AZ", "MT", "WY", "CO", "NM", "HI", "AK")
+    east_states <- c("ME", "NH", "MA", "RI", "CT", "NY", "NJ", "DE", "MD", "VA", "NC", "SC", "GA", "FL", "VT", "PA", "WV", "OH", "MI")
+    
+    if (!is.na(state)) {
+      if (state %in% west_states) {
+        return("West")
+      } else if (state %in% east_states) {
+        return("East")
+      } else if (state == "TX") {
+        return("Texas")
+      } else {
+        return("Other")
+      }
+    } else {
+      return(NA)
+    }
+  }
+  
+  # Classify state, region, and select appropriate electricity emission factor
+  df <- df %>%
+    rowwise() %>%
+    mutate(
+      state = classify_state(SD_08_ZipCode),
+      region = classify_zip_code(SD_08_ZipCode),
+      electricity_emission_factor = case_when(
+        region == "Texas" ~ emission_factors_housing$Electricity$Texas,
+        region == "West" ~ emission_factors_housing$Electricity$Western,
+        region == "East" ~ emission_factors_housing$Electricity$Eastern,
+        TRUE ~ emission_factors_housing$Electricity$Average
+      )
+    ) %>%
+    ungroup()
+  
+  # Handle missing values for energy bills
+  df <- df %>%
+    mutate(
+      EH_02_ElectricityBil_1 = as.numeric(EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = as.numeric(EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = as.numeric(EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1= as.numeric(EH_06_NaturalGasBill_1),
+      
+      EH_02_ElectricityBil_1 = ifelse(is.na(EH_02_ElectricityBil_1), 0, EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = ifelse(is.na(EH_03_ElectricityBil_1), 0, EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = ifelse(is.na(EH_05_NaturalGasBill_1), 0, EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1)
+    )
+  
+  # Calculate annual emissions using specific user-selected values
+  df <- df %>%
+    mutate(
+      electricity_usage_kWh = ifelse(electricity_emission_factor > 0, 
+                                     (EH_02_ElectricityBil_1 * 100) / electricity_emission_factor, 
+                                     0),
+      natural_gas_usage_cubic_feet = EH_05_NaturalGasBill_1 / 15.2,
+      
+      ElectricityEmissions = electricity_usage_kWh * 12 * electricity_emission_factor,
+      NaturalGasEmissions = natural_gas_usage_cubic_feet * 12 * emission_factors_housing$NaturalGas,
+      WaterEmissions = emission_factors_housing$WaterCFC,
+      
+      # Total housing emissions
+      HousingEmissions = ElectricityEmissions + NaturalGasEmissions + WaterEmissions
+    )
+  
+  df <- df %>% 
+    select(-state,-region,-electricity_emission_factor,-electricity_usage_kWh,-natural_gas_usage_cubic_feet,-ElectricityEmissions,-NaturalGasEmissions,-WaterEmissions)
+  
+    # Notify user and print results
+  message("New column `HousingEmissions` representing total housing emissions has been added to the dataset.")
+
+
+  print(df$HousingEmissions)
+  
+  return(df)
+}
+
+
+
+
+```
+
+4. `calc_pet_emissions`
+
+Create the Built-in Dataset for Pet Emission Factors:
+
+```{r}
+# Create the built-in dataset for pet emission factors
+pet_emission_factors <- tibble::tibble(
+  Country = c("United States", "China", "European Union", "Other"),
+  Dog = c(770, NA, NA, NA),  # kg CO2 per dog per year
+  Cat = c(335, NA, NA, NA)   # kg CO2 per cat per year
+)
+
+# Save as internal data 
+usethis::use_data(pet_emission_factors, overwrite = TRUE)
+
+```
+
+Define the function:
+
+```{r}
+#' Get country-specific pet emission factors
+#'
+#' Returns a list of pet emission factors based on the country.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A list of pet emission factors.
+get_pet_emission_factors <- function(country) {
+  
+  # Ensure dataset exists
+  if (!exists("pet_emission_factors")) stop("Error: pet_emission_factors dataset not found.")
+  
+  # Filter dataset for the given country
+  factors <- pet_emission_factors %>% filter(Country == country)
+  
+  # If no match, return NA values
+  if (nrow(factors) == 0) {
+    return(list("Dog" = NA, "Cat" = NA))
+  }
+  
+  # Return as a list
+  return(list("Dog" = factors$Dog, "Cat" = factors$Cat))
+}
+
+#' Calculate Pet Emissions
+#'
+#' This function computes pet-related emissions based on the number of cats and dogs owned.
+#'
+#' @param df A data frame containing pet ownership data.
+#' @return A data frame with a new column `PetEmissions` representing total pet emissions.
+#' @export
+calc_pet_emissions <- function(df) {
+  
+  # Get country-specific pet emission factors
+  emission_factors_pets <- get_pet_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert pet ownership columns to numeric and handle missing values
+  df <- df %>%
+    mutate(
+      PETS_4 = as.numeric(PETS_4),
+      PETS_5 = as.numeric(PETS_5),
+      PETS_4 = replace_na(PETS_4, 0),
+      PETS_5 = replace_na(PETS_5, 0)
+    )
+  
+  # Calculate pet emissions
+  df <- df %>%
+    mutate(
+      PetEmissions_Cat = PETS_4 * emission_factors_pets$Cat,
+      PetEmissions_Dog = PETS_5 * emission_factors_pets$Dog,
+      PetEmissions = PetEmissions_Cat + PetEmissions_Dog
+    )
+  
+  df <- df %>% 
+    select(-PetEmissions_Cat,-PetEmissions_Dog)
+  
+    # Notify user and print results
+  message("New column `PetEmissions` representing total pet-related emissions has been added to the dataset.")
+
+
+  print(df$PetEmissions)
+  
+  return(df)
+}
+
+
+```
+
+5. `calc_transport_emissions`
+
+Create the Built-in Dataset:
+
+```{r}
+
+# Create the built-in dataset for transport emission factors
+transport_emission_factors <- tibble::tibble(
+  Country = c("United States", "China", "European Union", "Other"),
+  Gasoline_Vehicles = c(0.14748, NA, NA, NA),
+  Diesel_Vehicles = c(0.16327, NA, NA, NA),
+  Electric_Vehicles = c(0.0, NA, NA, NA),  # Assumed zero
+  Hybrid_Vehicles = c(0.07374, NA, NA, NA),  # Half of gasoline
+  Natural_Gas_Vehicles = c(0.1279, NA, NA, NA),
+  Public_Transport = c(0.018949, NA, NA, NA),
+  Flights = c(1.05285, NA, NA, NA),  # kg CO2 per km
+  Long_Distance_Train = c(0.039489129, NA, NA, NA)  # kg CO2 per km
+)
+
+# Save the dataset as internal data
+usethis::use_data(transport_emission_factors, overwrite = TRUE)
+
+```
+
+Define the function:
+
+```{r}
+#' Get country-specific transport emission factors
+#'
+#' Returns a list of transport emission factors based on the country.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A list of transport emission factors.
+get_transport_emission_factors <- function(country) {
+  
+  # Ensure the built-in dataset exists
+  if (!exists("transport_emission_factors")) {
+    stop("Error: transport_emission_factors dataset not found.")
+  }
+  
+  # Filter the dataset for the given country
+  factors <- transport_emission_factors %>% filter(Country == country)
+  
+  # If no match, return NA values
+  if (nrow(factors) == 0) {
+    return(list(
+      "Gasoline Vehicles" = NA,
+      "Diesel Vehicles" = NA,
+      "Electric Vehicles" = NA,
+      "Hybrid Vehicles" = NA,
+      "Natural Gas Vehicles" = NA,
+      "Public Transport" = NA,
+      "Flights" = NA,
+      "Long Distance Train" = NA
+    ))
+  }
+  
+  # Convert row data to a list (excluding country column)
+  return(as.list(factors[-1]))
+}
+
+#' Calculate Transport Emissions
+#'
+#' This function computes transportation emissions by converting survey responses into estimated annual carbon emissions.
+#'
+#' @param df A data frame containing transportation-related survey data.
+#' @return A data frame with a new column `TransportEmissions` representing total transport emissions.
+#' @export
+calc_transport_emissions <- function(df) {
+  
+  # Get country-specific transport emission factors
+  emission_factors_transport <- get_transport_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure emission factors are not NULL or empty
+  emission_factors_transport <- lapply(emission_factors_transport, function(x) ifelse(is.na(x) | length(x) == 0, 0, x))
+
+  # Define mappings for categorical values
+  car_usage_map <- c(
+    "0 days (I do not use a car)" = 0,
+    "1-2 days" = 1.5,
+    "3-4 days" = 3.5,
+    "5-6 days" = 5.5,
+    "Everyday" = 7
+  )
+  
+  car_distance_map <- c(
+    "0-5 km or 0-3.1 miles" = 5,
+    "5-10 km or 3.1-6.2 miles" = 10,
+    "11-50 km or 6.2-31 miles" = 30.5,
+    "More than 50 km or 31 miles" = 51
+  )
+  
+  public_transport_freq_map <- c(
+    "Daily" = 1,
+    "Weekly" = 1/7,
+    "Monthly" = 1/30,
+    "Rarely" = 1/90,
+    "Never" = 0
+  )
+  
+  public_transport_distance_map <- c(
+    "0-5 km or 0-3.1 miles" = 5,
+    "5-10 km or 3.1-6.2 miles" = 10,
+    "11-50 km or 6.2-31 miles" = 30.5,
+    "More than 50 km or 31 miles" = 51
+  )
+  
+  flight_freq_map <- c(
+    "None" = 0,
+    "1-3 flights" = 2.5,
+    "4-6 flights" = 5,
+    "7-10 flights" = 8,
+    "More than 10 flights" = 12
+  )
+  
+  long_distance_transport_map <- c(
+    "Daily" = 1,
+    "Weekly" = 1/7,
+    "Monthly" = 1/30,
+    "Rarely" = 1/90,
+    "Never" = 0
+  )
+  
+  # Map categorical values to numeric
+  df <- df %>%
+    mutate(
+      T_01_CarUsage = car_usage_map[T_01_CarUsage],
+      T_03_CarDistance = car_distance_map[T_03_CarDistance],
+      T_04_PublicTransport = public_transport_freq_map[T_04_PublicTransport],
+      T_05_PublicTransport = public_transport_distance_map[T_05_PublicTransport],
+      T_06_AirTravelLong = flight_freq_map[T_06_AirTravelLong],
+      T_07_AirTravelShort = flight_freq_map[T_07_AirTravelShort],
+      T_08_LongDistanceTra = long_distance_transport_map[T_08_LongDistanceTra]
+    )
+  
+  # Assign correct emission factors for car types
+  df <- df %>%
+    mutate(
+      car_emission_factor = case_when(
+        T_02_CarType == "Gasoline Vehicle" ~ emission_factors_transport$Gasoline_Vehicles,
+        T_02_CarType == "Diesel Vehicle" ~ emission_factors_transport$Diesel_Vehicles,
+        T_02_CarType == "Hybrid Vehicle" ~ emission_factors_transport$Hybrid_Vehicles,
+        T_02_CarType == "Electric Vehicle" ~ emission_factors_transport$Electric_Vehicles,
+        T_02_CarType == "Natural Gas Vehicle" ~ emission_factors_transport$Natural_Gas_Vehicles,
+        TRUE ~ 0
+      )
+    )
+  
+  # Handle missing values in user inputs
+  df <- df %>%
+    mutate(
+      T_01_CarUsage = ifelse(is.na(T_01_CarUsage), 0, T_01_CarUsage),
+      T_03_CarDistance = ifelse(is.na(T_03_CarDistance), 0, T_03_CarDistance),
+      T_04_PublicTransport = ifelse(is.na(T_04_PublicTransport), 0, T_04_PublicTransport),
+      T_05_PublicTransport = ifelse(is.na(T_05_PublicTransport), 0, T_05_PublicTransport),
+      T_06_AirTravelLong = ifelse(is.na(T_06_AirTravelLong), 0, T_06_AirTravelLong),
+      T_07_AirTravelShort = ifelse(is.na(T_07_AirTravelShort), 0, T_07_AirTravelShort),
+      T_08_LongDistanceTra = ifelse(is.na(T_08_LongDistanceTra), 0, T_08_LongDistanceTra)
+    )
+  
+  # Calculate weekly travel distances
+  df <- df %>%
+    mutate(
+      WeeklyCarDistance = T_01_CarUsage * T_03_CarDistance,
+      WeeklyPublicTransportDistance = T_04_PublicTransport * T_05_PublicTransport
+    )
+  
+    df <- df %>% 
+    mutate(WeeklyCarDistance = as.numeric(WeeklyCarDistance),
+  WeeklyPublicTransportDistance = as.numeric(WeeklyPublicTransportDistance))
+    
+  # Ensure emission factors are correctly assigned and avoid size 0 error
+  public_transport_factor <- ifelse(length(emission_factors_transport$Public_Transport) > 0,
+                                    emission_factors_transport$Public_Transport, 0)
+  
+  flights_factor <- ifelse(length(emission_factors_transport$Flights) > 0,
+                           emission_factors_transport$Flights, 0)
+
+  train_factor <- ifelse(length(emission_factors_transport$Long_Distance_Train) > 0,
+                         emission_factors_transport$Long_Distance_Train, 0)
+
+  # Calculate annual emissions
+  df <- df %>%
+    mutate(
+      CarEmissions = WeeklyCarDistance * car_emission_factor * 52,
+      PublicTransportEmissions = WeeklyPublicTransportDistance * public_transport_factor * 52,
+      AirTravelLongEmissions = T_06_AirTravelLong * 500 * flights_factor,
+      AirTravelShortEmissions = T_07_AirTravelShort * 500 * flights_factor,
+      TrainEmissions = T_08_LongDistanceTra * 100 * 365 * train_factor,
+      
+      # Compute total transport emissions
+      TransportEmissions = CarEmissions + PublicTransportEmissions + AirTravelLongEmissions + AirTravelShortEmissions + TrainEmissions
+    )
+  
+df <- df %>% 
+  mutate(    CarEmissions = as.numeric(CarEmissions),
+    PublicTransportEmissions = as.numeric(PublicTransportEmissions),
+    AirTravelLongEmissions = as.numeric(AirTravelLongEmissions),
+    AirTravelShortEmissions = as.numeric(AirTravelShortEmissions),
+    TrainEmissions = as.numeric(TrainEmissions),
+    TransportEmissions = as.numeric(TransportEmissions))
+  
+df <- df %>% 
+  select(-car_emission_factor,-WeeklyCarDistance,-WeeklyPublicTransportDistance,-CarEmissions,-PublicTransportEmissions,-AirTravelLongEmissions,-AirTravelShortEmissions,-TrainEmissions)
+
+ # Notify user and print results
+  message("New column `TransportEmissions` representing total transport-related emissions has been added to the dataset.")
+
+
+  print(df$TransportEmissions)
+  
+  return(df)
+}
+
+
+
+```
+
+6. `calc_total_emissions`
+
+```{r}
+
+#' Get country-specific total emission factors
+#'
+#' Returns a list of total emission factors based on the country.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A list of total emission factors.
+get_total_emission_factors <- function(country) {
+  if (country == "United States") {
+    return(list(
+      "Transport" = 1,  # Placeholder (1 means no modification)
+      "Pet" = 1,
+      "Housing" = 1,
+      "Food" = 1,
+      "Consumption" = 1
+    ))
+  } else if (country == "China") {
+    return(list(
+      "Transport" = NA,  # Placeholder for China
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  } else if (country == "European Union") {
+    return(list(
+      "Transport" = NA,  # Placeholder for EU
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  } else {
+    return(list(
+      "Transport" = NA,
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  }
+}
+
+#' Calculate Total Emissions
+#'
+#' This function computes total carbon emissions by aggregating transportation, pet, housing (per capita), food, and consumption-based emissions.
+#'
+#' @param df A data frame containing emissions data from various components.
+#' @return A data frame with a new column `TotalEmissions` representing the aggregated total emissions.
+#' @export
+calc_total_emissions <- function(df) {
+  df <- calc_cons_emissions(df)
+  df <- calc_food_emissions(df)
+  df <- calc_housing_emissions(df)
+  df <- calc_pet_emissions(df)
+  df <- calc_transport_emissions(df)
+  # Get country-specific emission factors
+  emission_factors_total <- get_total_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert household size columns to numeric and handle NA values
+  df <- df %>%
+    mutate(
+      SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = as.numeric(SD_06_HouseholdSize_19),
+      SD_06_HouseholdSize_17 = ifelse(is.na(SD_06_HouseholdSize_17), 0, SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = ifelse(is.na(SD_06_HouseholdSize_18), 0, SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = ifelse(is.na(SD_06_HouseholdSize_19), 0, SD_06_HouseholdSize_19)
+    )
+  
+  # Calculate total household size (minimum 1 to prevent division by zero)
+  df <- df %>%
+    mutate(
+      HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
+      HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize)
+    )
+  
+  # Adjust housing emissions per capita
+  df <- df %>%
+    mutate(
+      HousingEmissionsPerCapita = HousingEmissions / HouseholdSize
+    )
+  
+  # Ensure all emission components exist and replace NA values
+  df <- df %>%
+    mutate(
+      TransportEmissions = ifelse(is.na(TransportEmissions), 0, TransportEmissions) * emission_factors_total$Transport,
+      PetEmissions = ifelse(is.na(PetEmissions), 0, PetEmissions) * emission_factors_total$Pet,
+      HousingEmissionsPerCapita = ifelse(is.na(HousingEmissionsPerCapita), 0, HousingEmissionsPerCapita) * emission_factors_total$Housing,
+      FoodEmissions = ifelse(is.na(FoodEmissions), 0, FoodEmissions) * emission_factors_total$Food,
+      ConsEmissions = ifelse(is.na(ConsEmissions), 0, ConsEmissions) * emission_factors_total$Consumption
+    )
+  
+  # Calculate total emissions
+  df <- df %>%
+    mutate(
+      TotalEmissions = TransportEmissions + PetEmissions + HousingEmissionsPerCapita +
+        FoodEmissions + ConsEmissions
+    )
+ 
+    df <- df %>% 
+  mutate(
+  TotalEmissions = as.numeric(TotalEmissions)
+  )
+  
+    df <- df %>% 
+      select(-HouseholdSize,-HousingEmissionsPerCapita)
+    
+#Notify user and print results
+  message("All individual emission calculations have been completed.")
+  message("New column `TotalEmissions` representing total carbon footprint has been added to the dataset.")
+
+
+  print(df$TotalEmissions) 
+  
+  return(df)
+}
+
+```
+
+7. `calc_cons_emissions_process`
+
+```{r}
+library(dplyr)
+library(tidyverse)
+
+#' Get country-specific emission factors from the built-in dataset
+#'
+#' Fetches consumption emission factors from the dataset stored in the package.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A named list of consumption emission factors.
+get_cons_emission_factors <- function(country) {
+  
+  # Filter the dataset for the given country
+  factors <- cons_emission_factors %>%
+    filter(Country == country) %>%
+    select(FactorName, Value)
+  
+  # Convert the dataset into a named list
+  if (nrow(factors) > 0) {
+    emission_list <- setNames(factors$Value, factors$FactorName)
+  } else {
+    # Return NA for all factors if the country is not found
+    emission_list <- list(
+      "FoodDelivery" = NA,  
+      "DiningOut" = NA,  
+      "HotelStays" = NA,  
+      "TobaccoProducts" = NA,  
+      "AlcoholDrinks" = NA,  
+      "Entertainment" = NA,  
+      "Healthcare" = NA,  
+      "Clothing" = NA  
+    )
+  }
+  
+  return(emission_list)
+}
+
+#' Calculate Consumption-Based Emissions with Process Data
+#'
+#' This function computes consumption-based emissions and retains process calculation result data.
+#'
+#' @param df A data frame containing the consumption data.
+#' @return A data frame with a new column `ConsEmissions` representing total consumption emissions and additional process calculation results.
+#' @export
+calc_cons_emissions_process <- function(df) {
+  
+  # Get country-specific emission factors from the dataset
+  emission_factors_cons <- get_cons_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure expenditure columns are numeric
+  df <- df %>%
+    mutate(
+      CL_03_MonthlyEx_9 = as.numeric(CL_03_MonthlyEx_9),
+      CL_03_MonthlyEx_10 = as.numeric(CL_03_MonthlyEx_10),
+      CL_03_MonthlyEx_11 = as.numeric(CL_03_MonthlyEx_11),
+      CL_03_MonthlyEx_12 = as.numeric(CL_03_MonthlyEx_12),
+      CL_03_MonthlyEx_13 = as.numeric(CL_03_MonthlyEx_13),
+      CL_03_MonthlyEx_14 = as.numeric(CL_03_MonthlyEx_14),
+      CL_03_MonthlyEx_15 = as.numeric(CL_03_MonthlyEx_15)
+    )
+  
+  # Assign estimated clothing spending based on categorical responses
+  clothing_spending_map <- c(
+    "More than 12 times (At least once a month)" = 600,
+    "7-12 times (About every 1-2 months)" = 420,
+    "4-6 times (About every 2-3 months)" = 300,
+    "1-3 times (Less than every 3 months)" = 120,
+    "Rarely" = 60
+  )
+  
+  df <- df %>%
+    mutate(
+      annual_clothing_spending = clothing_spending_map[CL_01_ClothingPurcha],
+      annual_clothing_spending = ifelse(is.na(annual_clothing_spending), 0, annual_clothing_spending),
+      
+      ClothingEm = annual_clothing_spending * emission_factors_cons[["Clothing"]]
+    )
+  
+  # Calculate annual emissions for each category
+  df <- df %>%
+    mutate(
+      FoodDeliveryEm = CL_03_MonthlyEx_9 * 12 * emission_factors_cons[["FoodDelivery"]],
+      DiningOutEm = CL_03_MonthlyEx_10 * 12 * emission_factors_cons[["DiningOut"]],
+      HotelStaysEm = CL_03_MonthlyEx_11 * 12 * emission_factors_cons[["HotelStays"]],
+      TobaccoEm = CL_03_MonthlyEx_12 * 12 * emission_factors_cons[["TobaccoProducts"]],
+      AlcoholEm = CL_03_MonthlyEx_13 * 12 * emission_factors_cons[["AlcoholDrinks"]],
+      EntertainmentEm = CL_03_MonthlyEx_14 * 12 * emission_factors_cons[["Entertainment"]],
+      HealthcareEm = CL_03_MonthlyEx_15 * 12 * emission_factors_cons[["Healthcare"]]
+    )
+  
+  # Compute total consumption emissions
+  df <- df %>%
+    mutate(
+      ConsEmissions = rowSums(cbind(
+        FoodDeliveryEm, DiningOutEm, HotelStaysEm,
+        TobaccoEm, AlcoholEm, EntertainmentEm,
+        HealthcareEm, ClothingEm
+      ), na.rm = TRUE)
+    )
+  
+  df <- df %>% 
+    mutate(
+      annual_clothing_spending = as.numeric(annual_clothing_spending),
+      ClothingEm = as.numeric(ClothingEm),
+      ConsEmissions = as.numeric(ConsEmissions)
+    )
+  
+  # Notify the user and print results
+  message("New column `ConsEmissions` representing total consumption emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$ConsEmissions)
+  
+  return(df)
+}
+```
+
+8. `calc_food_emissions_process`
+
+```{r}
+library(dplyr)
+library(tidyverse)
+
+#' Get country-specific food emission factors from the built-in dataset
+#'
+#' Fetches food emission factors from the dataset stored in the package.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A named list of food emission factors.
+get_food_emission_factors <- function(country) {
+  
+  # Filter the dataset for the given country
+  factors <- food_emission_factors %>%
+    filter(Country == country) %>%
+    select(FactorName, Value)
+  
+  # Convert the dataset into a named list
+  if (nrow(factors) > 0) {
+    emission_list <- setNames(factors$Value, factors$FactorName)
+  } else {
+    # Return NA for all factors if the country is not found
+    emission_list <- list(
+      "MeatMeals" = NA,  
+      "VeganMeals" = NA,  
+      "VegetarianMeals" = NA,  
+      "DairyProducts" = NA  
+    )
+  }
+  
+  return(emission_list)
+}
+
+#' Calculate Food-Related Carbon Emissions with Process Data
+#'
+#' This function computes food-based emissions and retains process calculation result data.
+#'
+#' @param df A data frame containing the food consumption data.
+#' @return A data frame with a new column `FoodEmissions` representing total food-related emissions and additional process calculation results.
+#' @export
+calc_food_emissions_process <- function(df) {
+  
+  # Get country-specific food emission factors from the dataset
+  emission_factors_food <- get_food_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert food intake columns to numeric and replace NA values with 0
+  df <- df %>%
+    mutate(
+      F_01_DietaryHabits_5 = as.numeric(F_01_DietaryHabits_5),
+      F_01_DietaryHabits_6 = as.numeric(F_01_DietaryHabits_6),
+      F_01_DietaryHabits_7 = as.numeric(F_01_DietaryHabits_7),
+      F_01_DietaryHabits_4 = as.numeric(F_01_DietaryHabits_4)
+    ) %>%
+    replace(is.na(.), 0)
+  
+  # Calculate emissions for each food category
+  df <- df %>%
+    mutate(
+      MeatEmissions = F_01_DietaryHabits_5 * 52 * emission_factors_food[["MeatMeals"]],
+      VeganEmissions = F_01_DietaryHabits_6 * 52 * emission_factors_food[["VeganMeals"]],
+      VegetarianEmissions = F_01_DietaryHabits_7 * 52 * emission_factors_food[["VegetarianMeals"]],
+      DairyEmissions = F_01_DietaryHabits_4 * 52 * emission_factors_food[["DairyProducts"]],
+      
+      # Total food emissions
+      FoodEmissions = rowSums(cbind(MeatEmissions, VeganEmissions, VegetarianEmissions, DairyEmissions), na.rm = TRUE)
+    )
+  
+  
+  
+  # Notify the user and print results
+  message("New column `FoodEmissions` representing total food emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$FoodEmissions)
+  
+  return(df)
+}
+```
+
+9. `calc_housing_emissions_process`
+
+```{r}
+.onLoad <- function(libname, pkgname) {
+  # Load package data into the global environment
+  data_env <- globalenv()
+  utils::data("zip_data", package = pkgname, envir = data_env)
+  utils::data("housing_emission_factors", package = pkgname, envir = data_env)
+}
+
+#' Get country-specific housing emission factors from dataset
+#'
+#' Returns a list of housing emission factors based on the country.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A list of housing emission factors.
+get_housing_emission_factors <- function(country) {
+  # Ensure dataset is available
+  if (!exists("housing_emission_factors", where = globalenv())) {
+    stop("Error: housing_emission_factors dataset not found.")
+  }
+  
+  # Filter dataset for the selected country
+  factors <- housing_emission_factors %>% filter(Country == country)
+  
+  # Set default values to prevent NULLs
+  default_values <- list(
+    "WaterCFC" = 26.5,
+    "NaturalGas" = 0.055,
+    "Electricity" = list(
+      "Average" = 0.513,
+      "Texas" = 0.641855,
+      "Western" = 0.461226,
+      "Eastern" = 0.572386
+    )
+  )
+  
+  # Ensure values exist, otherwise, use defaults
+  return(list(
+    "WaterCFC" = ifelse(any(factors$FactorName == "WaterCFC"), factors$Value[factors$FactorName == "WaterCFC"], default_values$WaterCFC),
+    "NaturalGas" = ifelse(any(factors$FactorName == "NaturalGas"), factors$Value[factors$FactorName == "NaturalGas"], default_values$NaturalGas),
+    "Electricity" = list(
+      "Average" = ifelse(any(factors$FactorName == "Electricity_Average"), factors$Value[factors$FactorName == "Electricity_Average"], default_values$Electricity$Average),
+      "Texas" = ifelse(any(factors$FactorName == "Electricity_Texas"), factors$Value[factors$FactorName == "Electricity_Texas"], default_values$Electricity$Texas),
+      "Western" = ifelse(any(factors$FactorName == "Electricity_Western"), factors$Value[factors$FactorName == "Electricity_Western"], default_values$Electricity$Western),
+      "Eastern" = ifelse(any(factors$FactorName == "Electricity_Eastern"), factors$Value[factors$FactorName == "Electricity_Eastern"], default_values$Electricity$Eastern)
+    )
+  ))
+}
+
+
+#' Calculate Housing-Related Carbon Emissions with Process Data
+#'
+#' This function computes housing-related carbon emissions and retains process calculation result data.
+#'
+#' @param df A data frame containing housing-related data.
+#' @return A data frame with a new column `HousingEmissions` representing total housing-related emissions and additional process calculation results.
+#' @export
+calc_housing_emissions_process <- function(df) {
+  
+  # Ensure built-in datasets are available
+  if (!exists("zip_data")) stop("Error: zip_data dataset not found.")
+  
+  # Get country-specific housing emission factors
+  emission_factors_housing <- get_housing_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure ZIP code exists and is numeric
+  df <- df %>%
+    mutate(SD_08_ZipCode = as.numeric(SD_08_ZipCode))
+  
+  # Define function to classify state based on ZIP code
+  classify_state <- function(zip_code) {
+    matched_state <- zip_data %>%
+      filter(zip_code >= Zip_Min & zip_code <= Zip_Max) %>%
+      pull(ST)
+    
+    if (length(matched_state) == 1) {
+      return(matched_state)
+    } else {
+      return(NA)  # Return NA if no match or multiple matches found
+    }
+  }
+  
+  # Define function to classify region based on state
+  classify_zip_code <- function(zip_code) {
+    state <- classify_state(zip_code)
+    
+    west_states <- c("WA", "OR", "CA", "ID", "NV", "UT", "AZ", "MT", "WY", "CO", "NM", "HI", "AK")
+    east_states <- c("ME", "NH", "MA", "RI", "CT", "NY", "NJ", "DE", "MD", "VA", "NC", "SC", "GA", "FL", "VT", "PA", "WV", "OH", "MI")
+    
+    if (!is.na(state)) {
+      if (state %in% west_states) {
+        return("West")
+      } else if (state %in% east_states) {
+        return("East")
+      } else if (state == "TX") {
+        return("Texas")
+      } else {
+        return("Other")
+      }
+    } else {
+      return(NA)
+    }
+  }
+  
+  # Classify state, region, and select appropriate electricity emission factor
+  df <- df %>%
+    rowwise() %>%
+    mutate(
+      state = classify_state(SD_08_ZipCode),
+      region = classify_zip_code(SD_08_ZipCode),
+      electricity_emission_factor = case_when(
+        region == "Texas" ~ emission_factors_housing$Electricity$Texas,
+        region == "West" ~ emission_factors_housing$Electricity$Western,
+        region == "East" ~ emission_factors_housing$Electricity$Eastern,
+        TRUE ~ emission_factors_housing$Electricity$Average
+      )
+    ) %>%
+    ungroup()
+  
+  # Handle missing values for energy bills
+  df <- df %>%
+    mutate(
+      EH_02_ElectricityBil_1 = as.numeric(EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = as.numeric(EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = as.numeric(EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1= as.numeric(EH_06_NaturalGasBill_1),
+      
+      EH_02_ElectricityBil_1 = ifelse(is.na(EH_02_ElectricityBil_1), 0, EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = ifelse(is.na(EH_03_ElectricityBil_1), 0, EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = ifelse(is.na(EH_05_NaturalGasBill_1), 0, EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1)
+    )
+  
+  # Calculate annual emissions using specific user-selected values
+  df <- df %>%
+    mutate(
+      electricity_usage_kWh = ifelse(electricity_emission_factor > 0, 
+                                     (EH_02_ElectricityBil_1 * 100) / electricity_emission_factor, 
+                                     0),
+      natural_gas_usage_cubic_feet = EH_05_NaturalGasBill_1 / 15.2,
+      
+      ElectricityEmissions = electricity_usage_kWh * 12 * electricity_emission_factor,
+      NaturalGasEmissions = natural_gas_usage_cubic_feet * 12 * emission_factors_housing$NaturalGas,
+      WaterEmissions = emission_factors_housing$WaterCFC,
+      
+      # Total housing emissions
+      HousingEmissions = ElectricityEmissions + NaturalGasEmissions + WaterEmissions
+    )
+  
+  
+  # Notify user and print results
+  message("New column `HousingEmissions` representing total housing emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$HousingEmissions)
+  
+  return(df)
+}
+```
+
+10. `calc_pet_emissions_process`
+
+```{r}
+#' Get country-specific pet emission factors
+#'
+#' Returns a list of pet emission factors based on the country.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A list of pet emission factors.
+get_pet_emission_factors <- function(country) {
+  
+  # Ensure dataset exists
+  if (!exists("pet_emission_factors")) stop("Error: pet_emission_factors dataset not found.")
+  
+  # Filter dataset for the given country
+  factors <- pet_emission_factors %>% filter(Country == country)
+  
+  # If no match, return NA values
+  if (nrow(factors) == 0) {
+    return(list("Dog" = NA, "Cat" = NA))
+  }
+  
+  # Return as a list
+  return(list("Dog" = factors$Dog, "Cat" = factors$Cat))
+}
+
+#' Calculate Pet-Related Carbon Emissions with Process Data
+#'
+#' This function computes pet-related carbon emissions and retains process calculation result data.
+#'
+#' @param df A data frame containing pet ownership data.
+#' @return A data frame with a new column `PetEmissions` representing total pet-related emissions and additional process calculation results.
+#' @export
+calc_pet_emissions_process <- function(df) {
+  
+  # Get country-specific pet emission factors
+  emission_factors_pets <- get_pet_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert pet ownership columns to numeric and handle missing values
+  df <- df %>%
+    mutate(
+      PETS_4 = as.numeric(PETS_4),
+      PETS_5 = as.numeric(PETS_5),
+      PETS_4 = replace_na(PETS_4, 0),
+      PETS_5 = replace_na(PETS_5, 0)
+    )
+  
+  # Calculate pet emissions
+  df <- df %>%
+    mutate(
+      PetEmissions_Cat = PETS_4 * emission_factors_pets$Cat,
+      PetEmissions_Dog = PETS_5 * emission_factors_pets$Dog,
+      PetEmissions = PetEmissions_Cat + PetEmissions_Dog
+    )
+  
+  
+  # Notify user and print results
+  message("New column `PetEmissions` representing total pet-related emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$PetEmissions)
+  
+  return(df)
+}
+
+```
+
+11. `calc_transport_emissions_process`
+
+```{r}
+#' Get country-specific transport emission factors
+#'
+#' Returns a list of transport emission factors based on the country.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A list of transport emission factors.
+get_transport_emission_factors <- function(country) {
+  
+  # Ensure the built-in dataset exists
+  if (!exists("transport_emission_factors")) {
+    stop("Error: transport_emission_factors dataset not found.")
+  }
+  
+  # Filter the dataset for the given country
+  factors <- transport_emission_factors %>% filter(Country == country)
+  
+  # If no match, return NA values
+  if (nrow(factors) == 0) {
+    return(list(
+      "Gasoline Vehicles" = NA,
+      "Diesel Vehicles" = NA,
+      "Electric Vehicles" = NA,
+      "Hybrid Vehicles" = NA,
+      "Natural Gas Vehicles" = NA,
+      "Public Transport" = NA,
+      "Flights" = NA,
+      "Long Distance Train" = NA
+    ))
+  }
+  
+  # Convert row data to a list (excluding country column)
+  return(as.list(factors[-1]))
+}
+
+#' Calculate Transport-Related Carbon Emissions with Process Data
+#'
+#' This function computes transport-related carbon emissions and retains process calculation result data.
+#'
+#' @param df A data frame containing transportation-related survey data.
+#' @return A data frame with a new column `TransportEmissions` representing total transport emissions and additional process calculation results.
+#' @export
+calc_transport_emissions_process <- function(df) {
+  
+  # Get country-specific transport emission factors
+  emission_factors_transport <- get_transport_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure emission factors are not NULL or empty
+  emission_factors_transport <- lapply(emission_factors_transport, function(x) ifelse(is.na(x) | length(x) == 0, 0, x))
+  
+  # Define mappings for categorical values
+  car_usage_map <- c(
+    "0 days (I do not use a car)" = 0,
+    "1-2 days" = 1.5,
+    "3-4 days" = 3.5,
+    "5-6 days" = 5.5,
+    "Everyday" = 7
+  )
+  
+  car_distance_map <- c(
+    "0-5 km or 0-3.1 miles" = 5,
+    "5-10 km or 3.1-6.2 miles" = 10,
+    "11-50 km or 6.2-31 miles" = 30.5,
+    "More than 50 km or 31 miles" = 51
+  )
+  
+  public_transport_freq_map <- c(
+    "Daily" = 1,
+    "Weekly" = 1/7,
+    "Monthly" = 1/30,
+    "Rarely" = 1/90,
+    "Never" = 0
+  )
+  
+  public_transport_distance_map <- c(
+    "0-5 km or 0-3.1 miles" = 5,
+    "5-10 km or 3.1-6.2 miles" = 10,
+    "11-50 km or 6.2-31 miles" = 30.5,
+    "More than 50 km or 31 miles" = 51
+  )
+  
+  flight_freq_map <- c(
+    "None" = 0,
+    "1-3 flights" = 2.5,
+    "4-6 flights" = 5,
+    "7-10 flights" = 8,
+    "More than 10 flights" = 12
+  )
+  
+  long_distance_transport_map <- c(
+    "Daily" = 1,
+    "Weekly" = 1/7,
+    "Monthly" = 1/30,
+    "Rarely" = 1/90,
+    "Never" = 0
+  )
+  
+  # Map categorical values to numeric
+  df <- df %>%
+    mutate(
+      T_01_CarUsage = car_usage_map[T_01_CarUsage],
+      T_03_CarDistance = car_distance_map[T_03_CarDistance],
+      T_04_PublicTransport = public_transport_freq_map[T_04_PublicTransport],
+      T_05_PublicTransport = public_transport_distance_map[T_05_PublicTransport],
+      T_06_AirTravelLong = flight_freq_map[T_06_AirTravelLong],
+      T_07_AirTravelShort = flight_freq_map[T_07_AirTravelShort],
+      T_08_LongDistanceTra = long_distance_transport_map[T_08_LongDistanceTra]
+    )
+  
+  # Assign correct emission factors for car types
+  df <- df %>%
+    mutate(
+      car_emission_factor = case_when(
+        T_02_CarType == "Gasoline Vehicle" ~ emission_factors_transport$Gasoline_Vehicles,
+        T_02_CarType == "Diesel Vehicle" ~ emission_factors_transport$Diesel_Vehicles,
+        T_02_CarType == "Hybrid Vehicle" ~ emission_factors_transport$Hybrid_Vehicles,
+        T_02_CarType == "Electric Vehicle" ~ emission_factors_transport$Electric_Vehicles,
+        T_02_CarType == "Natural Gas Vehicle" ~ emission_factors_transport$Natural_Gas_Vehicles,
+        TRUE ~ 0
+      )
+    )
+  
+  # Handle missing values in user inputs
+  df <- df %>%
+    mutate(
+      T_01_CarUsage = ifelse(is.na(T_01_CarUsage), 0, T_01_CarUsage),
+      T_03_CarDistance = ifelse(is.na(T_03_CarDistance), 0, T_03_CarDistance),
+      T_04_PublicTransport = ifelse(is.na(T_04_PublicTransport), 0, T_04_PublicTransport),
+      T_05_PublicTransport = ifelse(is.na(T_05_PublicTransport), 0, T_05_PublicTransport),
+      T_06_AirTravelLong = ifelse(is.na(T_06_AirTravelLong), 0, T_06_AirTravelLong),
+      T_07_AirTravelShort = ifelse(is.na(T_07_AirTravelShort), 0, T_07_AirTravelShort),
+      T_08_LongDistanceTra = ifelse(is.na(T_08_LongDistanceTra), 0, T_08_LongDistanceTra)
+    )
+  
+  # Calculate weekly travel distances
+  df <- df %>%
+    mutate(
+      WeeklyCarDistance = T_01_CarUsage * T_03_CarDistance,
+      WeeklyPublicTransportDistance = T_04_PublicTransport * T_05_PublicTransport
+    )
+  
+  df <- df %>% 
+    mutate(WeeklyCarDistance = as.numeric(WeeklyCarDistance),
+           WeeklyPublicTransportDistance = as.numeric(WeeklyPublicTransportDistance))
+  
+  # Ensure emission factors are correctly assigned and avoid size 0 error
+  public_transport_factor <- ifelse(length(emission_factors_transport$Public_Transport) > 0,
+                                    emission_factors_transport$Public_Transport, 0)
+  
+  flights_factor <- ifelse(length(emission_factors_transport$Flights) > 0,
+                           emission_factors_transport$Flights, 0)
+  
+  train_factor <- ifelse(length(emission_factors_transport$Long_Distance_Train) > 0,
+                         emission_factors_transport$Long_Distance_Train, 0)
+  
+  # Calculate annual emissions
+  df <- df %>%
+    mutate(
+      CarEmissions = WeeklyCarDistance * car_emission_factor * 52,
+      PublicTransportEmissions = WeeklyPublicTransportDistance * public_transport_factor * 52,
+      AirTravelLongEmissions = T_06_AirTravelLong * 500 * flights_factor,
+      AirTravelShortEmissions = T_07_AirTravelShort * 500 * flights_factor,
+      TrainEmissions = T_08_LongDistanceTra * 100 * 365 * train_factor,
+      
+      # Compute total transport emissions
+      TransportEmissions = CarEmissions + PublicTransportEmissions + AirTravelLongEmissions + AirTravelShortEmissions + TrainEmissions
+    )
+  
+  df <- df %>% 
+    mutate(    CarEmissions = as.numeric(CarEmissions),
+               PublicTransportEmissions = as.numeric(PublicTransportEmissions),
+               AirTravelLongEmissions = as.numeric(AirTravelLongEmissions),
+               AirTravelShortEmissions = as.numeric(AirTravelShortEmissions),
+               TrainEmissions = as.numeric(TrainEmissions),
+               TransportEmissions = as.numeric(TransportEmissions))
+  
+  
+  # Notify user and print results
+  message("New column `TransportEmissions` representing total transport-related emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$TransportEmissions)
+  
+  return(df)
+}
+
+```
+
+12. `calc_total_emissions_process`
+
+```{r}
+#' Get country-specific total emission factors
+#'
+#' Returns a list of total emission factors based on the country.
+#'
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom tidyr replace_na
+#' @importFrom stats setNames
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map map_df
+#' @importFrom tibble tibble
+#' @param country A character string representing the country.
+#' @return A list of total emission factors.
+get_total_emission_factors <- function(country) {
+  if (country == "United States") {
+    return(list(
+      "Transport" = 1,  # Placeholder (1 means no modification)
+      "Pet" = 1,
+      "Housing" = 1,
+      "Food" = 1,
+      "Consumption" = 1
+    ))
+  } else if (country == "China") {
+    return(list(
+      "Transport" = NA,  # Placeholder for China
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  } else if (country == "European Union") {
+    return(list(
+      "Transport" = NA,  # Placeholder for EU
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  } else {
+    return(list(
+      "Transport" = NA,
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  }
+}
+
+#' Calculate Total Carbon Emissions with Process Data
+#'
+#' This function computes total carbon emissions by aggregating transportation, pet, housing (per capita), food, and consumption-based emissions.
+#'
+#' @param df A data frame containing emissions data from various components.
+#' @return A data frame with a new column `TotalEmissions` representing total emissions and additional process calculation results.
+#' @export
+calc_total_emissions_process <- function(df) {
+  df <- calc_cons_emissions_process(df)
+  df <- calc_food_emissions_process(df)
+  df <- calc_housing_emissions_process(df)
+  df <- calc_pet_emissions_process(df)
+  df <- calc_transport_emissions_process(df)
+  # Get country-specific emission factors
+  emission_factors_total <- get_total_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert household size columns to numeric and handle NA values
+  df <- df %>%
+    mutate(
+      SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = as.numeric(SD_06_HouseholdSize_19),
+      SD_06_HouseholdSize_17 = ifelse(is.na(SD_06_HouseholdSize_17), 0, SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = ifelse(is.na(SD_06_HouseholdSize_18), 0, SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = ifelse(is.na(SD_06_HouseholdSize_19), 0, SD_06_HouseholdSize_19)
+    )
+  
+  # Calculate total household size (minimum 1 to prevent division by zero)
+  df <- df %>%
+    mutate(
+      HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
+      HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize)
+    )
+  
+  # Adjust housing emissions per capita
+  df <- df %>%
+    mutate(
+      HousingEmissionsPerCapita = HousingEmissions / HouseholdSize
+    )
+  
+  # Ensure all emission components exist and replace NA values
+  df <- df %>%
+    mutate(
+      TransportEmissions = ifelse(is.na(TransportEmissions), 0, TransportEmissions) * emission_factors_total$Transport,
+      PetEmissions = ifelse(is.na(PetEmissions), 0, PetEmissions) * emission_factors_total$Pet,
+      HousingEmissionsPerCapita = ifelse(is.na(HousingEmissionsPerCapita), 0, HousingEmissionsPerCapita) * emission_factors_total$Housing,
+      FoodEmissions = ifelse(is.na(FoodEmissions), 0, FoodEmissions) * emission_factors_total$Food,
+      ConsEmissions = ifelse(is.na(ConsEmissions), 0, ConsEmissions) * emission_factors_total$Consumption
+    )
+  
+  # Calculate total emissions
+  df <- df %>%
+    mutate(
+      TotalEmissions = TransportEmissions + PetEmissions + HousingEmissionsPerCapita +
+        FoodEmissions + ConsEmissions
+    )
+  
+  df <- df %>% 
+    mutate(
+      TotalEmissions = as.numeric(TotalEmissions)
+    )
+
+  
+  #Notify user and print results
+  message("All individual emission calculations have been completed.")
+  message("New column `TotalEmissions` representing total carbon footprint has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$TotalEmissions) 
+  
+  return(df)
+}
+```
+
+## Create a new R/data_documentation.R file and add:
+
+```{r}
+
+#' Consumer Emission Factors Dataset
+#'
+#' This dataset contains emission factors for various consumer goods and services
+#' based on country-specific data.
+#'
+#' @docType data
+#' @name cons_emission_factors
+#' @usage data(cons_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \describe{
+#'   \item{Country}{Country name}
+#'   \item{FactorName}{Type of consumer emission factor (e.g., Clothing, Dining, Healthcare, etc.)}
+#'   \item{Value}{Emission value for the given factor}
+#' }
+"cons_emission_factors"
+
+
+#' Food Emission Factors Dataset
+#'
+#' This dataset contains food-related emission factors based on country-specific data.
+#'
+#' @docType data
+#' @name food_emission_factors
+#' @usage data(food_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \describe{
+#'   \item{Country}{Country name}
+#'   \item{FactorName}{Type of food emission factor (e.g., Dairy, Meat, Vegan, Vegetarian)}
+#'   \item{Value}{Emission value for the given factor}
+#' }
+"food_emission_factors"
+
+
+#' Housing Emission Factors Dataset
+#'
+#' This dataset contains housing-related emission factors based on country-specific data.
+#'
+#' @docType data
+#' @name housing_emission_factors
+#' @usage data(housing_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \describe{
+#'   \item{Country}{Country name}
+#'   \item{FactorName}{Type of housing emission factor (e.g., Electricity, Heating_Oil, Natural_Gas, Water)}
+#'   \item{Value}{Emission value for the given factor}
+#' }
+"housing_emission_factors"
+
+
+#' Pet Emission Factors Dataset
+#'
+#' This dataset contains emission factors for pet ownership based on country-specific data.
+#'
+#' @docType data
+#' @name pet_emission_factors
+#' @usage data(pet_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \describe{
+#'   \item{Country}{Character, name of the country or region}
+#'   \item{Dog}{Numeric, carbon emissions from dogs (kg CO2 per year)}
+#'   \item{Cat}{Numeric, carbon emissions from cats (kg CO2 per year)}
+#' }
+"pet_emission_factors"
+
+
+#' Transport Emission Factors Dataset
+#'
+#' This dataset contains emission factors for different modes of transport,
+#' categorized by country.
+#'
+#' @docType data
+#' @name transport_emission_factors
+#' @usage data(transport_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \describe{
+#'   \item{Country}{Character, name of the country or region}
+#'   \item{Diesel_Vehicles}{Numeric, carbon emissions from diesel vehicles}
+#'   \item{Electric_Vehicles}{Numeric, carbon emissions from electric vehicles}
+#'   \item{Flights}{Numeric, emissions from air travel}
+#'   \item{Gasoline_Vehicles}{Numeric, emissions from gasoline vehicles}
+#'   \item{Hybrid_Vehicles}{Numeric, emissions from hybrid vehicles}
+#'   \item{Long_Distance_Train}{Numeric, emissions from train travel}
+#'   \item{Natural_Gas_Vehicles}{Numeric, emissions from natural gas vehicles}
+#'   \item{Public_Transport}{Numeric, emissions from public transport}
+#' }
+"transport_emission_factors"
+
+
+#' ZIP Code Data for U.S. States
+#'
+#' This dataset provides the ZIP code ranges for different states in the United States.
+#'
+#' @docType data
+#' @name zip_data
+#' @usage data(zip_data)
+#' @keywords datasets
+#' @format A data frame with the following columns:
+#' \describe{
+#'   \item{ID}{Unique identifier}
+#'   \item{ST}{State abbreviation}
+#'   \item{State_Name}{Full name of the state}
+#'   \item{Zip_Max}{Maximum ZIP code in the range}
+#'   \item{Zip_Min}{Minimum ZIP code in the range}
+#' }
+"zip_data"
+
+
+```
+
+
+## store functions inside the `R/` directory of the package
+
+```{r}
+usethis::use_r("calc_cons_emissions")
+usethis::use_r("calc_food_emissions")
+usethis::use_r("calc_housing_emissions")
+usethis::use_r("calc_pet_emissions")
+usethis::use_r("calc_transport_emissions")
+usethis::use_r("calc_total_emissions")
+usethis::use_r("calc_cons_emissions_process")
+usethis::use_r("calc_food_emissions_process")
+usethis::use_r("calc_housing_emissions_process")
+usethis::use_r("calc_pet_emissions_process")
+usethis::use_r("calc_transport_emissions_process")
+usethis::use_r("calc_total_emissions_process")
+usethis::use_r("cons_emission_factors")
+usethis::use_r("food_emission_factors")
+usethis::use_r("housing_emission_factors")
+usethis::use_r("pet_emission_factors")
+usethis::use_r("transport_emission_factors")
+usethis::use_r("zip_data")
+```
+
+## If these files were empty after running this
+
+```{r}
+usethis::proj_get()
+
+# Write the script content into "calc_cons_emissions.R"
+file_path <- "R/calc_cons_emissions.R"
+script_content <- '
+# Create a built-in dataset for emission factors
+cons_emission_factors <- tibble::tibble(
+  Country = c("United States", "United States", "United States", "United States", "United States", 
+              "United States", "United States", "United States", "United States",
+              "China", "China", "China", "China", "China", "China", "China", "China", "China",
+              "European Union", "European Union", "European Union", "European Union", 
+              "European Union", "European Union", "European Union", "European Union", "European Union"),
+  FactorName = c("FoodDelivery", "DiningOut", "HotelStays", "TobaccoProducts", 
+                 "AlcoholDrinks", "Entertainment", "Healthcare", "Clothing",
+                 "Other",
+                 "FoodDelivery", "DiningOut", "HotelStays", "TobaccoProducts", 
+                 "AlcoholDrinks", "Entertainment", "Healthcare", "Clothing",
+                 "Other",
+                 "FoodDelivery", "DiningOut", "HotelStays", "TobaccoProducts", 
+                 "AlcoholDrinks", "Entertainment", "Healthcare", "Clothing",
+                 "Other"),
+  Value = c(0.349757961, 0.010974672, 0.016436699, 0.009542055, 
+            0.042726645, 0.009474576, 0.014611029, 0.018380588, NA, 
+            NA, NA, NA, NA, NA, NA, NA, NA, NA,
+            NA, NA, NA, NA, NA, NA, NA, NA, NA)
+)
+
+# Save as an R dataset
+usethis::use_data(cons_emission_factors, overwrite = TRUE)
+library(dplyr)
+library(tidyverse)
+
+#\' Get country-specific emission factors from the built-in dataset
+#\'
+#\' Fetches consumption emission factors from the dataset stored in the package.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A named list of consumption emission factors.
+get_cons_emission_factors <- function(country) {
+  
+  # Filter the dataset for the given country
+  factors <- cons_emission_factors %>%
+    filter(Country == country) %>%
+    select(FactorName, Value)
+
+  # Convert the dataset into a named list
+  if (nrow(factors) > 0) {
+    emission_list <- setNames(factors$Value, factors$FactorName)
+  } else {
+    # Return NA for all factors if the country is not found
+    emission_list <- list(
+      "FoodDelivery" = NA,  
+      "DiningOut" = NA,  
+      "HotelStays" = NA,  
+      "TobaccoProducts" = NA,  
+      "AlcoholDrinks" = NA,  
+      "Entertainment" = NA,  
+      "Healthcare" = NA,  
+      "Clothing" = NA  
+    )
+  }
+
+  return(emission_list)
+}
+
+#\' Calculate Consumption-Based Emissions using internal dataset
+#\'
+#\' This function computes consumption-based emissions by converting expenditure data into estimated carbon emissions.
+#\'
+#\' @param df A data frame containing the consumption data.
+#\' @return A data frame with a new column `ConsEmissions` representing total consumption emissions.
+#\' @export
+calc_cons_emissions <- function(df) {
+  
+  # Get country-specific emission factors from the dataset
+  emission_factors_cons <- get_cons_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure expenditure columns are numeric
+  df <- df %>%
+    mutate(
+      CL_03_MonthlyEx_9 = as.numeric(CL_03_MonthlyEx_9),
+      CL_03_MonthlyEx_10 = as.numeric(CL_03_MonthlyEx_10),
+      CL_03_MonthlyEx_11 = as.numeric(CL_03_MonthlyEx_11),
+      CL_03_MonthlyEx_12 = as.numeric(CL_03_MonthlyEx_12),
+      CL_03_MonthlyEx_13 = as.numeric(CL_03_MonthlyEx_13),
+      CL_03_MonthlyEx_14 = as.numeric(CL_03_MonthlyEx_14),
+      CL_03_MonthlyEx_15 = as.numeric(CL_03_MonthlyEx_15)
+    )
+  
+  # Assign estimated clothing spending based on categorical responses
+  clothing_spending_map <- c(
+    "More than 12 times (At least once a month)" = 600,
+    "7-12 times (About every 1-2 months)" = 420,
+    "4-6 times (About every 2-3 months)" = 300,
+    "1-3 times (Less than every 3 months)" = 120,
+    "Rarely" = 60
+  )
+  
+  df <- df %>%
+    mutate(
+      annual_clothing_spending = clothing_spending_map[CL_01_ClothingPurcha],
+      annual_clothing_spending = ifelse(is.na(annual_clothing_spending), 0, annual_clothing_spending),
+      
+      ClothingEm = annual_clothing_spending * emission_factors_cons[["Clothing"]]
+    )
+  
+  # Calculate annual emissions for each category
+  df <- df %>%
+    mutate(
+      FoodDeliveryEm = CL_03_MonthlyEx_9 * 12 * emission_factors_cons[["FoodDelivery"]],
+      DiningOutEm = CL_03_MonthlyEx_10 * 12 * emission_factors_cons[["DiningOut"]],
+      HotelStaysEm = CL_03_MonthlyEx_11 * 12 * emission_factors_cons[["HotelStays"]],
+      TobaccoEm = CL_03_MonthlyEx_12 * 12 * emission_factors_cons[["TobaccoProducts"]],
+      AlcoholEm = CL_03_MonthlyEx_13 * 12 * emission_factors_cons[["AlcoholDrinks"]],
+      EntertainmentEm = CL_03_MonthlyEx_14 * 12 * emission_factors_cons[["Entertainment"]],
+      HealthcareEm = CL_03_MonthlyEx_15 * 12 * emission_factors_cons[["Healthcare"]]
+    )
+  
+  # Compute total consumption emissions
+  df <- df %>%
+    mutate(
+      ConsEmissions = rowSums(cbind(
+        FoodDeliveryEm, DiningOutEm, HotelStaysEm,
+        TobaccoEm, AlcoholEm, EntertainmentEm,
+        HealthcareEm, ClothingEm
+      ), na.rm = TRUE)
+    )
+
+  df <- df %>% 
+    mutate(
+      annual_clothing_spending = as.numeric(annual_clothing_spending),
+      ClothingEm = as.numeric(ClothingEm),
+      ConsEmissions = as.numeric(ConsEmissions)
+    )
+   
+     df <- df %>% 
+    select(-annual_clothing_spending,-ClothingEm,-FoodDeliveryEm,-DiningOutEm,-HotelStaysEm,-TobaccoEm,-AlcoholEm,-EntertainmentEm,-HealthcareEm)
+    
+      # Notify the user and print results
+  message("New column `ConsEmissions` representing total consumption emissions has been added to the dataset.")
+
+  
+  print(df$ConsEmissions)
+  
+  return(df)
+}
+
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_cons_emissions.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_food_emissions.R"
+file_path <- "R/calc_food_emissions.R"
+script_content <- '
+# Create a built-in dataset for food emission factors
+food_emission_factors <- tibble::tibble(
+  Country = c("United States", "United States", "United States", "United States",
+              "China", "China", "China", "China",
+              "European Union", "European Union", "European Union", "European Union"),
+  FactorName = c("MeatMeals", "VeganMeals", "VegetarianMeals", "DairyProducts",
+                 "MeatMeals", "VeganMeals", "VegetarianMeals", "DairyProducts",
+                 "MeatMeals", "VeganMeals", "VegetarianMeals", "DairyProducts"),
+  Value = c(3.07, 0.25, 0.68, 327.1728 / 1000,  
+            NA, NA, NA, NA,
+            NA, NA, NA, NA)
+)
+
+# Save as an R dataset inside the package
+usethis::use_data(food_emission_factors, overwrite = TRUE)
+library(dplyr)
+library(tidyverse)
+
+#\' Get country-specific food emission factors from the built-in dataset
+#\'
+#\' Fetches food emission factors from the dataset stored in the package.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A named list of food emission factors.
+get_food_emission_factors <- function(country) {
+  
+  # Filter the dataset for the given country
+  factors <- food_emission_factors %>%
+    filter(Country == country) %>%
+    select(FactorName, Value)
+
+  # Convert the dataset into a named list
+  if (nrow(factors) > 0) {
+    emission_list <- setNames(factors$Value, factors$FactorName)
+  } else {
+    # Return NA for all factors if the country is not found
+    emission_list <- list(
+      "MeatMeals" = NA,  
+      "VeganMeals" = NA,  
+      "VegetarianMeals" = NA,  
+      "DairyProducts" = NA  
+    )
+  }
+
+  return(emission_list)
+}
+
+#\' Calculate Food-Based Emissions using internal dataset
+#\'
+#\' This function computes food-based emissions by converting food intake data into estimated carbon emissions.
+#\'
+#\' @param df A data frame containing the food consumption data.
+#\' @return A data frame with a new column `FoodEmissions` representing total food emissions.
+#\' @export
+calc_food_emissions <- function(df) {
+  
+  # Get country-specific food emission factors from the dataset
+  emission_factors_food <- get_food_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert food intake columns to numeric and replace NA values with 0
+  df <- df %>%
+    mutate(
+      F_01_DietaryHabits_5 = as.numeric(F_01_DietaryHabits_5),
+      F_01_DietaryHabits_6 = as.numeric(F_01_DietaryHabits_6),
+      F_01_DietaryHabits_7 = as.numeric(F_01_DietaryHabits_7),
+      F_01_DietaryHabits_4 = as.numeric(F_01_DietaryHabits_4)
+    ) %>%
+    replace(is.na(.), 0)
+  
+  # Calculate emissions for each food category
+  df <- df %>%
+    mutate(
+      MeatEmissions = F_01_DietaryHabits_5 * 52 * emission_factors_food[["MeatMeals"]],
+      VeganEmissions = F_01_DietaryHabits_6 * 52 * emission_factors_food[["VeganMeals"]],
+      VegetarianEmissions = F_01_DietaryHabits_7 * 52 * emission_factors_food[["VegetarianMeals"]],
+      DairyEmissions = F_01_DietaryHabits_4 * 52 * emission_factors_food[["DairyProducts"]],
+      
+      # Total food emissions
+      FoodEmissions = rowSums(cbind(MeatEmissions, VeganEmissions, VegetarianEmissions, DairyEmissions), na.rm = TRUE)
+    )
+  
+    df <- df %>% 
+    select(-MeatEmissions,-VeganEmissions,-VegetarianEmissions,-DairyEmissions)
+    
+    # Notify the user and print results
+  message("New column `FoodEmissions` representing total food emissions has been added to the dataset.")
+
+
+  print(df$FoodEmissions) 
+  
+  return(df)
+}
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_food_emissions.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_housing_emissions.R"
+file_path <- "R/calc_housing_emissions.R"
+script_content <- '
+# Create a built-in dataset for housing emission factors
+housing_emission_factors <- tibble::tibble(
+  Country = c("United States", "United States", "United States", "United States", "United States", "United States",
+              "China", "China", "China", "China", "China",
+              "European Union", "European Union", "European Union", "European Union", "European Union"),
+  FactorName = c("WaterCFC", "NaturalGas", "Electricity_Average", "Electricity_Texas", "Electricity_Western", "Electricity_Eastern",
+                 "WaterCFC", "NaturalGas", "Electricity_Group1", "Electricity_Group2", "Electricity_Group3",
+                 "WaterCFC", "NaturalGas", "Electricity_Group1", "Electricity_Group2", "Electricity_Group3"),
+  Value = c(26.5, 0.055, 0.513, 0.641855, 0.461226, 0.572386,  
+            NA, NA, NA, NA, NA,  
+            NA, NA, NA, NA, NA)
+)
+
+# Save as an internal dataset inside the package
+usethis::use_data(housing_emission_factors, overwrite = TRUE)
+
+# Load required package
+library(tibble)
+library(dplyr)
+library(tidyverse)
+
+# Create the zip_data dataset
+zip_data <- tibble::tibble(
+  ID = c(6,5,69,8,7,9,10,11,73,13,74,63,12,14,15,65,16,20,66,17,18,19,21,22,68,23,26,58,77,78,25,24,27,28,57,29,59,31,38,39,67,32,34,35,36,33,60,37,40,70,41,42,43,44,45,46,47,48,49,71,72,61,50,64,75,76,52,51,62,53,55,54,56),
+  State_Name = c("Alaska", "Alabama", "Arkansas", "Arkansas (Texarkana)", "Arizona", "California", "Colorado", "Connecticut", "Connecticut", "Dist of Columbia", "Dist of Columbia", "Dist of Columbia", "Delaware", "Florida", "Georgia", "Georga (Atlanta)", "Hawaii", "Iowa", "Iowa (OMAHA)", "Idaho", "Illinois", "Indiana", "Kansas", "Kentucky", "Louisiana", "Louisiana", "Massachusetts", "Massachusetts (Andover)", "Maryland", "Maryland", "Maryland", "Maine", "Michigan", "Minnesota", "kc96 DataMO", "Mississippi", "Mississippi(Warren)", "Montana", "North Carolina", "North Dakota", "Nebraska", "Nebraska", "New Hampshire", "New Jersey", "New Mexico", "Nevada", "New York (Fishers Is)", "New York", "Ohio", "Oklahoma", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas (Austin)", "Texas", "Texas", "Texas (El Paso)", "Utah", "Virginia", "Virginia", "Virginia", "Virginia", "Vermont", "Vermont", "Washington", "Wisconsin", "West Virginia", "Wyoming"),
+  ST = c("AK","AL","AR","AR","AZ","CA","CO","CT","CT","DC","DC","DC","DE","FL","GA","GA","HI","IA","IA","ID","IL","IN","KS","KY","LA","LA","MA","MA","MD","MD","MD","ME","MI","MN","MO","MS","MS","MT","NC","ND","NE","NE","NH","NJ","NM","NV","NY","NY","OH","OK","OK","OR","PA","PR","RI","SC","SD","TN","TX","TX","TX","TX","UT","VA","VA","VA","VA","VT","VT","WA","WI","WV","WY"),
+  Zip_Min = c(99501,35004,71601,75502,85001,90001,80001,6001,6401,20001,20042,20799,19701,32004,30001,39901,96701,50001,68119,83201,60001,46001,66002,40003,70001,71234,1001,5501,20331,20335,20812,3901,48001,55001,63001,38601,71233,59001,27006,58001,68001,68122,3031,7001,87001,88901,6390,10001,43001,73001,73401,97001,15001,0,2801,29001,57001,37010,73301,75001,75503,88510,84001,20040,20040,20042,22001,5001,5601,98001,53001,24701,82001),
+  Zip_Max = c(99950,36925,72959,75502,86556,96162,81658,6389,6928,20039,20599,20799,19980,34997,31999,39901,96898,52809,68120,83876,62999,47997,67954,42788,71232,71497,2791,5544,20331,20797,21930,4992,49971,56763,65899,39776,71233,59937,28909,58856,68118,69367,3897,8989,88441,89883,6390,14975,45999,73199,74966,97920,19640,0,2940,29948,57799,38589,73301,75501,79999,88589,84784,20041,20167,20042,24658,5495,5907,99403,54990,26886,83128)
+)
+
+# Save it as an internal dataset inside the package
+usethis::use_data(zip_data, overwrite = TRUE)
+
+library(dplyr)
+library(tidyverse)
+
+.onLoad <- function(libname, pkgname) {
+  # Load package data into the global environment
+  data_env <- globalenv()
+  utils::data("zip_data", package = pkgname, envir = data_env)
+  utils::data("housing_emission_factors", package = pkgname, envir = data_env)
+}
+
+#\' Get country-specific housing emission factors from dataset
+#\'
+#\' Returns a list of housing emission factors based on the country.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A list of housing emission factors.
+get_housing_emission_factors <- function(country) {
+  # Ensure dataset is available
+  if (!exists("housing_emission_factors", where = globalenv())) {
+    stop("Error: housing_emission_factors dataset not found.")
+  }
+
+  # Filter dataset for the selected country
+  factors <- housing_emission_factors %>% filter(Country == country)
+
+  # Set default values to prevent NULLs
+  default_values <- list(
+    "WaterCFC" = 26.5,
+    "NaturalGas" = 0.055,
+    "Electricity" = list(
+      "Average" = 0.513,
+      "Texas" = 0.641855,
+      "Western" = 0.461226,
+      "Eastern" = 0.572386
+    )
+  )
+
+  # Ensure values exist, otherwise, use defaults
+  return(list(
+    "WaterCFC" = ifelse(any(factors$FactorName == "WaterCFC"), factors$Value[factors$FactorName == "WaterCFC"], default_values$WaterCFC),
+    "NaturalGas" = ifelse(any(factors$FactorName == "NaturalGas"), factors$Value[factors$FactorName == "NaturalGas"], default_values$NaturalGas),
+    "Electricity" = list(
+      "Average" = ifelse(any(factors$FactorName == "Electricity_Average"), factors$Value[factors$FactorName == "Electricity_Average"], default_values$Electricity$Average),
+      "Texas" = ifelse(any(factors$FactorName == "Electricity_Texas"), factors$Value[factors$FactorName == "Electricity_Texas"], default_values$Electricity$Texas),
+      "Western" = ifelse(any(factors$FactorName == "Electricity_Western"), factors$Value[factors$FactorName == "Electricity_Western"], default_values$Electricity$Western),
+      "Eastern" = ifelse(any(factors$FactorName == "Electricity_Eastern"), factors$Value[factors$FactorName == "Electricity_Eastern"], default_values$Electricity$Eastern)
+    )
+  ))
+}
+
+
+#\' Calculate Housing Emissions
+#\'
+#\' Computes housing emissions by converting energy and utility expenditure data into estimated annual carbon emissions.
+#\'
+#\' @param df A data frame containing housing-related data.
+#\' @return A data frame with a new column `HousingEmissions` representing total housing emissions.
+#\' @export
+calc_housing_emissions <- function(df) {
+  
+  # Ensure built-in datasets are available
+  if (!exists("zip_data")) stop("Error: zip_data dataset not found.")
+  
+  # Get country-specific housing emission factors
+  emission_factors_housing <- get_housing_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure ZIP code exists and is numeric
+  df <- df %>%
+    mutate(SD_08_ZipCode = as.numeric(SD_08_ZipCode))
+  
+  # Define function to classify state based on ZIP code
+  classify_state <- function(zip_code) {
+    matched_state <- zip_data %>%
+      filter(zip_code >= Zip_Min & zip_code <= Zip_Max) %>%
+      pull(ST)
+    
+    if (length(matched_state) == 1) {
+      return(matched_state)
+    } else {
+      return(NA)  # Return NA if no match or multiple matches found
+    }
+  }
+  
+  # Define function to classify region based on state
+  classify_zip_code <- function(zip_code) {
+    state <- classify_state(zip_code)
+    
+    west_states <- c("WA", "OR", "CA", "ID", "NV", "UT", "AZ", "MT", "WY", "CO", "NM", "HI", "AK")
+    east_states <- c("ME", "NH", "MA", "RI", "CT", "NY", "NJ", "DE", "MD", "VA", "NC", "SC", "GA", "FL", "VT", "PA", "WV", "OH", "MI")
+    
+    if (!is.na(state)) {
+      if (state %in% west_states) {
+        return("West")
+      } else if (state %in% east_states) {
+        return("East")
+      } else if (state == "TX") {
+        return("Texas")
+      } else {
+        return("Other")
+      }
+    } else {
+      return(NA)
+    }
+  }
+  
+  # Classify state, region, and select appropriate electricity emission factor
+  df <- df %>%
+    rowwise() %>%
+    mutate(
+      state = classify_state(SD_08_ZipCode),
+      region = classify_zip_code(SD_08_ZipCode),
+      electricity_emission_factor = case_when(
+        region == "Texas" ~ emission_factors_housing$Electricity$Texas,
+        region == "West" ~ emission_factors_housing$Electricity$Western,
+        region == "East" ~ emission_factors_housing$Electricity$Eastern,
+        TRUE ~ emission_factors_housing$Electricity$Average
+      )
+    ) %>%
+    ungroup()
+  
+  # Handle missing values for energy bills
+  df <- df %>%
+    mutate(
+      EH_02_ElectricityBil_1 = as.numeric(EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = as.numeric(EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = as.numeric(EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1= as.numeric(EH_06_NaturalGasBill_1),
+      
+      EH_02_ElectricityBil_1 = ifelse(is.na(EH_02_ElectricityBil_1), 0, EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = ifelse(is.na(EH_03_ElectricityBil_1), 0, EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = ifelse(is.na(EH_05_NaturalGasBill_1), 0, EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1)
+    )
+  
+  # Calculate annual emissions using specific user-selected values
+  df <- df %>%
+    mutate(
+      electricity_usage_kWh = ifelse(electricity_emission_factor > 0, 
+                                     (EH_02_ElectricityBil_1 * 100) / electricity_emission_factor, 
+                                     0),
+      natural_gas_usage_cubic_feet = EH_05_NaturalGasBill_1 / 15.2,
+      
+      ElectricityEmissions = electricity_usage_kWh * 12 * electricity_emission_factor,
+      NaturalGasEmissions = natural_gas_usage_cubic_feet * 12 * emission_factors_housing$NaturalGas,
+      WaterEmissions = emission_factors_housing$WaterCFC,
+      
+      # Total housing emissions
+      HousingEmissions = ElectricityEmissions + NaturalGasEmissions + WaterEmissions
+    )
+  
+    df <- df %>% 
+    select(-state,-region,-electricity_emission_factor,-electricity_usage_kWh,-natural_gas_usage_cubic_feet,-ElectricityEmissions,-NaturalGasEmissions,-WaterEmissions)
+    
+    # Notify user and print results
+  message("New column `HousingEmissions` representing total housing emissions has been added to the dataset.")
+
+
+  print(df$HousingEmissions)
+  
+  return(df)
+}
+'
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_housing_emissions.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_pet_emissions.R"
+file_path <- "R/calc_pet_emissions.R"
+script_content <- '
+# Create the built-in dataset for pet emission factors
+pet_emission_factors <- tibble::tibble(
+  Country = c("United States", "China", "European Union", "Other"),
+  Dog = c(770, NA, NA, NA),  # kg CO2 per dog per year
+  Cat = c(335, NA, NA, NA)   # kg CO2 per cat per year
+)
+
+# Save as internal data 
+usethis::use_data(pet_emission_factors, overwrite = TRUE)
+library(dplyr)
+library(tidyverse)
+#\' Get country-specific pet emission factors
+#\'
+#\' Returns a list of pet emission factors based on the country.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A list of pet emission factors.
+get_pet_emission_factors <- function(country) {
+  
+  # Ensure dataset exists
+  if (!exists("pet_emission_factors")) stop("Error: pet_emission_factors dataset not found.")
+  
+  # Filter dataset for the given country
+  factors <- pet_emission_factors %>% filter(Country == country)
+  
+  # If no match, return NA values
+  if (nrow(factors) == 0) {
+    return(list("Dog" = NA, "Cat" = NA))
+  }
+  
+  # Return as a list
+  return(list("Dog" = factors$Dog, "Cat" = factors$Cat))
+}
+
+#\' Calculate Pet Emissions
+#\'
+#\' This function computes pet-related emissions based on the number of cats and dogs owned.
+#\'
+#\' @param df A data frame containing pet ownership data.
+#\' @return A data frame with a new column `PetEmissions` representing total pet emissions.
+#\' @export
+calc_pet_emissions <- function(df) {
+  
+  # Get country-specific pet emission factors
+  emission_factors_pets <- get_pet_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert pet ownership columns to numeric and handle missing values
+  df <- df %>%
+    mutate(
+      PETS_4 = as.numeric(PETS_4),
+      PETS_5 = as.numeric(PETS_5),
+      PETS_4 = replace_na(PETS_4, 0),
+      PETS_5 = replace_na(PETS_5, 0)
+    )
+  
+  # Calculate pet emissions
+  df <- df %>%
+    mutate(
+      PetEmissions_Cat = PETS_4 * emission_factors_pets$Cat,
+      PetEmissions_Dog = PETS_5 * emission_factors_pets$Dog,
+      PetEmissions = PetEmissions_Cat + PetEmissions_Dog
+    )
+  
+    df <- df %>% 
+    select(-PetEmissions_Cat,-PetEmissions_Dog)
+    
+    # Notify user and print results
+  message("New column `PetEmissions` representing total pet-related emissions has been added to the dataset.")
+
+
+  print(df$PetEmissions)
+  
+  return(df)
+}
+
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_pet_emissions.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_transport_emissions.R"
+file_path <- "R/calc_transport_emissions.R"
+script_content <- '
+# Create the built-in dataset for transport emission factors
+transport_emission_factors <- tibble::tibble(
+  Country = c("United States", "China", "European Union", "Other"),
+  Gasoline_Vehicles = c(0.14748, NA, NA, NA),
+  Diesel_Vehicles = c(0.16327, NA, NA, NA),
+  Electric_Vehicles = c(0.0, NA, NA, NA),  # Assumed zero
+  Hybrid_Vehicles = c(0.07374, NA, NA, NA),  # Half of gasoline
+  Natural_Gas_Vehicles = c(0.1279, NA, NA, NA),
+  Public_Transport = c(0.018949, NA, NA, NA),
+  Flights = c(1.05285, NA, NA, NA),  # kg CO2 per km
+  Long_Distance_Train = c(0.039489129, NA, NA, NA)  # kg CO2 per km
+)
+
+# Save the dataset as internal data
+usethis::use_data(transport_emission_factors, overwrite = TRUE)
+library(dplyr)
+library(tidyverse)
+#\' Get country-specific transport emission factors
+#\'
+#\' Returns a list of transport emission factors based on the country.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A list of transport emission factors.
+get_transport_emission_factors <- function(country) {
+  
+  # Ensure the built-in dataset exists
+  if (!exists("transport_emission_factors")) {
+    stop("Error: transport_emission_factors dataset not found.")
+  }
+  
+  # Filter the dataset for the given country
+  factors <- transport_emission_factors %>% filter(Country == country)
+  
+  # If no match, return NA values
+  if (nrow(factors) == 0) {
+    return(list(
+      "Gasoline Vehicles" = NA,
+      "Diesel Vehicles" = NA,
+      "Electric Vehicles" = NA,
+      "Hybrid Vehicles" = NA,
+      "Natural Gas Vehicles" = NA,
+      "Public Transport" = NA,
+      "Flights" = NA,
+      "Long Distance Train" = NA
+    ))
+  }
+  
+  # Convert row data to a list (excluding country column)
+  return(as.list(factors[-1]))
+}
+
+#\' Calculate Transport Emissions
+#\'
+#\' This function computes transportation emissions by converting survey responses into estimated annual carbon emissions.
+#\'
+#\' @param df A data frame containing transportation-related survey data.
+#\' @return A data frame with a new column `TransportEmissions` representing total transport emissions.
+#\' @export
+calc_transport_emissions <- function(df) {
+  
+  # Get country-specific transport emission factors
+  emission_factors_transport <- get_transport_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure emission factors are not NULL or empty
+  emission_factors_transport <- lapply(emission_factors_transport, function(x) ifelse(is.na(x) | length(x) == 0, 0, x))
+
+  # Define mappings for categorical values
+  car_usage_map <- c(
+    "0 days (I do not use a car)" = 0,
+    "1-2 days" = 1.5,
+    "3-4 days" = 3.5,
+    "5-6 days" = 5.5,
+    "Everyday" = 7
+  )
+  
+  car_distance_map <- c(
+    "0-5 km or 0-3.1 miles" = 5,
+    "5-10 km or 3.1-6.2 miles" = 10,
+    "11-50 km or 6.2-31 miles" = 30.5,
+    "More than 50 km or 31 miles" = 51
+  )
+  
+  public_transport_freq_map <- c(
+    "Daily" = 1,
+    "Weekly" = 1/7,
+    "Monthly" = 1/30,
+    "Rarely" = 1/90,
+    "Never" = 0
+  )
+  
+  public_transport_distance_map <- c(
+    "0-5 km or 0-3.1 miles" = 5,
+    "5-10 km or 3.1-6.2 miles" = 10,
+    "11-50 km or 6.2-31 miles" = 30.5,
+    "More than 50 km or 31 miles" = 51
+  )
+  
+  flight_freq_map <- c(
+    "None" = 0,
+    "1-3 flights" = 2.5,
+    "4-6 flights" = 5,
+    "7-10 flights" = 8,
+    "More than 10 flights" = 12
+  )
+  
+  long_distance_transport_map <- c(
+    "Daily" = 1,
+    "Weekly" = 1/7,
+    "Monthly" = 1/30,
+    "Rarely" = 1/90,
+    "Never" = 0
+  )
+  
+  # Map categorical values to numeric
+  df <- df %>%
+    mutate(
+      T_01_CarUsage = car_usage_map[T_01_CarUsage],
+      T_03_CarDistance = car_distance_map[T_03_CarDistance],
+      T_04_PublicTransport = public_transport_freq_map[T_04_PublicTransport],
+      T_05_PublicTransport = public_transport_distance_map[T_05_PublicTransport],
+      T_06_AirTravelLong = flight_freq_map[T_06_AirTravelLong],
+      T_07_AirTravelShort = flight_freq_map[T_07_AirTravelShort],
+      T_08_LongDistanceTra = long_distance_transport_map[T_08_LongDistanceTra]
+    )
+  
+  # Assign correct emission factors for car types
+  df <- df %>%
+    mutate(
+      car_emission_factor = case_when(
+        T_02_CarType == "Gasoline Vehicle" ~ emission_factors_transport$Gasoline_Vehicles,
+        T_02_CarType == "Diesel Vehicle" ~ emission_factors_transport$Diesel_Vehicles,
+        T_02_CarType == "Hybrid Vehicle" ~ emission_factors_transport$Hybrid_Vehicles,
+        T_02_CarType == "Electric Vehicle" ~ emission_factors_transport$Electric_Vehicles,
+        T_02_CarType == "Natural Gas Vehicle" ~ emission_factors_transport$Natural_Gas_Vehicles,
+        TRUE ~ 0
+      )
+    )
+  
+  # Handle missing values in user inputs
+  df <- df %>%
+    mutate(
+      T_01_CarUsage = ifelse(is.na(T_01_CarUsage), 0, T_01_CarUsage),
+      T_03_CarDistance = ifelse(is.na(T_03_CarDistance), 0, T_03_CarDistance),
+      T_04_PublicTransport = ifelse(is.na(T_04_PublicTransport), 0, T_04_PublicTransport),
+      T_05_PublicTransport = ifelse(is.na(T_05_PublicTransport), 0, T_05_PublicTransport),
+      T_06_AirTravelLong = ifelse(is.na(T_06_AirTravelLong), 0, T_06_AirTravelLong),
+      T_07_AirTravelShort = ifelse(is.na(T_07_AirTravelShort), 0, T_07_AirTravelShort),
+      T_08_LongDistanceTra = ifelse(is.na(T_08_LongDistanceTra), 0, T_08_LongDistanceTra)
+    )
+  
+  # Calculate weekly travel distances
+  df <- df %>%
+    mutate(
+      WeeklyCarDistance = T_01_CarUsage * T_03_CarDistance,
+      WeeklyPublicTransportDistance = T_04_PublicTransport * T_05_PublicTransport
+    )
+    
+  df <- df %>% 
+    mutate(WeeklyCarDistance = as.numeric(WeeklyCarDistance),
+  WeeklyPublicTransportDistance = as.numeric(WeeklyPublicTransportDistance))
+  
+  # Ensure emission factors are correctly assigned and avoid size 0 error
+  public_transport_factor <- ifelse(length(emission_factors_transport$Public_Transport) > 0,
+                                    emission_factors_transport$Public_Transport, 0)
+  
+  flights_factor <- ifelse(length(emission_factors_transport$Flights) > 0,
+                           emission_factors_transport$Flights, 0)
+
+  train_factor <- ifelse(length(emission_factors_transport$Long_Distance_Train) > 0,
+                         emission_factors_transport$Long_Distance_Train, 0)
+
+  # Calculate annual emissions
+  df <- df %>%
+    mutate(
+      CarEmissions = WeeklyCarDistance * car_emission_factor * 52,
+      PublicTransportEmissions = WeeklyPublicTransportDistance * public_transport_factor * 52,
+      AirTravelLongEmissions = T_06_AirTravelLong * 500 * flights_factor,
+      AirTravelShortEmissions = T_07_AirTravelShort * 500 * flights_factor,
+      TrainEmissions = T_08_LongDistanceTra * 100 * 365 * train_factor,
+      
+      # Compute total transport emissions
+      TransportEmissions = CarEmissions + PublicTransportEmissions + AirTravelLongEmissions + AirTravelShortEmissions + TrainEmissions
+    )
+  
+df <- df %>% 
+  mutate(    
+  CarEmissions = as.numeric(CarEmissions),
+    PublicTransportEmissions = as.numeric(PublicTransportEmissions),
+    AirTravelLongEmissions = as.numeric(AirTravelLongEmissions),
+    AirTravelShortEmissions = as.numeric(AirTravelShortEmissions),
+    TrainEmissions = as.numeric(TrainEmissions),
+    TransportEmissions = as.numeric(TransportEmissions))
+    
+    df <- df %>% 
+  select(-car_emission_factor,-WeeklyCarDistance,-WeeklyPublicTransportDistance,-CarEmissions,-PublicTransportEmissions,-AirTravelLongEmissions,-AirTravelShortEmissions,-TrainEmissions)
+  
+  # Notify user and print results
+  message("New column `TransportEmissions` representing total transport-related emissions has been added to the dataset.")
+
+
+  print(df$TransportEmissions)
+  
+  return(df)
+}
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_transport_emissions.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_total_emissions.R"
+file_path <- "R/calc_total_emissions.R"
+script_content <- '
+#\' Get country-specific total emission factors
+#\'
+#\' Returns a list of total emission factors based on the country.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A list of total emission factors.
+get_total_emission_factors <- function(country) {
+  if (country == "United States") {
+    return(list(
+      "Transport" = 1,  # Placeholder (1 means no modification)
+      "Pet" = 1,
+      "Housing" = 1,
+      "Food" = 1,
+      "Consumption" = 1
+    ))
+  } else if (country == "China") {
+    return(list(
+      "Transport" = NA,  # Placeholder for China
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  } else if (country == "European Union") {
+    return(list(
+      "Transport" = NA,  # Placeholder for EU
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  } else {
+    return(list(
+      "Transport" = NA,
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  }
+}
+
+#\' Calculate Total Emissions
+#\'
+#\' This function computes total carbon emissions by aggregating transportation, pet, housing (per capita), food, and consumption-based emissions.
+#\'
+#\' @param df A data frame containing emissions data from various components.
+#\' @return A data frame with a new column `TotalEmissions` representing the aggregated total emissions.
+#\' @export
+calc_total_emissions <- function(df) {
+    df <- calc_cons_emissions(df)
+  df <- calc_food_emissions(df)
+  df <- calc_housing_emissions(df)
+  df <- calc_pet_emissions(df)
+  df <- calc_transport_emissions(df)
+  # Get country-specific emission factors
+  emission_factors_total <- get_total_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert household size columns to numeric and handle NA values
+  df <- df %>%
+    mutate(
+      SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = as.numeric(SD_06_HouseholdSize_19),
+      SD_06_HouseholdSize_17 = ifelse(is.na(SD_06_HouseholdSize_17), 0, SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = ifelse(is.na(SD_06_HouseholdSize_18), 0, SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = ifelse(is.na(SD_06_HouseholdSize_19), 0, SD_06_HouseholdSize_19)
+    )
+  
+  # Calculate total household size (minimum 1 to prevent division by zero)
+  df <- df %>%
+    mutate(
+      HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
+      HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize)
+    )
+  
+  # Adjust housing emissions per capita
+  df <- df %>%
+    mutate(
+      HousingEmissionsPerCapita = HousingEmissions / HouseholdSize
+    )
+  
+  # Ensure all emission components exist and replace NA values
+  df <- df %>%
+    mutate(
+      TransportEmissions = ifelse(is.na(TransportEmissions), 0, TransportEmissions) * emission_factors_total$Transport,
+      PetEmissions = ifelse(is.na(PetEmissions), 0, PetEmissions) * emission_factors_total$Pet,
+      HousingEmissionsPerCapita = ifelse(is.na(HousingEmissionsPerCapita), 0, HousingEmissionsPerCapita) * emission_factors_total$Housing,
+      FoodEmissions = ifelse(is.na(FoodEmissions), 0, FoodEmissions) * emission_factors_total$Food,
+      ConsEmissions = ifelse(is.na(ConsEmissions), 0, ConsEmissions) * emission_factors_total$Consumption
+    )
+  
+  # Calculate total emissions
+  df <- df %>%
+    mutate(
+      TotalEmissions = TransportEmissions + PetEmissions + HousingEmissionsPerCapita +
+        FoodEmissions + ConsEmissions
+    )
+    
+  df <- df %>% 
+  mutate(
+  TotalEmissions = as.numeric(TotalEmissions)
+  )
+  
+   df <- df %>% 
+      select(-HouseholdSize,-HousingEmissionsPerCapita)
+      
+  #Notify user and print results
+  message("All individual emission calculations have been completed.")
+  message("New column `TotalEmissions` representing total carbon footprint has been added to the dataset.")
+
+
+  print(df$TotalEmissions)
+  
+  return(df)
+}
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_total_emissions.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_cons_emissions_process.R"
+file_path <- "R/calc_cons_emissions_process.R"
+script_content <- '
+library(dplyr)
+library(tidyverse)
+
+#\' Get country-specific emission factors from the built-in dataset
+#\'
+#\' Fetches consumption emission factors from the dataset stored in the package.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A named list of consumption emission factors.
+get_cons_emission_factors <- function(country) {
+  
+  # Filter the dataset for the given country
+  factors <- cons_emission_factors %>%
+    filter(Country == country) %>%
+    select(FactorName, Value)
+  
+  # Convert the dataset into a named list
+  if (nrow(factors) > 0) {
+    emission_list <- setNames(factors$Value, factors$FactorName)
+  } else {
+    # Return NA for all factors if the country is not found
+    emission_list <- list(
+      "FoodDelivery" = NA,  
+      "DiningOut" = NA,  
+      "HotelStays" = NA,  
+      "TobaccoProducts" = NA,  
+      "AlcoholDrinks" = NA,  
+      "Entertainment" = NA,  
+      "Healthcare" = NA,  
+      "Clothing" = NA  
+    )
+  }
+  
+  return(emission_list)
+}
+
+#\' Calculate Consumption-Based Emissions with Process Data
+#\'
+#\' This function computes consumption-based emissions and retains process calculation result data.
+#\'
+#\' @param df A data frame containing the consumption data.
+#\' @return A data frame with a new column `ConsEmissions` representing total consumption emissions and additional process calculation results.
+#\' @export
+calc_cons_emissions_process <- function(df) {
+  
+  # Get country-specific emission factors from the dataset
+  emission_factors_cons <- get_cons_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure expenditure columns are numeric
+  df <- df %>%
+    mutate(
+      CL_03_MonthlyEx_9 = as.numeric(CL_03_MonthlyEx_9),
+      CL_03_MonthlyEx_10 = as.numeric(CL_03_MonthlyEx_10),
+      CL_03_MonthlyEx_11 = as.numeric(CL_03_MonthlyEx_11),
+      CL_03_MonthlyEx_12 = as.numeric(CL_03_MonthlyEx_12),
+      CL_03_MonthlyEx_13 = as.numeric(CL_03_MonthlyEx_13),
+      CL_03_MonthlyEx_14 = as.numeric(CL_03_MonthlyEx_14),
+      CL_03_MonthlyEx_15 = as.numeric(CL_03_MonthlyEx_15)
+    )
+  
+  # Assign estimated clothing spending based on categorical responses
+  clothing_spending_map <- c(
+    "More than 12 times (At least once a month)" = 600,
+    "7-12 times (About every 1-2 months)" = 420,
+    "4-6 times (About every 2-3 months)" = 300,
+    "1-3 times (Less than every 3 months)" = 120,
+    "Rarely" = 60
+  )
+  
+  df <- df %>%
+    mutate(
+      annual_clothing_spending = clothing_spending_map[CL_01_ClothingPurcha],
+      annual_clothing_spending = ifelse(is.na(annual_clothing_spending), 0, annual_clothing_spending),
+      
+      ClothingEm = annual_clothing_spending * emission_factors_cons[["Clothing"]]
+    )
+  
+  # Calculate annual emissions for each category
+  df <- df %>%
+    mutate(
+      FoodDeliveryEm = CL_03_MonthlyEx_9 * 12 * emission_factors_cons[["FoodDelivery"]],
+      DiningOutEm = CL_03_MonthlyEx_10 * 12 * emission_factors_cons[["DiningOut"]],
+      HotelStaysEm = CL_03_MonthlyEx_11 * 12 * emission_factors_cons[["HotelStays"]],
+      TobaccoEm = CL_03_MonthlyEx_12 * 12 * emission_factors_cons[["TobaccoProducts"]],
+      AlcoholEm = CL_03_MonthlyEx_13 * 12 * emission_factors_cons[["AlcoholDrinks"]],
+      EntertainmentEm = CL_03_MonthlyEx_14 * 12 * emission_factors_cons[["Entertainment"]],
+      HealthcareEm = CL_03_MonthlyEx_15 * 12 * emission_factors_cons[["Healthcare"]]
+    )
+  
+  # Compute total consumption emissions
+  df <- df %>%
+    mutate(
+      ConsEmissions = rowSums(cbind(
+        FoodDeliveryEm, DiningOutEm, HotelStaysEm,
+        TobaccoEm, AlcoholEm, EntertainmentEm,
+        HealthcareEm, ClothingEm
+      ), na.rm = TRUE)
+    )
+  
+  df <- df %>% 
+    mutate(
+      annual_clothing_spending = as.numeric(annual_clothing_spending),
+      ClothingEm = as.numeric(ClothingEm),
+      ConsEmissions = as.numeric(ConsEmissions)
+    )
+  
+  # Notify the user and print results
+  message("New column `ConsEmissions` representing total consumption emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$ConsEmissions)
+  
+  return(df)
+}
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_cons_emissions_process.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_food_emissions_process.R"
+file_path <- "R/calc_food_emissions_process.R"
+script_content <- '
+library(dplyr)
+library(tidyverse)
+
+#\' Get country-specific food emission factors from the built-in dataset
+#\'
+#\' Fetches food emission factors from the dataset stored in the package.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A named list of food emission factors.
+get_food_emission_factors <- function(country) {
+  
+  # Filter the dataset for the given country
+  factors <- food_emission_factors %>%
+    filter(Country == country) %>%
+    select(FactorName, Value)
+  
+  # Convert the dataset into a named list
+  if (nrow(factors) > 0) {
+    emission_list <- setNames(factors$Value, factors$FactorName)
+  } else {
+    # Return NA for all factors if the country is not found
+    emission_list <- list(
+      "MeatMeals" = NA,  
+      "VeganMeals" = NA,  
+      "VegetarianMeals" = NA,  
+      "DairyProducts" = NA  
+    )
+  }
+  
+  return(emission_list)
+}
+
+#\' Calculate Food-Related Carbon Emissions with Process Data
+#\'
+#\' This function computes food-based emissions and retains process calculation result data.
+#\'
+#\' @param df A data frame containing the food consumption data.
+#\' @return A data frame with a new column `FoodEmissions` representing total food-related emissions and additional process calculation results.
+#\' @export
+calc_food_emissions_process <- function(df) {
+  
+  # Get country-specific food emission factors from the dataset
+  emission_factors_food <- get_food_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert food intake columns to numeric and replace NA values with 0
+  df <- df %>%
+    mutate(
+      F_01_DietaryHabits_5 = as.numeric(F_01_DietaryHabits_5),
+      F_01_DietaryHabits_6 = as.numeric(F_01_DietaryHabits_6),
+      F_01_DietaryHabits_7 = as.numeric(F_01_DietaryHabits_7),
+      F_01_DietaryHabits_4 = as.numeric(F_01_DietaryHabits_4)
+    ) %>%
+    replace(is.na(.), 0)
+  
+  # Calculate emissions for each food category
+  df <- df %>%
+    mutate(
+      MeatEmissions = F_01_DietaryHabits_5 * 52 * emission_factors_food[["MeatMeals"]],
+      VeganEmissions = F_01_DietaryHabits_6 * 52 * emission_factors_food[["VeganMeals"]],
+      VegetarianEmissions = F_01_DietaryHabits_7 * 52 * emission_factors_food[["VegetarianMeals"]],
+      DairyEmissions = F_01_DietaryHabits_4 * 52 * emission_factors_food[["DairyProducts"]],
+      
+      # Total food emissions
+      FoodEmissions = rowSums(cbind(MeatEmissions, VeganEmissions, VegetarianEmissions, DairyEmissions), na.rm = TRUE)
+    )
+  
+  
+  
+  # Notify the user and print results
+  message("New column `FoodEmissions` representing total food emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$FoodEmissions)
+  
+  return(df)
+}
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_food_emissions_process.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_housing_emissions_process.R"
+file_path <- "R/calc_housing_emissions_process.R"
+script_content <- '
+.onLoad <- function(libname, pkgname) {
+  # Load package data into the global environment
+  data_env <- globalenv()
+  utils::data("zip_data", package = pkgname, envir = data_env)
+  utils::data("housing_emission_factors", package = pkgname, envir = data_env)
+}
+
+#\' Get country-specific housing emission factors from dataset
+#\'
+#\' Returns a list of housing emission factors based on the country.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A list of housing emission factors.
+get_housing_emission_factors <- function(country) {
+  # Ensure dataset is available
+  if (!exists("housing_emission_factors", where = globalenv())) {
+    stop("Error: housing_emission_factors dataset not found.")
+  }
+  
+  # Filter dataset for the selected country
+  factors <- housing_emission_factors %>% filter(Country == country)
+  
+  # Set default values to prevent NULLs
+  default_values <- list(
+    "WaterCFC" = 26.5,
+    "NaturalGas" = 0.055,
+    "Electricity" = list(
+      "Average" = 0.513,
+      "Texas" = 0.641855,
+      "Western" = 0.461226,
+      "Eastern" = 0.572386
+    )
+  )
+  
+  # Ensure values exist, otherwise, use defaults
+  return(list(
+    "WaterCFC" = ifelse(any(factors$FactorName == "WaterCFC"), factors$Value[factors$FactorName == "WaterCFC"], default_values$WaterCFC),
+    "NaturalGas" = ifelse(any(factors$FactorName == "NaturalGas"), factors$Value[factors$FactorName == "NaturalGas"], default_values$NaturalGas),
+    "Electricity" = list(
+      "Average" = ifelse(any(factors$FactorName == "Electricity_Average"), factors$Value[factors$FactorName == "Electricity_Average"], default_values$Electricity$Average),
+      "Texas" = ifelse(any(factors$FactorName == "Electricity_Texas"), factors$Value[factors$FactorName == "Electricity_Texas"], default_values$Electricity$Texas),
+      "Western" = ifelse(any(factors$FactorName == "Electricity_Western"), factors$Value[factors$FactorName == "Electricity_Western"], default_values$Electricity$Western),
+      "Eastern" = ifelse(any(factors$FactorName == "Electricity_Eastern"), factors$Value[factors$FactorName == "Electricity_Eastern"], default_values$Electricity$Eastern)
+    )
+  ))
+}
+
+
+#\' Calculate Housing-Related Carbon Emissions with Process Data
+#\'
+#\' This function computes housing-related carbon emissions and retains process calculation result data.
+#\'
+#\' @param df A data frame containing housing-related data.
+#\' @return A data frame with a new column `HousingEmissions` representing total housing-related emissions and additional process calculation results.
+#\' @export
+calc_housing_emissions_process <- function(df) {
+  
+  # Ensure built-in datasets are available
+  if (!exists("zip_data")) stop("Error: zip_data dataset not found.")
+  
+  # Get country-specific housing emission factors
+  emission_factors_housing <- get_housing_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure ZIP code exists and is numeric
+  df <- df %>%
+    mutate(SD_08_ZipCode = as.numeric(SD_08_ZipCode))
+  
+  # Define function to classify state based on ZIP code
+  classify_state <- function(zip_code) {
+    matched_state <- zip_data %>%
+      filter(zip_code >= Zip_Min & zip_code <= Zip_Max) %>%
+      pull(ST)
+    
+    if (length(matched_state) == 1) {
+      return(matched_state)
+    } else {
+      return(NA)  # Return NA if no match or multiple matches found
+    }
+  }
+  
+  # Define function to classify region based on state
+  classify_zip_code <- function(zip_code) {
+    state <- classify_state(zip_code)
+    
+    west_states <- c("WA", "OR", "CA", "ID", "NV", "UT", "AZ", "MT", "WY", "CO", "NM", "HI", "AK")
+    east_states <- c("ME", "NH", "MA", "RI", "CT", "NY", "NJ", "DE", "MD", "VA", "NC", "SC", "GA", "FL", "VT", "PA", "WV", "OH", "MI")
+    
+    if (!is.na(state)) {
+      if (state %in% west_states) {
+        return("West")
+      } else if (state %in% east_states) {
+        return("East")
+      } else if (state == "TX") {
+        return("Texas")
+      } else {
+        return("Other")
+      }
+    } else {
+      return(NA)
+    }
+  }
+  
+  # Classify state, region, and select appropriate electricity emission factor
+  df <- df %>%
+    rowwise() %>%
+    mutate(
+      state = classify_state(SD_08_ZipCode),
+      region = classify_zip_code(SD_08_ZipCode),
+      electricity_emission_factor = case_when(
+        region == "Texas" ~ emission_factors_housing$Electricity$Texas,
+        region == "West" ~ emission_factors_housing$Electricity$Western,
+        region == "East" ~ emission_factors_housing$Electricity$Eastern,
+        TRUE ~ emission_factors_housing$Electricity$Average
+      )
+    ) %>%
+    ungroup()
+  
+  # Handle missing values for energy bills
+  df <- df %>%
+    mutate(
+      EH_02_ElectricityBil_1 = as.numeric(EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = as.numeric(EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = as.numeric(EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1= as.numeric(EH_06_NaturalGasBill_1),
+      
+      EH_02_ElectricityBil_1 = ifelse(is.na(EH_02_ElectricityBil_1), 0, EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = ifelse(is.na(EH_03_ElectricityBil_1), 0, EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = ifelse(is.na(EH_05_NaturalGasBill_1), 0, EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1)
+    )
+  
+  # Calculate annual emissions using specific user-selected values
+  df <- df %>%
+    mutate(
+      electricity_usage_kWh = ifelse(electricity_emission_factor > 0, 
+                                     (EH_02_ElectricityBil_1 * 100) / electricity_emission_factor, 
+                                     0),
+      natural_gas_usage_cubic_feet = EH_05_NaturalGasBill_1 / 15.2,
+      
+      ElectricityEmissions = electricity_usage_kWh * 12 * electricity_emission_factor,
+      NaturalGasEmissions = natural_gas_usage_cubic_feet * 12 * emission_factors_housing$NaturalGas,
+      WaterEmissions = emission_factors_housing$WaterCFC,
+      
+      # Total housing emissions
+      HousingEmissions = ElectricityEmissions + NaturalGasEmissions + WaterEmissions
+    )
+  
+  
+  # Notify user and print results
+  message("New column `HousingEmissions` representing total housing emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$HousingEmissions)
+  
+  return(df)
+}
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_housing_emissions_process.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_pet_emissions_process.R"
+file_path <- "R/calc_pet_emissions_process.R"
+script_content <- '
+#\' Get country-specific pet emission factors
+#\'
+#\' Returns a list of pet emission factors based on the country.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A list of pet emission factors.
+get_pet_emission_factors <- function(country) {
+  
+  # Ensure dataset exists
+  if (!exists("pet_emission_factors")) stop("Error: pet_emission_factors dataset not found.")
+  
+  # Filter dataset for the given country
+  factors <- pet_emission_factors %>% filter(Country == country)
+  
+  # If no match, return NA values
+  if (nrow(factors) == 0) {
+    return(list("Dog" = NA, "Cat" = NA))
+  }
+  
+  # Return as a list
+  return(list("Dog" = factors$Dog, "Cat" = factors$Cat))
+}
+
+#\' Calculate Pet-Related Carbon Emissions with Process Data
+#\'
+#\' This function computes pet-related carbon emissions and retains process calculation result data.
+#\'
+#\' @param df A data frame containing pet ownership data.
+#\' @return A data frame with a new column `PetEmissions` representing total pet-related emissions and additional process calculation results.
+#\' @export
+calc_pet_emissions_process <- function(df) {
+  
+  # Get country-specific pet emission factors
+  emission_factors_pets <- get_pet_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert pet ownership columns to numeric and handle missing values
+  df <- df %>%
+    mutate(
+      PETS_4 = as.numeric(PETS_4),
+      PETS_5 = as.numeric(PETS_5),
+      PETS_4 = replace_na(PETS_4, 0),
+      PETS_5 = replace_na(PETS_5, 0)
+    )
+  
+  # Calculate pet emissions
+  df <- df %>%
+    mutate(
+      PetEmissions_Cat = PETS_4 * emission_factors_pets$Cat,
+      PetEmissions_Dog = PETS_5 * emission_factors_pets$Dog,
+      PetEmissions = PetEmissions_Cat + PetEmissions_Dog
+    )
+  
+  
+  # Notify user and print results
+  message("New column `PetEmissions` representing total pet-related emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$PetEmissions)
+  
+  return(df)
+}
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_pet_emissions_process.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_transport_emissions_process.R"
+file_path <- "R/calc_transport_emissions_process.R"
+script_content <- '
+#\' Get country-specific transport emission factors
+#\'
+#\' Returns a list of transport emission factors based on the country.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A list of transport emission factors.
+get_transport_emission_factors <- function(country) {
+  
+  # Ensure the built-in dataset exists
+  if (!exists("transport_emission_factors")) {
+    stop("Error: transport_emission_factors dataset not found.")
+  }
+  
+  # Filter the dataset for the given country
+  factors <- transport_emission_factors %>% filter(Country == country)
+  
+  # If no match, return NA values
+  if (nrow(factors) == 0) {
+    return(list(
+      "Gasoline Vehicles" = NA,
+      "Diesel Vehicles" = NA,
+      "Electric Vehicles" = NA,
+      "Hybrid Vehicles" = NA,
+      "Natural Gas Vehicles" = NA,
+      "Public Transport" = NA,
+      "Flights" = NA,
+      "Long Distance Train" = NA
+    ))
+  }
+  
+  # Convert row data to a list (excluding country column)
+  return(as.list(factors[-1]))
+}
+
+#\' Calculate Transport-Related Carbon Emissions with Process Data
+#\'
+#\' This function computes transport-related carbon emissions and retains process calculation result data.
+#\'
+#\' @param df A data frame containing transportation-related survey data.
+#\' @return A data frame with a new column `TransportEmissions` representing total transport emissions and additional process calculation results.
+#\' @export
+calc_transport_emissions_process <- function(df) {
+  
+  # Get country-specific transport emission factors
+  emission_factors_transport <- get_transport_emission_factors(unique(df$SD_07_Country))
+  
+  # Ensure emission factors are not NULL or empty
+  emission_factors_transport <- lapply(emission_factors_transport, function(x) ifelse(is.na(x) | length(x) == 0, 0, x))
+  
+  # Define mappings for categorical values
+  car_usage_map <- c(
+    "0 days (I do not use a car)" = 0,
+    "1-2 days" = 1.5,
+    "3-4 days" = 3.5,
+    "5-6 days" = 5.5,
+    "Everyday" = 7
+  )
+  
+  car_distance_map <- c(
+    "0-5 km or 0-3.1 miles" = 5,
+    "5-10 km or 3.1-6.2 miles" = 10,
+    "11-50 km or 6.2-31 miles" = 30.5,
+    "More than 50 km or 31 miles" = 51
+  )
+  
+  public_transport_freq_map <- c(
+    "Daily" = 1,
+    "Weekly" = 1/7,
+    "Monthly" = 1/30,
+    "Rarely" = 1/90,
+    "Never" = 0
+  )
+  
+  public_transport_distance_map <- c(
+    "0-5 km or 0-3.1 miles" = 5,
+    "5-10 km or 3.1-6.2 miles" = 10,
+    "11-50 km or 6.2-31 miles" = 30.5,
+    "More than 50 km or 31 miles" = 51
+  )
+  
+  flight_freq_map <- c(
+    "None" = 0,
+    "1-3 flights" = 2.5,
+    "4-6 flights" = 5,
+    "7-10 flights" = 8,
+    "More than 10 flights" = 12
+  )
+  
+  long_distance_transport_map <- c(
+    "Daily" = 1,
+    "Weekly" = 1/7,
+    "Monthly" = 1/30,
+    "Rarely" = 1/90,
+    "Never" = 0
+  )
+  
+  # Map categorical values to numeric
+  df <- df %>%
+    mutate(
+      T_01_CarUsage = car_usage_map[T_01_CarUsage],
+      T_03_CarDistance = car_distance_map[T_03_CarDistance],
+      T_04_PublicTransport = public_transport_freq_map[T_04_PublicTransport],
+      T_05_PublicTransport = public_transport_distance_map[T_05_PublicTransport],
+      T_06_AirTravelLong = flight_freq_map[T_06_AirTravelLong],
+      T_07_AirTravelShort = flight_freq_map[T_07_AirTravelShort],
+      T_08_LongDistanceTra = long_distance_transport_map[T_08_LongDistanceTra]
+    )
+  
+  # Assign correct emission factors for car types
+  df <- df %>%
+    mutate(
+      car_emission_factor = case_when(
+        T_02_CarType == "Gasoline Vehicle" ~ emission_factors_transport$Gasoline_Vehicles,
+        T_02_CarType == "Diesel Vehicle" ~ emission_factors_transport$Diesel_Vehicles,
+        T_02_CarType == "Hybrid Vehicle" ~ emission_factors_transport$Hybrid_Vehicles,
+        T_02_CarType == "Electric Vehicle" ~ emission_factors_transport$Electric_Vehicles,
+        T_02_CarType == "Natural Gas Vehicle" ~ emission_factors_transport$Natural_Gas_Vehicles,
+        TRUE ~ 0
+      )
+    )
+  
+  # Handle missing values in user inputs
+  df <- df %>%
+    mutate(
+      T_01_CarUsage = ifelse(is.na(T_01_CarUsage), 0, T_01_CarUsage),
+      T_03_CarDistance = ifelse(is.na(T_03_CarDistance), 0, T_03_CarDistance),
+      T_04_PublicTransport = ifelse(is.na(T_04_PublicTransport), 0, T_04_PublicTransport),
+      T_05_PublicTransport = ifelse(is.na(T_05_PublicTransport), 0, T_05_PublicTransport),
+      T_06_AirTravelLong = ifelse(is.na(T_06_AirTravelLong), 0, T_06_AirTravelLong),
+      T_07_AirTravelShort = ifelse(is.na(T_07_AirTravelShort), 0, T_07_AirTravelShort),
+      T_08_LongDistanceTra = ifelse(is.na(T_08_LongDistanceTra), 0, T_08_LongDistanceTra)
+    )
+  
+  # Calculate weekly travel distances
+  df <- df %>%
+    mutate(
+      WeeklyCarDistance = T_01_CarUsage * T_03_CarDistance,
+      WeeklyPublicTransportDistance = T_04_PublicTransport * T_05_PublicTransport
+    )
+  
+  df <- df %>% 
+    mutate(WeeklyCarDistance = as.numeric(WeeklyCarDistance),
+           WeeklyPublicTransportDistance = as.numeric(WeeklyPublicTransportDistance))
+  
+  # Ensure emission factors are correctly assigned and avoid size 0 error
+  public_transport_factor <- ifelse(length(emission_factors_transport$Public_Transport) > 0,
+                                    emission_factors_transport$Public_Transport, 0)
+  
+  flights_factor <- ifelse(length(emission_factors_transport$Flights) > 0,
+                           emission_factors_transport$Flights, 0)
+  
+  train_factor <- ifelse(length(emission_factors_transport$Long_Distance_Train) > 0,
+                         emission_factors_transport$Long_Distance_Train, 0)
+  
+  # Calculate annual emissions
+  df <- df %>%
+    mutate(
+      CarEmissions = WeeklyCarDistance * car_emission_factor * 52,
+      PublicTransportEmissions = WeeklyPublicTransportDistance * public_transport_factor * 52,
+      AirTravelLongEmissions = T_06_AirTravelLong * 500 * flights_factor,
+      AirTravelShortEmissions = T_07_AirTravelShort * 500 * flights_factor,
+      TrainEmissions = T_08_LongDistanceTra * 100 * 365 * train_factor,
+      
+      # Compute total transport emissions
+      TransportEmissions = CarEmissions + PublicTransportEmissions + AirTravelLongEmissions + AirTravelShortEmissions + TrainEmissions
+    )
+  
+  df <- df %>% 
+    mutate(    CarEmissions = as.numeric(CarEmissions),
+               PublicTransportEmissions = as.numeric(PublicTransportEmissions),
+               AirTravelLongEmissions = as.numeric(AirTravelLongEmissions),
+               AirTravelShortEmissions = as.numeric(AirTravelShortEmissions),
+               TrainEmissions = as.numeric(TrainEmissions),
+               TransportEmissions = as.numeric(TransportEmissions))
+  
+  
+  # Notify user and print results
+  message("New column `TransportEmissions` representing total transport-related emissions has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$TransportEmissions)
+  
+  return(df)
+}
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_transport_emissions_process.R' has been successfully created.\n")
+
+
+# Write the script content into "calc_total_emissions_process.R"
+file_path <- "R/calc_total_emissions_process.R"
+script_content <- '
+#\' Get country-specific total emission factors
+#\'
+#\' Returns a list of total emission factors based on the country.
+#\'
+#\' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#\' @importFrom tidyr replace_na
+#\' @importFrom stats setNames
+#\' @importFrom magrittr "%>%"
+#\' @importFrom purrr map map_df
+#\' @importFrom tibble tibble
+#\' @param country A character string representing the country.
+#\' @return A list of total emission factors.
+get_total_emission_factors <- function(country) {
+  if (country == "United States") {
+    return(list(
+      "Transport" = 1,  # Placeholder (1 means no modification)
+      "Pet" = 1,
+      "Housing" = 1,
+      "Food" = 1,
+      "Consumption" = 1
+    ))
+  } else if (country == "China") {
+    return(list(
+      "Transport" = NA,  # Placeholder for China
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  } else if (country == "European Union") {
+    return(list(
+      "Transport" = NA,  # Placeholder for EU
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  } else {
+    return(list(
+      "Transport" = NA,
+      "Pet" = NA,
+      "Housing" = NA,
+      "Food" = NA,
+      "Consumption" = NA
+    ))
+  }
+}
+
+#\' Calculate Total Carbon Emissions with Process Data
+#\'
+#\' This function computes total carbon emissions by aggregating transportation, pet, housing (per capita), food, and consumption-based emissions.
+#\'
+#\' @param df A data frame containing emissions data from various components.
+#\' @return A data frame with a new column `TotalEmissions` representing total emissions and additional process calculation results.
+#\' @export
+calc_total_emissions_process <- function(df) {
+  df <- calc_cons_emissions_process(df)
+  df <- calc_food_emissions_process(df)
+  df <- calc_housing_emissions_process(df)
+  df <- calc_pet_emissions_process(df)
+  df <- calc_transport_emissions_process(df)
+  # Get country-specific emission factors
+  emission_factors_total <- get_total_emission_factors(unique(df$SD_07_Country))
+  
+  # Convert household size columns to numeric and handle NA values
+  df <- df %>%
+    mutate(
+      SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = as.numeric(SD_06_HouseholdSize_19),
+      SD_06_HouseholdSize_17 = ifelse(is.na(SD_06_HouseholdSize_17), 0, SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = ifelse(is.na(SD_06_HouseholdSize_18), 0, SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = ifelse(is.na(SD_06_HouseholdSize_19), 0, SD_06_HouseholdSize_19)
+    )
+  
+  # Calculate total household size (minimum 1 to prevent division by zero)
+  df <- df %>%
+    mutate(
+      HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
+      HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize)
+    )
+  
+  # Adjust housing emissions per capita
+  df <- df %>%
+    mutate(
+      HousingEmissionsPerCapita = HousingEmissions / HouseholdSize
+    )
+  
+  # Ensure all emission components exist and replace NA values
+  df <- df %>%
+    mutate(
+      TransportEmissions = ifelse(is.na(TransportEmissions), 0, TransportEmissions) * emission_factors_total$Transport,
+      PetEmissions = ifelse(is.na(PetEmissions), 0, PetEmissions) * emission_factors_total$Pet,
+      HousingEmissionsPerCapita = ifelse(is.na(HousingEmissionsPerCapita), 0, HousingEmissionsPerCapita) * emission_factors_total$Housing,
+      FoodEmissions = ifelse(is.na(FoodEmissions), 0, FoodEmissions) * emission_factors_total$Food,
+      ConsEmissions = ifelse(is.na(ConsEmissions), 0, ConsEmissions) * emission_factors_total$Consumption
+    )
+  
+  # Calculate total emissions
+  df <- df %>%
+    mutate(
+      TotalEmissions = TransportEmissions + PetEmissions + HousingEmissionsPerCapita +
+        FoodEmissions + ConsEmissions
+    )
+  
+  df <- df %>% 
+    mutate(
+      TotalEmissions = as.numeric(TotalEmissions)
+    )
+
+  
+  #Notify user and print results
+  message("All individual emission calculations have been completed.")
+  message("New column `TotalEmissions` representing total carbon footprint has been added to the dataset.")
+  message("Process calculation result data have been added.")
+  
+  print(df$TotalEmissions) 
+  
+  return(df)
+}
+'
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'calc_total_emissions_process.R' has been successfully created.\n")
+
+
+
+
+
+
+# Write the script content into "cons_emission_factors.R"
+file_path <- "R/cons_emission_factors.R"
+script_content <- "
+#' Consumer Emission Factors Dataset
+#'
+#' This dataset contains emission factors for various consumer goods and services
+#' based on country-specific data.
+#'
+#' @docType data
+#' @name cons_emission_factors
+#' @usage data(cons_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \\describe{
+#'   \\item{Country}{Country name}
+#'   \\item{FactorName}{Type of consumer emission factor (e.g., Clothing, Dining, Healthcare, etc.)}
+#'   \\item{Value}{Emission value for the given factor}
+#' }
+'cons_emission_factors'
+"
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'cons_emission_factors.R' has been successfully created.\n")
+
+
+
+# Write the script content into "food_emission_factors.R"
+file_path <- "R/food_emission_factors.R"
+script_content <- "
+#' Food Emission Factors Dataset
+#'
+#' This dataset contains food-related emission factors based on country-specific data.
+#'
+#' @docType data
+#' @name food_emission_factors
+#' @usage data(food_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \\describe{
+#'   \\item{Country}{Country name}
+#'   \\item{FactorName}{Type of food emission factor (e.g., Dairy, Meat, Vegan, Vegetarian)}
+#'   \\item{Value}{Emission value for the given factor}
+#' }
+'food_emission_factors'
+"
+
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'food_emission_factors.R' has been successfully created.\n")
+
+
+
+
+# Write the script content into "housing_emission_factors.R"
+file_path <- "R/housing_emission_factors.R"
+script_content <- "
+#' Housing Emission Factors Dataset
+#'
+#' This dataset contains housing-related emission factors based on country-specific data.
+#'
+#' @docType data
+#' @name housing_emission_factors
+#' @usage data(housing_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \\describe{
+#'   \\item{Country}{Country name}
+#'   \\item{FactorName}{Type of housing emission factor (e.g., Electricity, Heating_Oil, Natural_Gas, Water)}
+#'   \\item{Value}{Emission value for the given factor}
+#' }
+'housing_emission_factors'
+"
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'housing_emission_factors.R' has been successfully created.\n")
+
+
+
+
+# Write the script content into "pet_emission_factors.R"
+file_path <- "R/pet_emission_factors.R"
+script_content <- "
+#' Pet Emission Factors Dataset
+#'
+#' This dataset contains emission factors for pet ownership based on country-specific data.
+#'
+#' @docType data
+#' @name pet_emission_factors
+#' @usage data(pet_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \\describe{
+#'   \\item{Country}{Character, name of the country or region}
+#'   \\item{Dog}{Numeric, carbon emissions from dogs (kg CO2 per year)}
+#'   \\item{Cat}{Numeric, carbon emissions from cats (kg CO2 per year)}
+#' }
+'pet_emission_factors'
+"
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'pet_emission_factors.R' has been successfully created.\n")
+
+
+
+
+# Write the script content into "transport_emission_factors.R"
+file_path <- "R/transport_emission_factors.R"
+script_content <- "
+#' Transport Emission Factors Dataset
+#'
+#' This dataset contains emission factors for different modes of transport,
+#' categorized by country.
+#'
+#' @docType data
+#' @name transport_emission_factors
+#' @usage data(transport_emission_factors)
+#' @keywords datasets
+#' @format A data frame with columns:
+#' \\describe{
+#'   \\item{Country}{Character, name of the country or region}
+#'   \\item{Diesel_Vehicles}{Numeric, carbon emissions from diesel vehicles}
+#'   \\item{Electric_Vehicles}{Numeric, carbon emissions from electric vehicles}
+#'   \\item{Flights}{Numeric, emissions from air travel}
+#'   \\item{Gasoline_Vehicles}{Numeric, emissions from gasoline vehicles}
+#'   \\item{Hybrid_Vehicles}{Numeric, emissions from hybrid vehicles}
+#'   \\item{Long_Distance_Train}{Numeric, emissions from train travel}
+#'   \\item{Natural_Gas_Vehicles}{Numeric, emissions from natural gas vehicles}
+#'   \\item{Public_Transport}{Numeric, emissions from public transport}
+#' }
+'transport_emission_factors'
+"
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'transport_emission_factors.R' has been successfully created.\n")
+
+
+
+
+# Write the script content into "zip_data.R"
+file_path <- "R/zip_data.R"
+script_content <- "
+#' ZIP Code Data for U.S. States
+#'
+#' This dataset provides the ZIP code ranges for different states in the United States.
+#'
+#' @docType data
+#' @name zip_data
+#' @usage data(zip_data)
+#' @keywords datasets
+#' @format A data frame with the following columns:
+#' \\describe{
+#'   \\item{ID}{Unique identifier}
+#'   \\item{ST}{State abbreviation}
+#'   \\item{State_Name}{Full name of the state}
+#'   \\item{Zip_Max}{Maximum ZIP code in the range}
+#'   \\item{Zip_Min}{Minimum ZIP code in the range}
+#' }
+'zip_data'
+"
+
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'zip_data.R' has been successfully created.\n")
+
+
+
+# Write the script content into "zzz.R"
+file_path <- "R/zzz.R"
+script_content <- '
+.onLoad <- function(libname, pkgname) {
+  required_packages <- c("dplyr", "tidyr", "tibble", "purrr", "magrittr")
+
+  for (pkg in required_packages) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+       warning(paste("Package", pkg, "is required but not installed. Please install it."))
+    }
+  }
+}
+
+.onLoad <- function(libname, pkgname) {
+  utils::globalVariables(c(
+    # General variables
+    "Zip_Min", "Zip_Max", "ST", "SD_08_ZipCode", "WeeklyCarDistance", 
+    "electricity_emission_factor", "natural_gas_usage_cubic_feet", 
+    "electricity_usage_kWh", "CarEmissions", "PublicTransportEmissions",
+    "AirTravelLongEmissions", "AirTravelShortEmissions", "TrainEmissions", 
+    "PetEmissions", "PetEmissions_Cat", "PetEmissions_Dog", "HousingEmissions", 
+    "FoodEmissions", "ConsEmissions", "WaterEmissions", "HouseholdSize",
+    
+    # Consumption Emissions
+    "CL_03_MonthlyEx_9", "CL_03_MonthlyEx_10", "CL_03_MonthlyEx_11", 
+    "CL_03_MonthlyEx_12", "CL_03_MonthlyEx_13", "CL_03_MonthlyEx_14", 
+    "CL_03_MonthlyEx_15", "CL_01_ClothingPurcha", "annual_clothing_spending", 
+    "FoodDeliveryEm", "DiningOutEm", "HotelStaysEm", "TobaccoEm", 
+    "AlcoholEm", "EntertainmentEm", "HealthcareEm", "ClothingEm",
+    
+    # Food Emissions
+    "F_01_DietaryHabits_4", "F_01_DietaryHabits_5", "F_01_DietaryHabits_6", 
+    "F_01_DietaryHabits_7", ".", "MeatEmissions", "VeganEmissions", 
+    "VegetarianEmissions", "DairyEmissions",
+    
+    # Housing Emissions
+    "EH_02_ElectricityBil_1", "EH_03_ElectricityBil_1", 
+    "EH_05_NaturalGasBill_1", "EH_06_NaturalGasBill_1", 
+    "ElectricityEmissions", "NaturalGasEmissions",
+    
+    # Pet Emissions
+    "PETS_4", "PETS_5",
+    
+    # Total Emissions
+    "SD_06_HouseholdSize_17", "SD_06_HouseholdSize_18", "SD_06_HouseholdSize_19",
+    "TransportEmissions", "HousingEmissionsPerCapita","TotalEmissions",
+    
+    # Transport Emissions
+    "T_01_CarUsage", "T_03_CarDistance", "T_04_PublicTransport", 
+    "T_05_PublicTransport", "T_06_AirTravelLong", "T_07_AirTravelShort", 
+    "T_08_LongDistanceTra", "car_emission_factor", "WeeklyPublicTransportDistance",
+    
+    # Emission Factor Functions
+    "Country", "FactorName", "Value", "pull","state","region"
+  ))
+}
+
+'
+# Write the script to the R file
+writeLines(script_content, file_path, useBytes = TRUE)
+
+# Confirm file creation
+cat("The file 'zzz.R' has been successfully created.\n")
+
+
+
+
+```
+
+
+
+## Document the package
+
+```{r}
+litr::document()
+```
