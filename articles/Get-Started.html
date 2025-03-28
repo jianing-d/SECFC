@@ -75,12 +75,14 @@
 <p>Install the package</p>
 <pre><code><span><span class="co">#&gt; Using github PAT from envvar GITHUB_PAT. Use `gitcreds::gitcreds_set()` and unset GITHUB_PAT in .Renviron (or elsewhere) if you want to use the more secure git credential store instead.</span></span>
 <span><span class="co">#&gt; Downloading GitHub repo jianing-d/SECFC@HEAD</span></span>
-<span><span class="co">#&gt; curl (6.2.1 -&gt; 6.2.2) [CRAN]</span></span>
-<span><span class="co">#&gt; Installing 1 packages: curl</span></span>
-<span><span class="co">#&gt; Installing package into '/home/runner/work/_temp/Library'</span></span>
+<span><span class="co">#&gt; jsonlite (1.9.1 -&gt; 2.0.0) [CRAN]</span></span>
+<span><span class="co">#&gt; stringi  (1.8.4 -&gt; 1.8.7) [CRAN]</span></span>
+<span><span class="co">#&gt; broom    (1.0.7 -&gt; 1.0.8) [CRAN]</span></span>
+<span><span class="co">#&gt; Installing 3 packages: jsonlite, stringi, broom</span></span>
+<span><span class="co">#&gt; Installing packages into '/home/runner/work/_temp/Library'</span></span>
 <span><span class="co">#&gt; (as 'lib' is unspecified)</span></span>
 <span><span class="co">#&gt; Running `R CMD build`...</span></span>
-<span><span class="co">#&gt; * checking for file ‘/tmp/RtmpGROUEv/remotes1dcf3869bf4c/jianing-d-SECFC-0d5e078/DESCRIPTION’ ... OK</span></span>
+<span><span class="co">#&gt; * checking for file ‘/tmp/Rtmpq51evH/remotes1de529a0a53b/jianing-d-SECFC-59830cc/DESCRIPTION’ ... OK</span></span>
 <span><span class="co">#&gt; * preparing ‘SECFC’:</span></span>
 <span><span class="co">#&gt; * checking DESCRIPTION meta-information ... OK</span></span>
 <span><span class="co">#&gt; * checking for LF line-endings in source and make files and shell scripts</span></span>
@@ -189,13 +191,13 @@ process data.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">housing</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calc_housing_emissions.html">calc_housing_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; New column `HousingEmissions` representing total housing emissions has been added to the dataset.</span></span>
-<span><span class="co">#&gt; [1] 144028.7</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 4299.323</span></span></code></pre></div>
 <p>With process details:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">housing_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calc_housing_emissions_process.html">calc_housing_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; New column `HousingEmissions` representing total housing emissions has been added to the dataset.</span></span>
 <span><span class="co">#&gt; Process calculation result data have been added.</span></span>
-<span><span class="co">#&gt; [1] 144028.7</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 4299.323</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="pet-emissions">🐶 Pet Emissions<a class="anchor" aria-label="anchor" href="#pet-emissions"></a>
@@ -220,7 +222,7 @@ transportation.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">transport</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calc_transport_emissions.html">calc_transport_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; New column `TransportEmissions` representing total transport-related emissions has been added to the dataset.</span></span>
-<span><span class="co">#&gt; [1] 3968.046</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 7688.554</span></span></code></pre></div>
 <p>With process details:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">transport_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calc_transport_emissions_process.html">calc_transport_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
@@ -239,14 +241,14 @@ transportation.</p>
 <span><span class="co">#&gt; New column `FoodEmissions` representing total food emissions has been added to the dataset.</span></span>
 <span><span class="co">#&gt; [1] 1399.998</span></span>
 <span><span class="co">#&gt; New column `HousingEmissions` representing total housing emissions has been added to the dataset.</span></span>
-<span><span class="co">#&gt; [1] 144028.7</span></span>
+<span><span class="co">#&gt; [1] 4299.323</span></span>
 <span><span class="co">#&gt; New column `PetEmissions` representing total pet-related emissions has been added to the dataset.</span></span>
 <span><span class="co">#&gt; [1] 1105</span></span>
 <span><span class="co">#&gt; New column `TransportEmissions` representing total transport-related emissions has been added to the dataset.</span></span>
-<span><span class="co">#&gt; [1] 3968.046</span></span>
+<span><span class="co">#&gt; [1] 7688.554</span></span>
 <span><span class="co">#&gt; All individual emission calculations have been completed.</span></span>
 <span><span class="co">#&gt; New column `TotalEmissions` representing total carbon footprint has been added to the dataset.</span></span>
-<span><span class="co">#&gt; [1] 54731.09</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 11875.15</span></span></code></pre></div>
 <p>With process details:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">total_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calc_total_emissions_process.html">calc_total_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
@@ -258,7 +260,7 @@ transportation.</p>
 <span><span class="co">#&gt; [1] 1399.998</span></span>
 <span><span class="co">#&gt; New column `HousingEmissions` representing total housing emissions has been added to the dataset.</span></span>
 <span><span class="co">#&gt; Process calculation result data have been added.</span></span>
-<span><span class="co">#&gt; [1] 144028.7</span></span>
+<span><span class="co">#&gt; [1] 4299.323</span></span>
 <span><span class="co">#&gt; New column `PetEmissions` representing total pet-related emissions has been added to the dataset.</span></span>
 <span><span class="co">#&gt; Process calculation result data have been added.</span></span>
 <span><span class="co">#&gt; [1] 1105</span></span>
@@ -268,7 +270,7 @@ transportation.</p>
 <span><span class="co">#&gt; All individual emission calculations have been completed.</span></span>
 <span><span class="co">#&gt; New column `TotalEmissions` representing total carbon footprint has been added to the dataset.</span></span>
 <span><span class="co">#&gt; Process calculation result data have been added.</span></span>
-<span><span class="co">#&gt; [1] 54731.09</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 8154.642</span></span></code></pre></div>
 <p>✅ Note The following columns are automatically generated when you
 export responses from Qualtrics: ~StartDate, ~EndDate, ~Status,
 ~IPAddress, ~Progress, ~<code>Duration (in seconds)</code>, ~Finished,
