@@ -136,11 +136,28 @@ calc_housing_emissions_process <- function(df) {
       EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1)
     )
   
+  # Define electricity prices by state (in cents per kWh)
+  electricity_prices <- data.frame(
+    state = c("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", 
+              "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", 
+              "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", 
+              "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", 
+              "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", 
+              "WY"),
+    price = c(12.41, 22.54, 13.16, 9.99, 19.90, 12.28, 21.62, 13.21, 12.05, 11.37, 
+              12.26, 32.76, 10.58, 12.56, 12.02, 13.81, 11.56, 10.56, 9.37, 16.16, 
+              13.92, 21.11, 16.07, 14.09, 11.55, 13.23, 11.85, 11.31, 11.67, 19.63, 
+              15.64, 13.37, 19.30, 11.24, 12.07, 12.64, 10.72, 11.02, 14.38, 18.64, 
+              12.91, 12.39, 10.79, 11.36, 10.63, 18.50, 12.40, 9.79, 11.57, 14.28, 
+              12.30)
+  )
+  
   # Calculate annual emissions using specific user-selected values
   df <- df %>%
     mutate(
-      electricity_usage_kWh = ifelse(electricity_emission_factor > 0, 
-                                     (EH_02_ElectricityBil_1 * 100) / electricity_emission_factor, 
+      electricity_price = as.numeric(electricity_prices$price[match(state, electricity_prices$state)]),
+      electricity_usage_kWh = ifelse(electricity_price > 0,
+                                     (EH_02_ElectricityBil_1 * 100) / electricity_price,
                                      0),
       natural_gas_usage_cubic_feet = EH_05_NaturalGasBill_1 / 15.2,
       

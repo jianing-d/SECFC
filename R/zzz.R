@@ -41,12 +41,12 @@
     
     # Total Emissions
     "SD_06_HouseholdSize_17", "SD_06_HouseholdSize_18", "SD_06_HouseholdSize_19",
-    "TransportEmissions", "HousingEmissionsPerCapita","TotalEmissions",
+    "TransportEmissions", "HousingEmissionsPerCapita","TotalEmissions","electricity_price",
     
     # Transport Emissions
     "T_01_CarUsage", "T_03_CarDistance", "T_04_PublicTransport", 
     "T_05_PublicTransport", "T_06_AirTravelLong", "T_07_AirTravelShort", 
-    "T_08_LongDistanceTra", "car_emission_factor", "WeeklyPublicTransportDistance",
+    "T_08_LongDistanceTra", "car_emission_factor", "WeeklyPublicTransportDistance","T_04_PublicTransport_usage","public_transport_usage_factor",
     
     # Emission Factor Functions
     "Country", "FactorName", "Value", "pull","state","region"
