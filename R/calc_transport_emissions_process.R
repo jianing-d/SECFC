@@ -48,6 +48,7 @@ get_transport_emission_factors <- function(country) {
 #' @export
 calc_transport_emissions_process <- function(df) {
   
+  message("Running calc_transport_emissions v2025-03-28")
   # Get country-specific transport emission factors
   emission_factors_transport <- get_transport_emission_factors(unique(df$SD_07_Country))
   
