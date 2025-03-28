@@ -54,7 +54,7 @@ get_total_emission_factors <- function(country) {
 #'
 #' @param df A data frame containing emissions data from various components.
 #' @return A data frame with a new column `TotalEmissions` representing total emissions and additional process calculation results.
-#' @export
+#'
 calc_total_emissions_process <- function(df) {
   df <- calc_cons_emissions_process(df)
   df <- calc_food_emissions_process(df)

@@ -1,4 +1,3 @@
-
 #' Get country-specific transport emission factors
 #'
 #' Returns a list of transport emission factors based on the country.
@@ -6,9 +5,10 @@
 #' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
 #' @importFrom tidyr replace_na
 #' @importFrom stats setNames
-#' @importFrom magrittr "%>%"
+#' @importFrom magrittr %>%
 #' @importFrom purrr map map_df
 #' @importFrom tibble tibble
+#'
 #' @param country A character string representing the country.
 #' @return A list of transport emission factors.
 get_transport_emission_factors <- function(country) {
@@ -39,16 +39,18 @@ get_transport_emission_factors <- function(country) {
   return(as.list(factors[-1]))
 }
 
+
 #' Calculate Transport-Related Carbon Emissions with Process Data
 #'
-#' This function computes transport-related carbon emissions and retains process calculation result data.
+#' Computes transport-related carbon emissions and retains intermediate calculations.
 #'
 #' @param df A data frame containing transportation-related survey data.
-#' @return A data frame with a new column `TransportEmissions` representing total transport emissions and additional process calculation results.
+#' @return A data frame with a new column `TransportEmissions` representing total 
+#'   transport emissions and additional process-calculation columns.
 #' @export
 calc_transport_emissions_process <- function(df) {
   
-  message("Running calc_transport_emissions v2025-03-28")
+  message("Running calc_transport_emissions v2025-44448")
   # Get country-specific transport emission factors
   emission_factors_transport <- get_transport_emission_factors(unique(df$SD_07_Country))
   
@@ -189,4 +191,3 @@ calc_transport_emissions_process <- function(df) {
   
   return(df)
 }
-

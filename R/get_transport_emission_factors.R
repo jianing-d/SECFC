@@ -46,7 +46,7 @@ get_transport_emission_factors <- function(country) {
 #'
 #' @param df A data frame containing transportation-related survey data.
 #' @return A data frame with a new column `TransportEmissions` representing total transport emissions and additional process calculation results.
-#' @export
+#'
 calc_transport_emissions_process <- function(df) {
   
   # Get country-specific transport emission factors
@@ -165,8 +165,8 @@ calc_transport_emissions_process <- function(df) {
     mutate(
       CarEmissions = WeeklyCarDistance * car_emission_factor * 52,
       PublicTransportEmissions = WeeklyPublicTransportDistance * public_transport_factor * 52,
-      AirTravelLongEmissions = T_06_AirTravelLong * 500 * flights_factor,
-      AirTravelShortEmissions = T_07_AirTravelShort * 500 * flights_factor,
+      AirTravelLongEmissions = T_06_AirTravelLong * 1609 * flights_factor,
+      AirTravelShortEmissions = T_07_AirTravelShort * 804.5 * flights_factor,
       TrainEmissions = T_08_LongDistanceTra * 100 * 365 * train_factor,
       
       # Compute total transport emissions
