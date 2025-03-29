@@ -30,7 +30,7 @@ In this document, we will demonstrate how to use the **Survey-Embedded Carbon Fo
 
 First, we need to install the package from GitHub. If you do not have `remotes` installed yet, run `install.packages("remotes")` beforehand.
 
-```{r warning=FALSE, message=FALSE,eval=FALSE}
+```{r warning=FALSE, message=FALSE,eval=T}
 # Install the SECFC package from GitHub
 remotes::install_github("jianing-d/SECFC")
 ```
