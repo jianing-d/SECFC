@@ -14,8 +14,8 @@ knitr::opts_chunk$set(
 
 Install the package
 
-```{r echo=FALSE}
-#install.packages("remotes")
+```{r warning=FALSE, message=FALSE}
+install.packages("remotes")
 remotes::install_github("jianing-d/SECFC")
 ```
 
