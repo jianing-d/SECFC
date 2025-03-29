@@ -21,6 +21,20 @@ housing, transport, and pets.
 SECFC is particularly suitable for academic studies requiring
 reproducibility, transparency, and process-level emissions output.
 
+## Shiny APP
+
+<div style="text-align: center; background-color: #f5f5f5; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin: 20px auto; max-width: 500px;">
+
+<h2 style="color: #2C3E50; margin-bottom: 10px;">
+Shiny App Available
+</h2>
+<p>
+<a href="https://ziqianxia.shinyapps.io/secfc/" target="_blank" style="font-size: 18px; color: #4A6D8C; text-decoration: none; font-weight: bold;">
+https://ziqianxia.shinyapps.io/secfc/ </a>
+</p>
+
+</div>
+
 ## Key Features
 
 - Twelve core functions to estimate individual-level carbon footprint
