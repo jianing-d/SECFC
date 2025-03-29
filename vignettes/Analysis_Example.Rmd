@@ -30,9 +30,11 @@ In this document, we will demonstrate how to use the **Survey-Embedded Carbon Fo
 
 First, we need to install the package from GitHub. If you do not have `remotes` installed yet, run `install.packages("remotes")` beforehand.
 
-```{r install_secfc, eval=FALSE}
+```{r warning=FALSE, message=FALSE}
 # Install the SECFC package from GitHub
 remotes::install_github("jianing-d/SECFC")
+
+library(SECFC)
 ```
 
 ## Step 2: Load the package
@@ -44,6 +46,7 @@ For demonstration, we assume you are use questionnaire_sample.rds that contains 
 ```{r warning=FALSE, message=FALSE}
 # Replace the file path with your own dataset if necessary
 questionnaire_example <- SECFC::questionnaire_example
+
 # Take a quick look at your data structure
 str(questionnaire_example)
 ```
