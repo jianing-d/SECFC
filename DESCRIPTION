@@ -1,7 +1,7 @@
 Package: SECFC
 Title: The Survey-Embedded Carbon Footprint Calculator (SECFC)
 Version: 0.0.1
-Authors@R: Authors@R: c(
+Authors@R: c(
     person("Jianing", "Ding", , "jianing.research@gmail.com", role = c("aut", "cre")),
     person("Ziqian", "Xia", , "ziqian.research@gmail.com", role = c("aut")),
     person("Jinquan", "Ye", , "jinquan.ye@duke.edu", role = c("ctb"))
