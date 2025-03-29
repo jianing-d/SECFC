@@ -1,11 +1,11 @@
 Package: SECFC
 Title: The Survey-Embedded Carbon Footprint Calculator (SECFC)
-Version: 0.0.1
+Version: 0.0.3
 Authors@R: c(
     person("Jianing", "Ding", , "jianing.research@gmail.com", role = c("aut", "cre")),
     person("Ziqian", "Xia", , "ziqian.research@gmail.com", role = c("aut")),
     person("Jinquan", "Ye", , "jinquan.ye@duke.edu", role = c("ctb")),
-    person("Nathaniel","Geiger", , "geigern@umich.edu", role = c("ctb")))
+    person("Nathaniel","Geiger", , "geigern@umich.edu", role = c("aut")))
 Description: SECFC is a transparent and open-source R package designed for
     survey-embedded carbon footprint calculation.It provides a
     standardized approach for estimating carbon emissions based on survey
@@ -30,3 +30,7 @@ LitrVersionUsed: 0.9.2
 LitrId: 81f5eda7ac433913ff6cc01c90c874ed
 URL: https://jianing-d.github.io/SECFC/
 Config/Needs/website: rmarkdown
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

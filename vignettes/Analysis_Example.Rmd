@@ -1,0 +1,104 @@
+---
+title: "Analysis_Example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Analysis_Example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+## Introduction
+
+In this document, we will demonstrate how to use the **Survey-Embedded Carbon Footprint Calculator (SECFC)** package. We will:
+
+1. Install the SECFC package from GitHub.
+2. Load SECFC and our sample dataset.
+3. Calculate carbon emissions using a built-in SECFC function.
+4. Run a linear regression to see how *income* predicts total carbon emissions.
+5. Create a plot of the data using **ggplot2**.
+
+
+## Step 1: Download the package from GitHub
+
+First, we need to install the package from GitHub. If you do not have `remotes` installed yet, run `install.packages("remotes")` beforehand.
+
+```{r install_secfc, eval=FALSE}
+# Install the SECFC package from GitHub
+remotes::install_github("jianing-d/SECFC")
+```
+
+## Step 2: Load the package
+Load the SECFC package, which provides the ```calc_total_emissions()``` function among others.
+
+## Step 3: Load your dataset
+For demonstration, we assume you are use questionnaire_sample.rds that contains survey responses (provided and pre-loaded in our package). 
+
+```{r warning=FALSE, message=FALSE}
+# Replace the file path with your own dataset if necessary
+questionnaire_example <- SECFC::questionnaire_example
+# Take a quick look at your data structure
+str(questionnaire_example)
+```
+
+## Step 4: Calculate total carbon emissions
+Now we use the ```calc_total_emissions()``` function from SECFC to estimate each respondent’s carbon footprint based on their survey responses. The returned data frame will include a new column called TotalEmissions.
+
+```{r warning=FALSE, message=FALSE}
+carbon_total <- calc_total_emissions(questionnaire_example)
+
+# Check the first few rows
+head(carbon_total)
+```
+
+## Step 5: Run a linear regression
+We will examine how a respondent’s income might predict their total carbon emissions. This is a basic linear model using the built-in ```lm()``` function.
+
+```{r warning=FALSE, message=FALSE}
+model <- lm(TotalEmissions ~ income, data = carbon_total)
+
+# Display summary statistics of the regression
+summary(model)
+```
+
+## Step 6: Create a Plot
+Finally, we can visualize the relationship between income and TotalEmissions using ```ggplot2```. The plot below includes:
+
+- Points representing individual respondents
+- A linear regression line (and confidence interval)
+
+```{r warning=FALSE, message=FALSE}
+# Load ggplot2
+library(ggplot2)
+
+# Define custom colors
+point_color <- "#4A6D8C"  # desaturated blue-grey for points
+line_color  <- "#2C3E50"  # deeper blue-grey for the regression line
+
+lm_plot <- ggplot(carbon_total, aes(x = income, y = TotalEmissions)) +
+  geom_point(color = point_color, size = 2.8, alpha = 0.8) +
+  geom_smooth(method = "lm", se = TRUE, color = line_color, linewidth = 1.2) +
+  labs(
+    title = "Income and Total Carbon Emissions",
+    x = "Annual Income (USD)",
+    y = "Total Emissions (kg CO2e)"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    plot.title   = element_text(face = "bold", hjust = 0.5, color = line_color),
+    axis.title   = element_text(color = line_color),
+    axis.text    = element_text(color = "black"),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8),
+    plot.margin  = margin(10, 10, 10, 10)
+  )
+
+# Print the plot
+lm_plot
+```
