@@ -1,4 +1,3 @@
-
 #' Get country-specific transport emission factors
 #'
 #' Returns a list of transport emission factors based on the country.
@@ -6,9 +5,10 @@
 #' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
 #' @importFrom tidyr replace_na
 #' @importFrom stats setNames
-#' @importFrom magrittr "%>%"
+#' @importFrom magrittr %>%
 #' @importFrom purrr map map_df
 #' @importFrom tibble tibble
+#'
 #' @param country A character string representing the country.
 #' @return A list of transport emission factors.
 get_transport_emission_factors <- function(country) {
@@ -39,15 +39,18 @@ get_transport_emission_factors <- function(country) {
   return(as.list(factors[-1]))
 }
 
+
 #' Calculate Transport-Related Carbon Emissions with Process Data
 #'
-#' This function computes transport-related carbon emissions and retains process calculation result data.
+#' Computes transport-related carbon emissions and retains intermediate calculations.
 #'
 #' @param df A data frame containing transportation-related survey data.
-#' @return A data frame with a new column `TransportEmissions` representing total transport emissions and additional process calculation results.
+#' @return A data frame with a new column `TransportEmissions` representing total 
+#'   transport emissions and additional process-calculation columns.
 #' @export
 calc_transport_emissions_process <- function(df) {
   
+  message("Running calc_transport_emissions v2025-44448")
   # Get country-specific transport emission factors
   emission_factors_transport <- get_transport_emission_factors(unique(df$SD_07_Country))
   
@@ -106,7 +109,7 @@ calc_transport_emissions_process <- function(df) {
     mutate(
       T_01_CarUsage = car_usage_map[T_01_CarUsage],
       T_03_CarDistance = car_distance_map[T_03_CarDistance],
-      T_04_PublicTransport = public_transport_freq_map[T_04_PublicTransport],
+      T_04_PublicTransport_usage = sapply(T_04_PublicTransport, function(x) public_transport_freq_map[[x]]),
       T_05_PublicTransport = public_transport_distance_map[T_05_PublicTransport],
       T_06_AirTravelLong = flight_freq_map[T_06_AirTravelLong],
       T_07_AirTravelShort = flight_freq_map[T_07_AirTravelShort],
@@ -131,7 +134,7 @@ calc_transport_emissions_process <- function(df) {
     mutate(
       T_01_CarUsage = ifelse(is.na(T_01_CarUsage), 0, T_01_CarUsage),
       T_03_CarDistance = ifelse(is.na(T_03_CarDistance), 0, T_03_CarDistance),
-      T_04_PublicTransport = ifelse(is.na(T_04_PublicTransport), 0, T_04_PublicTransport),
+      T_04_PublicTransport_usage = ifelse(is.na(T_04_PublicTransport_usage), 0, T_04_PublicTransport_usage),
       T_05_PublicTransport = ifelse(is.na(T_05_PublicTransport), 0, T_05_PublicTransport),
       T_06_AirTravelLong = ifelse(is.na(T_06_AirTravelLong), 0, T_06_AirTravelLong),
       T_07_AirTravelShort = ifelse(is.na(T_07_AirTravelShort), 0, T_07_AirTravelShort),
@@ -142,7 +145,8 @@ calc_transport_emissions_process <- function(df) {
   df <- df %>%
     mutate(
       WeeklyCarDistance = T_01_CarUsage * T_03_CarDistance,
-      WeeklyPublicTransportDistance = T_04_PublicTransport * T_05_PublicTransport
+      WeeklyPublicTransportDistance = T_05_PublicTransport,
+      public_transport_usage_factor = T_04_PublicTransport_usage
     )
   
   df <- df %>% 
@@ -163,12 +167,10 @@ calc_transport_emissions_process <- function(df) {
   df <- df %>%
     mutate(
       CarEmissions = WeeklyCarDistance * car_emission_factor * 52,
-      PublicTransportEmissions = WeeklyPublicTransportDistance * public_transport_factor * 52,
-      AirTravelLongEmissions = T_06_AirTravelLong * 500 * flights_factor,
-      AirTravelShortEmissions = T_07_AirTravelShort * 500 * flights_factor,
+      PublicTransportEmissions = WeeklyPublicTransportDistance * public_transport_factor * 52 * public_transport_usage_factor,
+      AirTravelLongEmissions = T_06_AirTravelLong * 1609 * flights_factor,
+      AirTravelShortEmissions = T_07_AirTravelShort * 804.5 * flights_factor,
       TrainEmissions = T_08_LongDistanceTra * 100 * 365 * train_factor,
-      
-      # Compute total transport emissions
       TransportEmissions = CarEmissions + PublicTransportEmissions + AirTravelLongEmissions + AirTravelShortEmissions + TrainEmissions
     )
   
@@ -189,4 +191,3 @@ calc_transport_emissions_process <- function(df) {
   
   return(df)
 }
-

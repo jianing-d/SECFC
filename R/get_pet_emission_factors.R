@@ -35,7 +35,7 @@ get_pet_emission_factors <- function(country) {
 #'
 #' @param df A data frame containing pet ownership data.
 #' @return A data frame with a new column `PetEmissions` representing total pet-related emissions and additional process calculation results.
-#' @export
+#' 
 calc_pet_emissions_process <- function(df) {
   
   # Get country-specific pet emission factors
