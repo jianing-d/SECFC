@@ -5,6 +5,8 @@ Authors@R: c(
     person("Jianing", "Ding", , "jianing.research@gmail.com", role = c("aut", "cre")),
     person("Ziqian", "Xia", , "ziqian.research@gmail.com", role = c("aut")),
     person("Jinquan", "Ye", , "jinquan.ye@duke.edu", role = c("ctb")),
+    person("Jinliang","Xie", , "Jinliang.research@gmail.com", role = c("aut")),
+    person("Ka Leung","Lam", , "kaleung.lam@dukekunshan.edu.cn", role = c("aut")),
     person("Nathaniel","Geiger", , "geigern@umich.edu", role = c("aut")))
 Description: SECFC is a transparent and open-source R package designed for
     survey-embedded carbon footprint calculation.It provides a

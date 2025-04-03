@@ -124,25 +124,35 @@ transport_process <- calc_transport_emissions_process(df)
 total_process <- calc_total_emissions_process(df)
 ```
 
-## 📫 Contact
 
+## 📫 Contact
 For questions, bug reports, or suggestions, please reach out to:
 
-**Jianing Ding**
+<div style="display: flex; justify-content: space-between;">
+  <div style="flex: 1; padding-right: 15px;">
 
-[jianing.research\@gmail.com](mailto:jianing.research@gmail.com){.email}
+**Jianing Ding**<br>
+[jianing.research@gmail.com](mailto:jianing.research@gmail.com)<br>
+Tongji University<br><br>
 
-Tongji University
+**Ka Leung Lam**<br>
+[kaleung.lam@dukekunshan.edu.cn](mailto:kaleung.lam@dukekunshan.edu.cn)<br>
+Duke Kunshan University<br><br>
 
-**Ziqian Xia**
-
-[ziqianx\@stanford.edu](mailto:ziqianx@stanford.edu){.email}
-
-Stanford University
-
-**Nathaniel Geiger**
-
-[geigern@umich.edu](mailto:geigern@umich.edu){.email}
-
+**Nathaniel Geiger**<br>
+[geigern@umich.edu](mailto:geigern@umich.edu)<br>
 University of Michigan
 
+  </div>
+  <div style="flex: 1; padding-left: 15px;">
+
+**Ziqian Xia**<br>
+[ziqianx@stanford.edu](mailto:ziqianx@stanford.edu)<br>
+Stanford University<br><br>
+
+**Jinliang Xie**<br>
+[jinliang.research@gmail.com](mailto:jinliang.research@gmail.com)<br>
+Tsinghua University
+
+  </div>
+</div>

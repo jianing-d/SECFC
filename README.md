@@ -111,20 +111,28 @@ total_process <- calc_total_emissions_process(df)
 
 For questions, bug reports, or suggestions, please reach out to:
 
-**Jianing Ding**
+<div style="display: flex; justify-content: space-between;">
 
-<jianing.research@gmail.com>
+<div style="flex: 1; padding-right: 15px;">
 
-Tongji University
+**Jianing Ding**<br> <jianing.research@gmail.com><br> Tongji
+University<br><br>
 
-**Ziqian Xia**
+**Ka Leung Lam**<br> <kaleung.lam@dukekunshan.edu.cn><br> Duke Kunshan
+University<br><br>
 
-<ziqianx@stanford.edu>
+**Nathaniel Geiger**<br> <geigern@umich.edu><br> University of Michigan
 
-Stanford University
+</div>
 
-**Nathaniel Geiger**
+<div style="flex: 1; padding-left: 15px;">
 
-<geigern@umich.edu>
+**Ziqian Xia**<br> <ziqianx@stanford.edu><br> Stanford
+University<br><br>
 
-University of Michigan
+**Jinliang Xie**<br> <jinliang.research@gmail.com><br> Tsinghua
+University
+
+</div>
+
+</div>
