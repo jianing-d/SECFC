@@ -19,38 +19,97 @@
 #' @param country A character string representing the country.
 #' @return A list of housing emission factors.
 get_housing_emission_factors <- function(country) {
-  # Ensure dataset is available
-  if (!exists("housing_emission_factors", where = globalenv())) {
-    stop("Error: housing_emission_factors dataset not found.")
+  # Normalize empty/missing to "United States"
+  lookup_country <- if (is.na(country) || country == "") "United States" else country
+  
+  # United States: use existing dataset + defaults
+  if (lookup_country == "United States") {
+    if (!exists("housing_emission_factors", where = globalenv())) {
+      stop("Error: housing_emission_factors dataset not found.")
+    }
+    factors <- housing_emission_factors %>% filter(Country == "United States")
+    
+    defaults <- list(
+      WaterCFC   = 26.5,
+      NaturalGas = 0.573511218,
+      Electricity = list(
+        US_ASCC = 0.608418285, US_HICC = 0.823151786,
+        US_MRO  = 0.543851789, US_NPCC = 0.273336294,
+        US_RFC  = 0.5399024,   US_SERC = 0.532591155,
+        US_TRE  = 0.461607295, US_WECC = 0.376463424
+      )
+    )
+    
+    return(list(
+      WaterCFC   = ifelse(any(factors$FactorName=="WaterCFC"),
+                          factors$Value[factors$FactorName=="WaterCFC"],
+                          defaults$WaterCFC),
+      NaturalGas = ifelse(any(factors$FactorName=="NaturalGas"),
+                          factors$Value[factors$FactorName=="NaturalGas"],
+                          defaults$NaturalGas),
+      Electricity = list(
+        US_ASCC = ifelse(any(factors$FactorName=="Electricity_US_ASCC"),
+                         factors$Value[factors$FactorName=="Electricity_US_ASCC"],
+                         defaults$Electricity$US_ASCC),
+        US_HICC = ifelse(any(factors$FactorName=="Electricity_US_HICC"),
+                         factors$Value[factors$FactorName=="Electricity_US_HICC"],
+                         defaults$Electricity$US_HICC),
+        US_MRO  = ifelse(any(factors$FactorName=="Electricity_US_MRO"),
+                         factors$Value[factors$FactorName=="Electricity_US_MRO"],
+                         defaults$Electricity$US_MRO),
+        US_NPCC = ifelse(any(factors$FactorName=="Electricity_US_NPCC"),
+                         factors$Value[factors$FactorName=="Electricity_US_NPCC"],
+                         defaults$Electricity$US_NPCC),
+        US_RFC  = ifelse(any(factors$FactorName=="Electricity_US_RFC"),
+                         factors$Value[factors$FactorName=="Electricity_US_RFC"],
+                         defaults$Electricity$US_RFC),
+        US_SERC = ifelse(any(factors$FactorName=="Electricity_US_SERC"),
+                         factors$Value[factors$FactorName=="Electricity_US_SERC"],
+                         defaults$Electricity$US_SERC),
+        US_TRE  = ifelse(any(factors$FactorName=="Electricity_US_TRE"),
+                         factors$Value[factors$FactorName=="Electricity_US_TRE"],
+                         defaults$Electricity$US_TRE),
+        US_WECC = ifelse(any(factors$FactorName=="Electricity_US_WECC"),
+                         factors$Value[factors$FactorName=="Electricity_US_WECC"],
+                         defaults$Electricity$US_WECC)
+      )
+    ))
   }
   
-  # Filter dataset for the selected country
-  factors <- housing_emission_factors %>% filter(Country == country)
+  # China: all NA, but keep structure
+  if (lookup_country == "China") {
+    return(list(
+      WaterCFC   = NA,
+      NaturalGas = NA,
+      Electricity = list(
+        Electricity_China_Group1 = NA,
+        Electricity_China_Group2 = NA,
+        Electricity_China_Group3 = NA
+      )
+    ))
+  }
   
-  # Set default values to prevent NULLs
-  default_values <- list(
-    "WaterCFC" = 26.5,
-    "NaturalGas" = 0.055,
-    "Electricity" = list(
-      "Average" = 0.513,
-      "Texas" = 0.641855,
-      "Western" = 0.461226,
-      "Eastern" = 0.572386
-    )
-  )
+  # European Union: all NA, but keep structure
+  if (lookup_country == "European Union") {
+    return(list(
+      WaterCFC   = NA,
+      NaturalGas = NA,
+      Electricity = list(
+        Electricity_EU_Group1 = NA,
+        Electricity_EU_Group2 = NA,
+        Electricity_EU_Group3 = NA
+      )
+    ))
+  }
   
-  # Ensure values exist, otherwise, use defaults
+  # Other (not US, China, EU): everything NA
   return(list(
-    "WaterCFC" = ifelse(any(factors$FactorName == "WaterCFC"), factors$Value[factors$FactorName == "WaterCFC"], default_values$WaterCFC),
-    "NaturalGas" = ifelse(any(factors$FactorName == "NaturalGas"), factors$Value[factors$FactorName == "NaturalGas"], default_values$NaturalGas),
-    "Electricity" = list(
-      "Average" = ifelse(any(factors$FactorName == "Electricity_Average"), factors$Value[factors$FactorName == "Electricity_Average"], default_values$Electricity$Average),
-      "Texas" = ifelse(any(factors$FactorName == "Electricity_Texas"), factors$Value[factors$FactorName == "Electricity_Texas"], default_values$Electricity$Texas),
-      "Western" = ifelse(any(factors$FactorName == "Electricity_Western"), factors$Value[factors$FactorName == "Electricity_Western"], default_values$Electricity$Western),
-      "Eastern" = ifelse(any(factors$FactorName == "Electricity_Eastern"), factors$Value[factors$FactorName == "Electricity_Eastern"], default_values$Electricity$Eastern)
-    )
+    WaterCFC   = NA,
+    NaturalGas = NA,
+    Electricity = NA
   ))
 }
+
 
 
 #' Calculate Housing-Related Carbon Emissions with Process Data
@@ -61,7 +120,8 @@ get_housing_emission_factors <- function(country) {
 #' @return A data frame with a new column `HousingEmissions` representing total housing-related emissions and additional process calculation results.
 #' @export
 calc_housing_emissions_process <- function(df) {
-  
+  original_name <- deparse(substitute(df))
+  new_name      <- paste0(original_name, "_housing_process")
   # Ensure built-in datasets are available
   if (!exists("zip_data")) stop("Error: zip_data dataset not found.")
   
@@ -69,7 +129,7 @@ calc_housing_emissions_process <- function(df) {
   emission_factors_housing <- get_housing_emission_factors(unique(df$SD_07_Country))
   
   # Ensure ZIP code exists and is numeric
-  df <- df %>%
+  df_housing_process <- df %>%
     mutate(SD_08_ZipCode = as.numeric(SD_08_ZipCode))
   
   # Define function to classify state based on ZIP code
@@ -89,41 +149,52 @@ calc_housing_emissions_process <- function(df) {
   classify_zip_code <- function(zip_code) {
     state <- classify_state(zip_code)
     
-    west_states <- c("WA", "OR", "CA", "ID", "NV", "UT", "AZ", "MT", "WY", "CO", "NM", "HI", "AK")
-    east_states <- c("ME", "NH", "MA", "RI", "CT", "NY", "NJ", "DE", "MD", "VA", "NC", "SC", "GA", "FL", "VT", "PA", "WV", "OH", "MI")
+    US_ASCC <- c("AK")
+    US_HICC <- c("HI")
+    US_MRO  <- c("IA","IL","KS","MI","MN","MO","MT","ND","NE","SD","WI")
+    US_NPCC <- c("CT","MA","ME","NH","NY","RI","VT")
+    US_RFC  <- c("DC","DE","IN","MD","NJ","OH","PA","VA","WV")
+    US_SERC <- c("AL","AR","FL","GA","KY","LA","MS","NC","OK","SC","TN")
+    US_TRE  <- c("TX")
+    US_WECC <- c("AZ","CA","CO","ID","NM","NV","OR","UT","WA","WY")
     
-    if (!is.na(state)) {
-      if (state %in% west_states) {
-        return("West")
-      } else if (state %in% east_states) {
-        return("East")
-      } else if (state == "TX") {
-        return("Texas")
-      } else {
-        return("Other")
-      }
-    } else {
+    
+    if (is.na(state)) {
       return(NA)
     }
+    if      (state %in% US_ASCC) return("US_ASCC")
+    else if (state %in% US_HICC) return("US_HICC")
+    else if (state %in% US_MRO)  return("US_MRO")
+    else if (state %in% US_NPCC) return("US_NPCC")
+    else if (state %in% US_RFC)  return("US_RFC")
+    else if (state %in% US_SERC) return("US_SERC")
+    else if (state %in% US_TRE)  return("US_TRE")
+    else if (state %in% US_WECC) return("US_WECC")
+    # catch‑all
+    return(NA)
   }
   
   # Classify state, region, and select appropriate electricity emission factor
-  df <- df %>%
+  df_housing_process <- df_housing_process %>%
     rowwise() %>%
     mutate(
       state = classify_state(SD_08_ZipCode),
       region = classify_zip_code(SD_08_ZipCode),
       electricity_emission_factor = case_when(
-        region == "Texas" ~ emission_factors_housing$Electricity$Texas,
-        region == "West" ~ emission_factors_housing$Electricity$Western,
-        region == "East" ~ emission_factors_housing$Electricity$Eastern,
-        TRUE ~ emission_factors_housing$Electricity$Average
+        region == "US_ASCC" ~ emission_factors_housing$Electricity$US_ASCC,
+        region == "US_HICC" ~ emission_factors_housing$Electricity$US_HICC,
+        region == "US_MRO" ~ emission_factors_housing$Electricity$US_MRO,
+        region == "US_NPCC" ~ emission_factors_housing$Electricity$US_NPCC,
+        region == "US_RFC" ~ emission_factors_housing$Electricity$US_RFC,
+        region == "US_SERC" ~ emission_factors_housing$Electricity$US_SERC,
+        region == "US_TRE" ~ emission_factors_housing$Electricity$US_TRE,
+        region == "US_WECC" ~ emission_factors_housing$Electricity$US_WECC
       )
     ) %>%
     ungroup()
   
   # Handle missing values for energy bills
-  df <- df %>%
+  df_housing_process <- df_housing_process %>%
     mutate(
       EH_02_ElectricityBil_1 = as.numeric(EH_02_ElectricityBil_1),
       EH_03_ElectricityBil_1 = as.numeric(EH_03_ElectricityBil_1),
@@ -151,31 +222,29 @@ calc_housing_emissions_process <- function(df) {
               12.91, 12.39, 10.79, 11.36, 10.63, 18.50, 12.40, 9.79, 11.57, 14.28, 
               12.30)
   )
-  
   # Calculate annual emissions using specific user-selected values
-  df <- df %>%
+  df_housing_process <- df_housing_process %>%
     mutate(
       electricity_price = as.numeric(electricity_prices$price[match(state, electricity_prices$state)]),
       electricity_usage_kWh = ifelse(electricity_price > 0,
                                      (EH_02_ElectricityBil_1 * 100) / electricity_price,
                                      0),
-      natural_gas_usage_cubic_feet = EH_05_NaturalGasBill_1 / 15.2,
+      natural_gas_usage_m3 = EH_05_NaturalGasBill_1 / 0.353147, # Assuming $0.353147 per 1.0 m3 for simplicity
       
       ElectricityEmissions = electricity_usage_kWh * 12 * electricity_emission_factor,
-      NaturalGasEmissions = natural_gas_usage_cubic_feet * 12 * emission_factors_housing$NaturalGas,
+      NaturalGasEmissions = natural_gas_usage_m3 * 12 * emission_factors_housing$NaturalGas,
       WaterEmissions = emission_factors_housing$WaterCFC,
       
       # Total housing emissions
       HousingEmissions = ElectricityEmissions + NaturalGasEmissions + WaterEmissions
     )
   
+
+  # assign new df_housing_process to the user’s workspace
+  assign(new_name, df_housing_process, envir = parent.frame())
+  message("Created new data frame: ", new_name)
   
-  # Notify user and print results
-  message("New column `HousingEmissions` representing total housing emissions has been added to the dataset.")
-  message("Process calculation result data have been added.")
   
-  print(df$HousingEmissions)
-  
-  return(df)
+  return(df_housing_process)
 }
 

@@ -47,12 +47,13 @@ get_pet_emission_factors <- function(country) {
 #' @return A data frame with a new column `PetEmissions` representing total pet emissions.
 #' @export
 calc_pet_emissions <- function(df) {
-  
+  original_name <- deparse(substitute(df))
+  new_name      <- paste0(original_name, "_pet")
   # Get country-specific pet emission factors
   emission_factors_pets <- get_pet_emission_factors(unique(df$SD_07_Country))
   
   # Convert pet ownership columns to numeric and handle missing values
-  df <- df %>%
+  df_pet <- df %>%
     mutate(
       PETS_4 = as.numeric(PETS_4),
       PETS_5 = as.numeric(PETS_5),
@@ -61,23 +62,21 @@ calc_pet_emissions <- function(df) {
     )
   
   # Calculate pet emissions
-  df <- df %>%
+  df_pet <- df_pet %>%
     mutate(
       PetEmissions_Cat = PETS_4 * emission_factors_pets$Cat,
       PetEmissions_Dog = PETS_5 * emission_factors_pets$Dog,
       PetEmissions = PetEmissions_Cat + PetEmissions_Dog
     )
   
-    df <- df %>% 
+    df_pet <- df_pet %>% 
     select(-PetEmissions_Cat,-PetEmissions_Dog)
     
-    # Notify user and print results
-  message("New column `PetEmissions` representing total pet-related emissions has been added to the dataset.")
-
-
-  print(df$PetEmissions)
-  
-  return(df)
+    # assign new df_pet to the user’s workspace
+    assign(new_name, df_pet, envir = parent.frame())
+    message("Created new data frame: ", new_name)
+    
+  return(df_pet)
 }
 
 

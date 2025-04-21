@@ -45,12 +45,14 @@ get_food_emission_factors <- function(country) {
 #' @return A data frame with a new column `FoodEmissions` representing total food-related emissions and additional process calculation results.
 #' @export
 calc_food_emissions_process <- function(df) {
+  original_name <- deparse(substitute(df))
+  new_name      <- paste0(original_name, "_food_process")
   
   # Get country-specific food emission factors from the dataset
   emission_factors_food <- get_food_emission_factors(unique(df$SD_07_Country))
   
   # Convert food intake columns to numeric and replace NA values with 0
-  df <- df %>%
+  df_food_process <- df %>%
     mutate(
       F_01_DietaryHabits_5 = as.numeric(F_01_DietaryHabits_5),
       F_01_DietaryHabits_6 = as.numeric(F_01_DietaryHabits_6),
@@ -60,7 +62,7 @@ calc_food_emissions_process <- function(df) {
     replace(is.na(.), 0)
   
   # Calculate emissions for each food category
-  df <- df %>%
+  df_food_process <- df_food_process %>%
     mutate(
       MeatEmissions = F_01_DietaryHabits_5 * 52 * emission_factors_food[["MeatMeals"]],
       VeganEmissions = F_01_DietaryHabits_6 * 52 * emission_factors_food[["VeganMeals"]],
@@ -73,12 +75,10 @@ calc_food_emissions_process <- function(df) {
   
   
   
-  # Notify the user and print results
-  message("New column `FoodEmissions` representing total food emissions has been added to the dataset.")
-  message("Process calculation result data have been added.")
+  # assign new df_food_process to the user’s workspace
+  assign(new_name, df_food_process, envir = parent.frame())
+  message("Created new data frame: ", new_name)
   
-  print(df$FoodEmissions)
-  
-  return(df)
+  return(df_food_process)
 }
 

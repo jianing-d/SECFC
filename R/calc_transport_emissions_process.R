@@ -24,11 +24,11 @@ get_transport_emission_factors <- function(country) {
   # If no match, return NA values
   if (nrow(factors) == 0) {
     return(list(
-      "Gasoline Vehicles" = NA,
-      "Diesel Vehicles" = NA,
-      "Electric Vehicles" = NA,
-      "Hybrid Vehicles" = NA,
-      "Natural Gas Vehicles" = NA,
+      "Gasoline Vehicle" = NA,
+      "Diesel Vehicle" = NA,
+      "Electric Vehicle" = NA,
+      "Hybrid Vehicle" = NA,
+      "Natural Gas Vehicle" = NA,
       "Public Transport" = NA,
       "Flights" = NA,
       "Long Distance Train" = NA
@@ -49,8 +49,8 @@ get_transport_emission_factors <- function(country) {
 #'   transport emissions and additional process-calculation columns.
 #' @export
 calc_transport_emissions_process <- function(df) {
-  
-  message("Running calc_transport_emissions v2025-44448")
+  original_name <- deparse(substitute(df))
+  new_name      <- paste0(original_name, "_transport_process")
   # Get country-specific transport emission factors
   emission_factors_transport <- get_transport_emission_factors(unique(df$SD_07_Country))
   
@@ -105,7 +105,7 @@ calc_transport_emissions_process <- function(df) {
   )
   
   # Map categorical values to numeric
-  df <- df %>%
+  df_transport_process <- df %>%
     mutate(
       T_01_CarUsage = car_usage_map[T_01_CarUsage],
       T_03_CarDistance = car_distance_map[T_03_CarDistance],
@@ -117,20 +117,20 @@ calc_transport_emissions_process <- function(df) {
     )
   
   # Assign correct emission factors for car types
-  df <- df %>%
+  df_transport_process <- df_transport_process %>%
     mutate(
       car_emission_factor = case_when(
-        T_02_CarType == "Gasoline Vehicle" ~ emission_factors_transport$Gasoline_Vehicles,
-        T_02_CarType == "Diesel Vehicle" ~ emission_factors_transport$Diesel_Vehicles,
-        T_02_CarType == "Hybrid Vehicle" ~ emission_factors_transport$Hybrid_Vehicles,
-        T_02_CarType == "Electric Vehicle" ~ emission_factors_transport$Electric_Vehicles,
-        T_02_CarType == "Natural Gas Vehicle" ~ emission_factors_transport$Natural_Gas_Vehicles,
+        T_02_CarType == "Gasoline Vehicle" ~ emission_factors_transport$Gasoline_Vehicle,
+        T_02_CarType == "Diesel Vehicle" ~ emission_factors_transport$Diesel_Vehicle,
+        T_02_CarType == "Hybrid Vehicle" ~ emission_factors_transport$Hybrid_Vehicle,
+        T_02_CarType == "Electric Vehicle" ~ emission_factors_transport$Electric_Vehicle,
+        T_02_CarType == "Natural Gas Vehicle" ~ emission_factors_transport$Natural_Gas_Vehicle,
         TRUE ~ 0
       )
     )
   
   # Handle missing values in user inputs
-  df <- df %>%
+  df_transport_process <- df_transport_process %>%
     mutate(
       T_01_CarUsage = ifelse(is.na(T_01_CarUsage), 0, T_01_CarUsage),
       T_03_CarDistance = ifelse(is.na(T_03_CarDistance), 0, T_03_CarDistance),
@@ -142,16 +142,16 @@ calc_transport_emissions_process <- function(df) {
     )
   
   # Calculate weekly travel distances
-  df <- df %>%
+  df_transport_process <- df_transport_process %>%
     mutate(
       WeeklyCarDistance = T_01_CarUsage * T_03_CarDistance,
-      WeeklyPublicTransportDistance = T_05_PublicTransport,
+      PublicTransportDistance = T_05_PublicTransport,
       public_transport_usage_factor = T_04_PublicTransport_usage
     )
   
-  df <- df %>% 
+  df_transport_process <- df_transport_process %>% 
     mutate(WeeklyCarDistance = as.numeric(WeeklyCarDistance),
-           WeeklyPublicTransportDistance = as.numeric(WeeklyPublicTransportDistance))
+           PublicTransportDistance = as.numeric(PublicTransportDistance))
   
   # Ensure emission factors are correctly assigned and avoid size 0 error
   public_transport_factor <- ifelse(length(emission_factors_transport$Public_Transport) > 0,
@@ -164,17 +164,17 @@ calc_transport_emissions_process <- function(df) {
                          emission_factors_transport$Long_Distance_Train, 0)
   
   # Calculate annual emissions
-  df <- df %>%
+  df_transport_process <- df_transport_process %>%
     mutate(
       CarEmissions = WeeklyCarDistance * car_emission_factor * 52,
-      PublicTransportEmissions = WeeklyPublicTransportDistance * public_transport_factor * 52 * public_transport_usage_factor,
+      PublicTransportEmissions = PublicTransportDistance * public_transport_factor * 365 * public_transport_usage_factor,
       AirTravelLongEmissions = T_06_AirTravelLong * 1609 * flights_factor,
       AirTravelShortEmissions = T_07_AirTravelShort * 804.5 * flights_factor,
       TrainEmissions = T_08_LongDistanceTra * 100 * 365 * train_factor,
       TransportEmissions = CarEmissions + PublicTransportEmissions + AirTravelLongEmissions + AirTravelShortEmissions + TrainEmissions
     )
   
-  df <- df %>% 
+  df_transport_process <- df_transport_process %>% 
     mutate(    CarEmissions = as.numeric(CarEmissions),
                PublicTransportEmissions = as.numeric(PublicTransportEmissions),
                AirTravelLongEmissions = as.numeric(AirTravelLongEmissions),
@@ -183,11 +183,9 @@ calc_transport_emissions_process <- function(df) {
                TransportEmissions = as.numeric(TransportEmissions))
   
   
-  # Notify user and print results
-  message("New column `TransportEmissions` representing total transport-related emissions has been added to the dataset.")
-  message("Process calculation result data have been added.")
+  # assign new df_transport_process to the user’s workspace
+  assign(new_name, df_transport_process, envir = parent.frame())
+  message("Created new data frame: ", new_name)
   
-  print(df$TransportEmissions)
-  
-  return(df)
+  return(df_transport_process)
 }

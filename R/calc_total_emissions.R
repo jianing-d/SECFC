@@ -55,16 +55,20 @@ get_total_emission_factors <- function(country) {
 #' @return A data frame with a new column `TotalEmissions` representing the aggregated total emissions.
 #' @export
 calc_total_emissions <- function(df) {
-    df <- calc_cons_emissions(df)
-  df <- calc_food_emissions(df)
-  df <- calc_housing_emissions(df)
-  df <- calc_pet_emissions(df)
-  df <- calc_transport_emissions(df)
+  original_name <- deparse(substitute(df))
+  new_name      <- paste0(original_name, "_total")
+  
+  df_total <- df
+  df_total <- calc_cons_emissions(df_total)
+  df_total <- calc_food_emissions(df_total)
+  df_total <- calc_housing_emissions(df_total)
+  df_total <- calc_pet_emissions(df_total)
+  df_total <- calc_transport_emissions(df_total)
   # Get country-specific emission factors
-  emission_factors_total <- get_total_emission_factors(unique(df$SD_07_Country))
+  emission_factors_total <- get_total_emission_factors(unique(df_total$SD_07_Country))
   
   # Convert household size columns to numeric and handle NA values
-  df <- df %>%
+  df_total <- df_total %>%
     mutate(
       SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
       SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
@@ -75,20 +79,20 @@ calc_total_emissions <- function(df) {
     )
   
   # Calculate total household size (minimum 1 to prevent division by zero)
-  df <- df %>%
+  df_total <- df_total %>%
     mutate(
       HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
       HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize)
     )
   
   # Adjust housing emissions per capita
-  df <- df %>%
+  df_total <- df_total %>%
     mutate(
       HousingEmissionsPerCapita = HousingEmissions / HouseholdSize
     )
   
   # Ensure all emission components exist and replace NA values
-  df <- df %>%
+  df_total <- df_total %>%
     mutate(
       TransportEmissions = ifelse(is.na(TransportEmissions), 0, TransportEmissions) * emission_factors_total$Transport,
       PetEmissions = ifelse(is.na(PetEmissions), 0, PetEmissions) * emission_factors_total$Pet,
@@ -98,27 +102,24 @@ calc_total_emissions <- function(df) {
     )
   
   # Calculate total emissions
-  df <- df %>%
+  df_total <- df_total %>%
     mutate(
       TotalEmissions = TransportEmissions + PetEmissions + HousingEmissionsPerCapita +
         FoodEmissions + ConsEmissions
     )
     
-  df <- df %>% 
+  df_total <- df_total %>% 
   mutate(
   TotalEmissions = as.numeric(TotalEmissions)
   )
   
-   df <- df %>% 
+   df_total <- df_total %>% 
       select(-HouseholdSize,-HousingEmissionsPerCapita)
       
-  #Notify user and print results
-  message("All individual emission calculations have been completed.")
-  message("New column `TotalEmissions` representing total carbon footprint has been added to the dataset.")
-
-
-  print(df$TotalEmissions)
+   # assign new df_total to the user’s workspace
+   assign(new_name, df_total, envir = parent.frame())
+   message("Created new data frame: ", new_name)
   
-  return(df)
+  return(df_total)
 }
 

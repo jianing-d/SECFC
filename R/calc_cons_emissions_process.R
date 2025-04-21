@@ -49,12 +49,13 @@ get_cons_emission_factors <- function(country) {
 #' @return A data frame with a new column `ConsEmissions` representing total consumption emissions and additional process calculation results.
 #' @export
 calc_cons_emissions_process <- function(df) {
-  
+  original_name <- deparse(substitute(df))
+  new_name      <- paste0(original_name, "_cons_process")
   # Get country-specific emission factors from the dataset
   emission_factors_cons <- get_cons_emission_factors(unique(df$SD_07_Country))
   
   # Ensure expenditure columns are numeric
-  df <- df %>%
+  df_cons_process <- df %>%
     mutate(
       CL_03_MonthlyEx_9 = as.numeric(CL_03_MonthlyEx_9),
       CL_03_MonthlyEx_10 = as.numeric(CL_03_MonthlyEx_10),
@@ -74,7 +75,7 @@ calc_cons_emissions_process <- function(df) {
     "Rarely" = 60
   )
   
-  df <- df %>%
+  df_cons_process <- df_cons_process %>%
     mutate(
       annual_clothing_spending = clothing_spending_map[CL_01_ClothingPurcha],
       annual_clothing_spending = ifelse(is.na(annual_clothing_spending), 0, annual_clothing_spending),
@@ -83,7 +84,7 @@ calc_cons_emissions_process <- function(df) {
     )
   
   # Calculate annual emissions for each category
-  df <- df %>%
+  df_cons_process <- df_cons_process %>%
     mutate(
       FoodDeliveryEm = CL_03_MonthlyEx_9 * 12 * emission_factors_cons[["FoodDelivery"]],
       DiningOutEm = CL_03_MonthlyEx_10 * 12 * emission_factors_cons[["DiningOut"]],
@@ -95,7 +96,7 @@ calc_cons_emissions_process <- function(df) {
     )
   
   # Compute total consumption emissions
-  df <- df %>%
+  df_cons_process <- df_cons_process %>%
     mutate(
       ConsEmissions = rowSums(cbind(
         FoodDeliveryEm, DiningOutEm, HotelStaysEm,
@@ -104,19 +105,17 @@ calc_cons_emissions_process <- function(df) {
       ), na.rm = TRUE)
     )
   
-  df <- df %>% 
+  df_cons_process <- df_cons_process %>% 
     mutate(
       annual_clothing_spending = as.numeric(annual_clothing_spending),
       ClothingEm = as.numeric(ClothingEm),
       ConsEmissions = as.numeric(ConsEmissions)
     )
   
-  # Notify the user and print results
-  message("New column `ConsEmissions` representing total consumption emissions has been added to the dataset.")
-  message("Process calculation result data have been added.")
+  # assign new df_cons_process to the user’s workspace
+  assign(new_name, df_cons_process, envir = parent.frame())
+  message("Created new data frame: ", new_name)
   
-  print(df$ConsEmissions)
-  
-  return(df)
+  return(df_cons_process)
 }
 
