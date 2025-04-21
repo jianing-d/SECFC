@@ -94,8 +94,10 @@ carbon emissions.</li>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install the SECFC package from GitHub</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"jianing-d/SECFC"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; xfun (0.51 -&gt; 0.52) [CRAN]</span></span>
-<span><span class="co">#&gt; * checking for file ‘/tmp/RtmptvQWLP/remotes1dcd7795771a/jianing-d-SECFC-f490b90/DESCRIPTION’ ... OK</span></span>
+<span><span class="co">#&gt; cpp11       (NA -&gt; 0.5.2) [CRAN]</span></span>
+<span><span class="co">#&gt; prettyunits (NA -&gt; 1.2.0) [CRAN]</span></span>
+<span><span class="co">#&gt; progress    (NA -&gt; 1.2.3) [CRAN]</span></span>
+<span><span class="co">#&gt; * checking for file ‘/tmp/RtmpSOpiIg/remotes1f17c1b144d/jianing-d-SECFC-9608af3/DESCRIPTION’ ... OK</span></span>
 <span><span class="co">#&gt; * preparing ‘SECFC’:</span></span>
 <span><span class="co">#&gt; * checking DESCRIPTION meta-information ... OK</span></span>
 <span><span class="co">#&gt; * checking for LF line-endings in source and make files and shell scripts</span></span>
@@ -167,56 +169,10 @@ survey responses. The returned data frame will include a new column
 called TotalEmissions.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">carbon_total</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calc_total_emissions.html">calc_total_emissions</a></span><span class="op">(</span><span class="va">questionnaire_example</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1]   92.367805   98.437531  853.446155  143.903384   64.928111  428.851286</span></span>
-<span><span class="co">#&gt;  [7]  860.479129  165.907811   49.807684   30.053274   66.278545   36.633441</span></span>
-<span><span class="co">#&gt; [13] 1533.582182    5.976541   26.577335    6.010655   33.738234 1000.567825</span></span>
-<span><span class="co">#&gt; [19]   20.889453    2.205671   53.732768   52.876651  631.770000   52.228997</span></span>
-<span><span class="co">#&gt; [25]  138.177364   47.490663   23.226313   62.717858  187.839161  206.237059</span></span>
-<span><span class="co">#&gt; [31]  441.669633  872.478975  213.444793   68.560063   39.493315    1.102835</span></span>
-<span><span class="co">#&gt; [37]   14.863682  153.258302  205.155961    7.437304  338.897055  108.876717</span></span>
-<span><span class="co">#&gt; [43]  339.854057  251.043570    2.205671   78.229376  661.823274  350.434362</span></span>
-<span><span class="co">#&gt; [49]   23.047411   76.970867</span></span>
-<span><span class="co">#&gt;  [1] 2000.7449 1432.9049 1034.8790 1591.2109 1976.9828  278.7309 1328.3060</span></span>
-<span><span class="co">#&gt;  [8] 1515.3018 2384.2109 1496.9439 1151.5060 2159.1979 2981.1818  771.9849</span></span>
-<span><span class="co">#&gt; [15] 1873.9439 2422.1028  387.3319 1299.2649 2337.0379 1236.5709  717.1018</span></span>
-<span><span class="co">#&gt; [22] 1091.2649 1274.2260 1236.5709 2320.0249 1398.4379 1430.1579 1664.4519</span></span>
-<span><span class="co">#&gt; [29] 1834.5818 2354.0509 2303.0119 1967.9849 2262.4628  848.3460 1830.1849</span></span>
-<span><span class="co">#&gt; [36] 1168.5190 1807.0790 1820.0109  824.2218 1458.6899 2106.2369 2556.8618</span></span>
-<span><span class="co">#&gt; [43] 2354.0509 2354.0509 2482.4800 1236.5709 1075.5860 1185.5319 2268.9860</span></span>
-<span><span class="co">#&gt; [50] 1834.5818</span></span>
-<span><span class="co">#&gt;  [1] 12646.1865  4074.4541  8598.2838  2057.9939  3004.4915  5061.4532</span></span>
-<span><span class="co">#&gt;  [7]  4859.3106  7313.1887  3697.7663  1351.0163  4005.3551 10391.0752</span></span>
-<span><span class="co">#&gt; [13]   860.8787  2838.2670  3214.1083  4678.0802  4728.1149  6337.9520</span></span>
-<span><span class="co">#&gt; [19]   221.1884 10842.7621  2837.4855  3303.9434  3421.8111 18149.5396</span></span>
-<span><span class="co">#&gt; [25]  4897.0090  8121.4577  3698.4610  2392.6138  3366.6200  3442.2310</span></span>
-<span><span class="co">#&gt; [31]  7815.5112  8715.2947  8531.2194  8732.3160 18149.5396  5152.3063</span></span>
-<span><span class="co">#&gt; [37]  3019.0126 17485.0281  9692.1211  5856.0455  5904.9503  8266.9653</span></span>
-<span><span class="co">#&gt; [43]  4616.1039  5304.3871  1961.1258  7332.0468  3173.3211  3651.6724</span></span>
-<span><span class="co">#&gt; [49]   613.7782 14734.7506</span></span>
-<span><span class="co">#&gt;  [1] 1540    0 2880 1105 2445 1105  335    0    0  335  335  770    0 1340  770</span></span>
-<span><span class="co">#&gt; [16]    0  670  770 1005    0 1540  335 1105 1340    0 1875 2645  770    0  770</span></span>
-<span><span class="co">#&gt; [31] 1440    0  335  670 1540  770    0 1105 1105    0 1105 1105    0 1440    0</span></span>
-<span><span class="co">#&gt; [46] 1540 1105    0    0 1775</span></span>
-<span><span class="co">#&gt;  [1] 11011.232 10180.787  4235.089 10180.338 10180.787 15669.830  8470.178</span></span>
-<span><span class="co">#&gt;  [8]  4235.089  4235.089 10164.269  6776.143  4235.089 18634.392  2133.614</span></span>
-<span><span class="co">#&gt; [15]  6776.143  6352.634  6776.143 14399.467  4235.089  6776.143  2117.545</span></span>
-<span><span class="co">#&gt; [22] 10164.269 11027.951  4235.089  4235.647  4235.089  4251.808  2117.599</span></span>
-<span><span class="co">#&gt; [29] 11027.356 15301.545  4235.089  6792.716 11011.232  4235.089  8470.178</span></span>
-<span><span class="co">#&gt; [36] 10164.214  8480.032 10164.214     0.000  2117.545 11037.100  4251.663</span></span>
-<span><span class="co">#&gt; [43] 11027.356  6352.634  2117.545  4235.089  6353.192 18660.261  2118.248</span></span>
-<span><span class="co">#&gt; [50]  6776.143</span></span>
-<span><span class="co">#&gt;  [1] 17805.891 15786.584 17601.698 13706.451 15168.447 18115.094 15853.274</span></span>
-<span><span class="co">#&gt;  [8]  7744.596  8517.991 13377.282 10331.605 12396.458 24010.035  4961.143</span></span>
-<span><span class="co">#&gt; [15] 10518.033  9950.267 10231.270 19581.951  7653.314 18857.681  5374.208</span></span>
-<span><span class="co">#&gt; [22] 13295.382 17460.758 12913.736  8326.186 11616.747  9274.807  5412.307</span></span>
-<span><span class="co">#&gt; [29] 13891.432 20352.948  9982.873 13990.827 16665.879 14554.311 16417.241</span></span>
-<span><span class="co">#&gt; [36] 13821.271 11308.312 17613.740  4072.802  9439.717 15768.224 10778.056</span></span>
-<span><span class="co">#&gt; [43] 16029.313 11723.825  6563.356  9533.905  9830.266 21109.145  4614.875</span></span>
-<span><span class="co">#&gt; [50] 12918.487</span></span>
 <span></span>
 <span><span class="co"># Check the first few rows</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">carbon_total</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 43</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 40</span></span></span>
 <span><span class="co">#&gt;   RecordedDate  T_01_CarUsage T_02_CarType T_03_CarDistance T_04_PublicTransport</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 30/6/2024 22…           5.5            3             10                      5</span></span>
@@ -225,7 +181,7 @@ called TotalEmissions.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 30/6/2024 22…           5.5            3             10                      4</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 30/6/2024 22…           7              3             10                      4</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 30/6/2024 22…           5.5            3             30.5                    5</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 38 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 35 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   T_07_AirTravelShort &lt;dbl&gt;, T_08_LongDistanceTra &lt;dbl&gt;, PETS_4 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   PETS_5 &lt;dbl&gt;, `E1_Electricity Usage` &lt;dbl&gt;, EH_02_ElectricityBil_1 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   EH_05_NaturalGasBill_1 &lt;dbl&gt;, F_01_DietaryHabits_5 &lt;dbl&gt;,</span></span></span>
@@ -250,18 +206,18 @@ carbon emissions. This is a basic linear model using the built-in
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Residuals:</span></span>
 <span><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></span>
-<span><span class="co">#&gt; -8188.6 -2905.5    53.7  3393.7  7988.5 </span></span>
+<span><span class="co">#&gt; -6303.6 -2107.0    40.9  3024.8  6997.5 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
 <span><span class="co">#&gt;              Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; (Intercept) 9.043e+03  1.330e+03   6.797  1.5e-08 ***</span></span>
-<span><span class="co">#&gt; income      6.031e-02  1.933e-02   3.120  0.00306 ** </span></span>
+<span><span class="co">#&gt; (Intercept) 8.730e+03  1.115e+03   7.828 4.01e-10 ***</span></span>
+<span><span class="co">#&gt; income      4.933e-02  1.621e-02   3.044  0.00378 ** </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Residual standard error: 4294 on 48 degrees of freedom</span></span>
-<span><span class="co">#&gt; Multiple R-squared:  0.1686, Adjusted R-squared:  0.1513 </span></span>
-<span><span class="co">#&gt; F-statistic: 9.734 on 1 and 48 DF,  p-value: 0.003058</span></span></code></pre></div>
+<span><span class="co">#&gt; Residual standard error: 3600 on 48 degrees of freedom</span></span>
+<span><span class="co">#&gt; Multiple R-squared:  0.1618, Adjusted R-squared:  0.1444 </span></span>
+<span><span class="co">#&gt; F-statistic: 9.267 on 1 and 48 DF,  p-value: 0.003779</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-6-create-a-plot">Step 6: Create a Plot<a class="anchor" aria-label="anchor" href="#step-6-create-a-plot"></a>
