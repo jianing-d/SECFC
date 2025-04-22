@@ -59,11 +59,11 @@ calc_total_emissions <- function(df) {
   new_name      <- paste0(original_name, "_total")
   
   df_total <- df
-  df_total <- calc_cons_emissions(df_total)
-  df_total <- calc_food_emissions(df_total)
-  df_total <- calc_housing_emissions(df_total)
-  df_total <- calc_pet_emissions(df_total)
-  df_total <- calc_transport_emissions(df_total)
+  df_total <- suppressMessages(calc_cons_emissions(df_total))
+  df_total <- suppressMessages(calc_food_emissions(df_total))
+  df_total <- suppressMessages(calc_housing_emissions(df_total))
+  df_total <- suppressMessages(calc_pet_emissions(df_total))
+  df_total <- suppressMessages(calc_transport_emissions(df_total))
   # Get country-specific emission factors
   emission_factors_total <- get_total_emission_factors(unique(df_total$SD_07_Country))
   
@@ -118,7 +118,13 @@ calc_total_emissions <- function(df) {
       
    # assign new df_total to the user’s workspace
    assign(new_name, df_total, envir = parent.frame())
-   message("Created new data frame: ", new_name)
+   message(
+     paste0(
+       "✅ A new data frame '", new_name,
+       "' is now available in your R environment."
+     )
+   )
+   
   
   return(df_total)
 }

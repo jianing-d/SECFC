@@ -142,7 +142,13 @@ calc_cons_emissions <- function(df) {
      
      # assign new df_cons to the user’s workspace
      assign(new_name, df_cons, envir = parent.frame())
-     message("Created new data frame: ", new_name)
+     message(
+       paste0(
+         "✅ A new data frame '", new_name,
+         "' is now available in your R environment."
+       )
+     )
+     
   
   return(df_cons)
 }

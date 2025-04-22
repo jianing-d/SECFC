@@ -185,7 +185,13 @@ calc_transport_emissions_process <- function(df) {
   
   # assign new df_transport_process to the user’s workspace
   assign(new_name, df_transport_process, envir = parent.frame())
-  message("Created new data frame: ", new_name)
+  message(
+    paste0(
+      "✅ A new data frame '", new_name,
+      "' is now available in your R environment."
+    )
+  )
+  
   
   return(df_transport_process)
 }

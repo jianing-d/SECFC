@@ -77,7 +77,13 @@ calc_food_emissions_process <- function(df) {
   
   # assign new df_food_process to the user’s workspace
   assign(new_name, df_food_process, envir = parent.frame())
-  message("Created new data frame: ", new_name)
+  message(
+    paste0(
+      "✅ A new data frame '", new_name,
+      "' is now available in your R environment."
+    )
+  )
+  
   
   return(df_food_process)
 }

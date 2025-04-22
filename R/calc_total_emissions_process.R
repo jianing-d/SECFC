@@ -59,11 +59,11 @@ calc_total_emissions_process <- function(df) {
   new_name      <- paste0(original_name, "_total_process")
   
   df_total_process <- df
-  df_total_process <- calc_cons_emissions_process(df_total_process)
-  df_total_process <- calc_food_emissions_process(df_total_process)
-  df_total_process <- calc_housing_emissions_process(df_total_process)
-  df_total_process <- calc_pet_emissions_process(df_total_process)
-  df_total_process <- calc_transport_emissions_process(df_total_process)
+  df_total_process <- suppressMessages(calc_cons_emissions_process(df_total_process))
+  df_total_process <- suppressMessages(calc_food_emissions_process(df_total_process))
+  df_total_process <- suppressMessages(calc_housing_emissions_process(df_total_process))
+  df_total_process <- suppressMessages(calc_pet_emissions_process(df_total_process))
+  df_total_process <- suppressMessages(calc_transport_emissions_process(df_total_process))
   # Get country-specific emission factors
   emission_factors_total <- get_total_emission_factors(unique(df_total_process$SD_07_Country))
   
@@ -116,7 +116,13 @@ calc_total_emissions_process <- function(df) {
   
   # assign new df_total_process to the user’s workspace
   assign(new_name, df_total_process, envir = parent.frame())
-  message("Created new data frame: ", new_name)
+  message(
+    paste0(
+      "✅ A new data frame '", new_name,
+      "' is now available in your R environment."
+    )
+  )
+  
   
   return(df_total_process)
 }
