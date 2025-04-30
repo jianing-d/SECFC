@@ -70,28 +70,41 @@ SECFC contains twelve main functions, divided into two groups:
 
 ### ➤ Simple Output Functions
 
-These functions calculate total emissions by domain and append one new
-column to the dataset: - `calc_cons_emissions()`: consumption-related
-emissions - `calc_food_emissions()`: food-related emissions -
-`calc_housing_emissions()`: housing-related emissions -
-`calc_pet_emissions()`: pet-related emissions -
-`calc_transport_emissions()`: transport-related emissions -
-`calc_total_emissions()`: total emissions across all domains
+These functions calculate total emissions by domain and produce a new data frame in your R environment named by appending a suffix to the input object’s name: 
 
-Each function: - Takes a data frame as input - Appends a new column with
-calculated emissions - Returns the updated data frame and prints results
+- `calc_cons_emissions()`: consumption-related emissions 
+- `calc_food_emissions()`: food-related emissions 
+- `calc_housing_emissions()`: housing-related emissions 
+- `calc_pet_emissions()`: pet-related emissions 
+- `calc_transport_emissions()`: transport-related emissions 
+- `calc_total_emissions()`: total emissions across all domains
+
+Each function:
+
+1. Accepts a data frame (e.g. data) as input.
+2. Computes the specified emissions.
+3. Assigns the result to a new object in your workspace (e.g. data_cons, data_food, etc.).
+4. Prints a confirmation message, for example:
+When you call the function calc_cons_emissions(data), it will print:
+✅ A new data frame 'data_cons' is now available in your R environment.
 
 ### ➤ Process-Level Functions
 
-These functions provide detailed emissions breakdowns, appending
-multiple columns with intermediate steps: -
-`calc_cons_emissions_process()` - `calc_food_emissions_process()` -
-`calc_housing_emissions_process()` - `calc_pet_emissions_process()` -
-`calc_transport_emissions_process()` - `calc_total_emissions_process()`
+These functions provide detailed emissions breakdowns, producing a new data frame in your R environment by appending a suffix to the input name: 
 
-Each function: - Adds multiple columns explaining the step-by-step
-calculation - Enhances transparency for research and teaching purposes -
-Also returns and prints the final emission result
+- `calc_cons_emissions_process()`
+- `calc_food_emissions_process()` 
+- `calc_housing_emissions_process()` 
+- `calc_pet_emissions_process()` 
+- `calc_transport_emissions_process()` 
+- `calc_total_emissions_process()`
+
+Each function:
+
+1. Takes a data frame as input.
+2. Appends multiple columns showing intermediate calculation steps.
+3. Returns the detailed data frame.
+4. Prints a confirmation message.
 
 ### Example Usage
 
@@ -106,22 +119,22 @@ library(SECFC)
 df <- readRDS("questionnaire_sample.rds")
 
 # Step 3: Calculate carbon emissions by domain
-cons <- calc_cons_emissions(df)       # Adds consumption emissions
-food <- calc_food_emissions(df)       # Adds food emissions
-housing <- calc_housing_emissions(df)    # Adds housing emissions
-pet <- calc_pet_emissions(df)        # Adds pet emissions
-transport <- calc_transport_emissions(df)  # Adds transport emissions
+calc_cons_emissions(df)       # Calculates consumption emissions
+calc_food_emissions(df)       # Calculates food emissions
+calc_housing_emissions(df)    # Calculates housing emissions
+calc_pet_emissions(df)        # Calculates pet emissions
+calc_transport_emissions(df)  # Calculates transport emissions
 
 # Step 4: Calculate total carbon footprint
-total <- calc_total_emissions(df)
+calc_total_emissions(df)
 
 # Optional: Use process-level functions to view detailed steps
-cons_process <- calc_cons_emissions_process(df)
-food_process <- calc_food_emissions_process(df)
-housing_process <- calc_housing_emissions_process(df)
-pet_process <- calc_pet_emissions_process(df)
-transport_process <- calc_transport_emissions_process(df)
-total_process <- calc_total_emissions_process(df)
+calc_cons_emissions_process(df)
+calc_food_emissions_process(df)
+calc_housing_emissions_process(df)
+calc_pet_emissions_process(df)
+calc_transport_emissions_process(df)
+calc_total_emissions_process(df)
 ```
 
 

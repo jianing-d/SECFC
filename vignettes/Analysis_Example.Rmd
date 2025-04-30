@@ -35,12 +35,12 @@ First, we need to install the package from GitHub. If you do not have `remotes` 
 remotes::install_github("jianing-d/SECFC")
 ```
 
+## Step 2: Load the package
+Load the SECFC package, which provides the ```calc_total_emissions()``` function among others.
+
 ```{r warning=FALSE, message=FALSE}
 library(SECFC)
 ```
-
-## Step 2: Load the package
-Load the SECFC package, which provides the ```calc_total_emissions()``` function among others.
 
 ## Step 3: Load your dataset
 For demonstration, we assume you are use questionnaire_sample.rds that contains survey responses (provided and pre-loaded in our package). 
@@ -54,20 +54,20 @@ str(questionnaire_example)
 ```
 
 ## Step 4: Calculate total carbon emissions
-Now we use the ```calc_total_emissions()``` function from SECFC to estimate each respondent’s carbon footprint based on their survey responses. The returned data frame will include a new column called TotalEmissions.
+Now we use the ```calc_total_emissions()``` function from SECFC to estimate each respondent’s carbon footprint based on their survey responses. A new data frame, questionnaire_example_total, is now available in your R environment. It has several new variables, including TotalEmissions, the individual respondent's overall estimated footprint.
 
 ```{r warning=FALSE, message=FALSE}
-carbon_total <- calc_total_emissions(questionnaire_example)
+calc_total_emissions(questionnaire_example)
 
 # Check the first few rows
-head(carbon_total)
+head(questionnaire_example_total)
 ```
 
 ## Step 5: Run a linear regression
 We will examine how a respondent’s income might predict their total carbon emissions. This is a basic linear model using the built-in ```lm()``` function.
 
 ```{r warning=FALSE, message=FALSE}
-model <- lm(TotalEmissions ~ income, data = carbon_total)
+model <- lm(TotalEmissions ~ income, data = questionnaire_example_total)
 
 # Display summary statistics of the regression
 summary(model)
@@ -87,7 +87,7 @@ library(ggplot2)
 point_color <- "#4A6D8C"  # desaturated blue-grey for points
 line_color  <- "#2C3E50"  # deeper blue-grey for the regression line
 
-lm_plot <- ggplot(carbon_total, aes(x = income, y = TotalEmissions)) +
+lm_plot <- ggplot(questionnaire_example_total, aes(x = income, y = TotalEmissions)) +
   geom_point(color = point_color, size = 2.8, alpha = 0.8) +
   geom_smooth(method = "lm", se = TRUE, color = line_color, linewidth = 1.2) +
   labs(

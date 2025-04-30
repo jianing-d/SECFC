@@ -65,56 +65,56 @@ Now you're ready to calculate emissions. Choose the functions depending on wheth
 #### 🛒Consumption Emissions 
 Calculate the carbon footprint from general consumption.
 ```{r}
-cons <- calc_cons_emissions(data)
+calc_cons_emissions(data)
 ```
 With process details:
 ```{r}
-cons_process <- calc_cons_emissions_process(data)
+calc_cons_emissions_process(data)
 ```
 #### 🍽 Food Emissions ️
 Calculate the carbon footprint from food consumption.
 ```{r}
-food <- calc_food_emissions(data)
+calc_food_emissions(data)
 ```
 With process details:
 ```{r}
-food_process <- calc_food_emissions_process(data)
+calc_food_emissions_process(data)
 ```
 #### 🏠 Housing Emissions 
 Calculate the carbon footprint from housing energy use.
 ```{r}
-housing <- calc_housing_emissions(data)
+calc_housing_emissions(data)
 ```
 With process details:
 ```{r}
-housing_process <- calc_housing_emissions_process(data)
+calc_housing_emissions_process(data)
 ```
 #### 🐶 Pet Emissions 
 Calculate the carbon footprint from pet ownership.
 ```{r}
-pet <- calc_pet_emissions(data)
+calc_pet_emissions(data)
 ```
 With process details:
 ```{r}
-pet_process <- calc_pet_emissions_process(data)
+calc_pet_emissions_process(data)
 ```
 #### 🚗 Transport Emissions 
 Calculate the carbon footprint from daily and long-distance transportation.
 ```{r}
-transport <- calc_transport_emissions(data)
+calc_transport_emissions(data)
 ```
 With process details:
 ```{r}
-transport_process <- calc_transport_emissions_process(data)
+calc_transport_emissions_process(data)
 ```
 #### 🌍 Total Emissions 
 Calculate the total carbon footprint across all domains.
 ```{r}
-total <- calc_total_emissions(data)
+calc_total_emissions(data)
 ```
 With process details:
 ```{r}
-total_process <- calc_total_emissions_process(data)
+calc_total_emissions_process(data)
 ```
 
 
