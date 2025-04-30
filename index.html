@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>The Survey-Embedded Carbon Footprint Calculator (SECFC) • SECFC</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -19,7 +18,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="The Survey-Embedded Carbon Footprint Calculator (SECFC)">
 <meta name="description" content="SECFC is a transparent and open-source R package designed for survey-embedded carbon footprint calculation.It provides a standardized approach for estimating carbon emissions based on survey responses, focusing on environmental psychology applications.">
 <meta property="og:description" content="SECFC is a transparent and open-source R package designed for survey-embedded carbon footprint calculation.It provides a standardized approach for estimating carbon emissions based on survey responses, focusing on environmental psychology applications.">
-<meta property="og:image" content="https://jianing-d.github.io/SECFC/logo.png">
+<meta property="og:image" content="/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -29,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">SECFC</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,14 +99,48 @@ Shiny App Available
 <div class="section level3">
 <h3 id="id_-simple-output-functions">➤ Simple Output Functions<a class="anchor" aria-label="anchor" href="#id_-simple-output-functions"></a>
 </h3>
-<p>These functions calculate total emissions by domain and append one new column to the dataset: - <code><a href="reference/calc_cons_emissions.html">calc_cons_emissions()</a></code>: consumption-related emissions - <code><a href="reference/calc_food_emissions.html">calc_food_emissions()</a></code>: food-related emissions - <code><a href="reference/calc_housing_emissions.html">calc_housing_emissions()</a></code>: housing-related emissions - <code><a href="reference/calc_pet_emissions.html">calc_pet_emissions()</a></code>: pet-related emissions - <code><a href="reference/calc_transport_emissions.html">calc_transport_emissions()</a></code>: transport-related emissions - <code><a href="reference/calc_total_emissions.html">calc_total_emissions()</a></code>: total emissions across all domains</p>
-<p>Each function: - Takes a data frame as input - Appends a new column with calculated emissions - Returns the updated data frame and prints results</p>
+<p>These functions calculate total emissions by domain and produce a new data frame in your R environment named by appending a suffix to the input object’s name:</p>
+<ul>
+<li>
+<code><a href="reference/calc_cons_emissions.html">calc_cons_emissions()</a></code>: consumption-related emissions</li>
+<li>
+<code><a href="reference/calc_food_emissions.html">calc_food_emissions()</a></code>: food-related emissions</li>
+<li>
+<code><a href="reference/calc_housing_emissions.html">calc_housing_emissions()</a></code>: housing-related emissions</li>
+<li>
+<code><a href="reference/calc_pet_emissions.html">calc_pet_emissions()</a></code>: pet-related emissions</li>
+<li>
+<code><a href="reference/calc_transport_emissions.html">calc_transport_emissions()</a></code>: transport-related emissions</li>
+<li>
+<code><a href="reference/calc_total_emissions.html">calc_total_emissions()</a></code>: total emissions across all domains</li>
+</ul>
+<p>Each function:</p>
+<ol style="list-style-type: decimal">
+<li>Accepts a data frame (e.g. data) as input.</li>
+<li>Computes the specified emissions.</li>
+<li>Assigns the result to a new object in your workspace (e.g. data_cons, data_food, etc.).</li>
+<li>Prints a confirmation message, for example: When you call the function calc_cons_emissions(data), it will print: ✅ A new data frame ‘data_cons’ is now available in your R environment.</li>
+</ol>
 </div>
 <div class="section level3">
 <h3 id="id_-process-level-functions">➤ Process-Level Functions<a class="anchor" aria-label="anchor" href="#id_-process-level-functions"></a>
 </h3>
-<p>These functions provide detailed emissions breakdowns, appending multiple columns with intermediate steps: - <code><a href="reference/calc_cons_emissions_process.html">calc_cons_emissions_process()</a></code> - <code><a href="reference/calc_food_emissions_process.html">calc_food_emissions_process()</a></code> - <code><a href="reference/calc_housing_emissions_process.html">calc_housing_emissions_process()</a></code> - <code><a href="reference/calc_pet_emissions_process.html">calc_pet_emissions_process()</a></code> - <code><a href="reference/calc_transport_emissions_process.html">calc_transport_emissions_process()</a></code> - <code><a href="reference/calc_total_emissions_process.html">calc_total_emissions_process()</a></code></p>
-<p>Each function: - Adds multiple columns explaining the step-by-step calculation - Enhances transparency for research and teaching purposes - Also returns and prints the final emission result</p>
+<p>These functions provide detailed emissions breakdowns, producing a new data frame in your R environment by appending a suffix to the input name:</p>
+<ul>
+<li><code><a href="reference/calc_cons_emissions_process.html">calc_cons_emissions_process()</a></code></li>
+<li><code><a href="reference/calc_food_emissions_process.html">calc_food_emissions_process()</a></code></li>
+<li><code><a href="reference/calc_housing_emissions_process.html">calc_housing_emissions_process()</a></code></li>
+<li><code><a href="reference/calc_pet_emissions_process.html">calc_pet_emissions_process()</a></code></li>
+<li><code><a href="reference/calc_transport_emissions_process.html">calc_transport_emissions_process()</a></code></li>
+<li><code><a href="reference/calc_total_emissions_process.html">calc_total_emissions_process()</a></code></li>
+</ul>
+<p>Each function:</p>
+<ol style="list-style-type: decimal">
+<li>Takes a data frame as input.</li>
+<li>Appends multiple columns showing intermediate calculation steps.</li>
+<li>Returns the detailed data frame.</li>
+<li>Prints a confirmation message.</li>
+</ol>
 </div>
 <div class="section level3">
 <h3 id="example-usage">Example Usage<a class="anchor" aria-label="anchor" href="#example-usage"></a>
@@ -115,29 +148,29 @@ Shiny App Available
 <p>Here’s a simple example of how to use the <strong>SECFC</strong> package in practice:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Step 1: Load the package</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jianing-d.github.io/SECFC/">SECFC</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jianing-d.github.io/SECFC/" class="external-link">SECFC</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Step 2: Load your dataset</span></span>
 <span><span class="co"># Example: use "questionnaire_sample.rds"</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"questionnaire_sample.rds"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Step 3: Calculate carbon emissions by domain</span></span>
-<span><span class="va">cons</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_cons_emissions.html">calc_cons_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>       <span class="co"># Adds consumption emissions</span></span>
-<span><span class="va">food</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_food_emissions.html">calc_food_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>       <span class="co"># Adds food emissions</span></span>
-<span><span class="va">housing</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_housing_emissions.html">calc_housing_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>    <span class="co"># Adds housing emissions</span></span>
-<span><span class="va">pet</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_pet_emissions.html">calc_pet_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>        <span class="co"># Adds pet emissions</span></span>
-<span><span class="va">transport</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_transport_emissions.html">calc_transport_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>  <span class="co"># Adds transport emissions</span></span>
+<span><span class="fu"><a href="reference/calc_cons_emissions.html">calc_cons_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>       <span class="co"># Calculates consumption emissions</span></span>
+<span><span class="fu"><a href="reference/calc_food_emissions.html">calc_food_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>       <span class="co"># Calculates food emissions</span></span>
+<span><span class="fu"><a href="reference/calc_housing_emissions.html">calc_housing_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>    <span class="co"># Calculates housing emissions</span></span>
+<span><span class="fu"><a href="reference/calc_pet_emissions.html">calc_pet_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>        <span class="co"># Calculates pet emissions</span></span>
+<span><span class="fu"><a href="reference/calc_transport_emissions.html">calc_transport_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>  <span class="co"># Calculates transport emissions</span></span>
 <span></span>
 <span><span class="co"># Step 4: Calculate total carbon footprint</span></span>
-<span><span class="va">total</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_total_emissions.html">calc_total_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/calc_total_emissions.html">calc_total_emissions</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Optional: Use process-level functions to view detailed steps</span></span>
-<span><span class="va">cons_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_cons_emissions_process.html">calc_cons_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span><span class="va">food_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_food_emissions_process.html">calc_food_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span><span class="va">housing_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_housing_emissions_process.html">calc_housing_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span><span class="va">pet_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_pet_emissions_process.html">calc_pet_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span><span class="va">transport_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_transport_emissions_process.html">calc_transport_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span><span class="va">total_process</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_total_emissions_process.html">calc_total_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/calc_cons_emissions_process.html">calc_cons_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/calc_food_emissions_process.html">calc_food_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/calc_housing_emissions_process.html">calc_housing_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/calc_pet_emissions_process.html">calc_pet_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/calc_transport_emissions_process.html">calc_transport_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/calc_total_emissions_process.html">calc_total_emissions_process</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -176,11 +209,11 @@ Shiny App Available
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Jianing Ding <br><small class="roles"> Author, maintainer </small>  </li>
-<li>Ziqian Xia <br><small class="roles"> Author </small>  </li>
-<li>Jinliang Xie <br><small class="roles"> Author </small>  </li>
-<li>Ka Leung Lam <br><small class="roles"> Author </small>  </li>
-<li>Nathaniel Geiger <br><small class="roles"> Author </small>  </li>
+<li>Jianing Ding <br><small class="roles"> Author, maintainer </small>   </li>
+<li>Ziqian Xia <br><small class="roles"> Author </small>   </li>
+<li>Jinliang Xie <br><small class="roles"> Author </small>   </li>
+<li>Ka Leung Lam <br><small class="roles"> Author </small>   </li>
+<li>Nathaniel Geiger <br><small class="roles"> Author </small>   </li>
 <li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
@@ -196,7 +229,7 @@ Shiny App Available
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer>

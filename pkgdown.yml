@@ -1,11 +1,8 @@
 pandoc: 3.1.11
-pkgdown: 2.1.1
+pkgdown: 2.1.2
 pkgdown_sha: ~
 articles:
   Analysis_Example: Analysis_Example.html
   articles/Get-Started: Get-Started.html
   articles/Survey-Template: Survey-Template.html
-last_built: 2025-04-22T16:41Z
-urls:
-  reference: https://jianing-d.github.io/SECFC/reference
-  article: https://jianing-d.github.io/SECFC/articles
+last_built: 2025-04-30T15:13Z
