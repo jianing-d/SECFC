@@ -21,6 +21,11 @@ housing, transport, and pets.
 SECFC is particularly suitable for academic studies requiring
 reproducibility, transparency, and process-level emissions output.
 
+<img
+  src="https://github.com/jianing-d/SECFC/blob/main/source-files/image0503.png?raw=true"
+  style="display: block; margin: 0 auto; width: 50%; height: auto;"
+/>
+
 ## Shiny APP
 
 <div style="text-align: center; background-color: #f5f5f5; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin: 20px auto; max-width: 500px;">
