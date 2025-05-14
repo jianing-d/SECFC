@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-Download the .qsf (Qualtrics Survey File) template [here](https://drive.google.com/file/d/1Bw9mby8KJGncy9JIeQdNeY-4dk4yeje7/view?usp=drive_link)
+Download the .qsf (Qualtrics Survey File) template [here](https://drive.google.com/file/d/1oiXEd9qKTaQ9hvbEOAN9M3sKqSwsiWMq/view?usp=sharing)
 
 ### Survey Template
 
@@ -43,6 +43,7 @@ Below is a list of key columns expected by SECFC, along with their corresponding
 | EH_03_ElectricityBil_1        | Annual electricity bill (USD)                                               |
 | EH_05_NaturalGasBill_1        | Monthly natural gas bill (USD)                                              |
 | EH_06_NaturalGasBill_1        | Annual natural gas bill (USD)                                               |
+| EH_07_WaterBill               | Monthly water bill (USD)                                                    |
 | PETS_4                        | Number of cats owned                                                        |
 | PETS_5                        | Number of dogs owned                                                        |
 | SD_06_HouseholdSize_17        | Number of adults in household                                               |
