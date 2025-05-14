@@ -7,7 +7,7 @@ housing_emission_factors <- tibble::tibble(
   FactorName = c("WaterCFC", "NaturalGas", "Electricity_US_ASCC", "Electricity_US_HICC", "Electricity_US_MRO", "Electricity_US_NPCC","Electricity_US_RFC", "Electricity_US_SERC", "Electricity_TRE", "Electricity_WECC",
                  "WaterCFC", "NaturalGas", "Electricity_China_Group1", "Electricity_China_Group2", "Electricity_China_Group3",
                  "WaterCFC", "NaturalGas", "Electricity_EU_Group1", "Electricity_EU_Group2", "Electricity_EU_Group3"),
-  Value = c(26.5, 0.573511218, 0.608418285, 0.823151786, 0.543851789, 0.273336294, 0.5399024,0.532591155,0.461607295,0.376463424,
+  Value = c(0.84, 0.573511218, 0.608418285, 0.823151786, 0.543851789, 0.273336294, 0.5399024,0.532591155,0.461607295,0.376463424,
             NA, NA, NA, NA, NA,  
             NA, NA, NA, NA, NA)
 )
@@ -54,97 +54,97 @@ library(tidyverse)
 #' @importFrom tibble tibble
 #' @param country A character string representing the country.
 #' @return A list of housing emission factors.
-  get_housing_emission_factors <- function(country) {
-    # Normalize empty/missing to "United States"
-    lookup_country <- if (is.na(country) || country == "") "United States" else country
+get_housing_emission_factors <- function(country) {
+  # Normalize empty/missing to "United States"
+  lookup_country <- if (is.na(country) || country == "") "United States" else country
+  
+  # United States: use existing dataset + defaults
+  if (lookup_country == "United States") {
+    if (!exists("housing_emission_factors", where = globalenv())) {
+      stop("Error: housing_emission_factors dataset not found.")
+    }
+    factors <- housing_emission_factors %>% filter(Country == "United States")
     
-    # United States: use existing dataset + defaults
-    if (lookup_country == "United States") {
-      if (!exists("housing_emission_factors", where = globalenv())) {
-        stop("Error: housing_emission_factors dataset not found.")
-      }
-      factors <- housing_emission_factors %>% filter(Country == "United States")
-      
-      defaults <- list(
-        WaterCFC   = 26.5,
-        NaturalGas = 0.573511218,
-        Electricity = list(
-          US_ASCC = 0.608418285, US_HICC = 0.823151786,
-          US_MRO  = 0.543851789, US_NPCC = 0.273336294,
-          US_RFC  = 0.5399024,   US_SERC = 0.532591155,
-          US_TRE  = 0.461607295, US_WECC = 0.376463424
-        )
+    defaults <- list(
+      WaterCFC   = 0.84,
+      NaturalGas = 0.573511218,
+      Electricity = list(
+        US_ASCC = 0.608418285, US_HICC = 0.823151786,
+        US_MRO  = 0.543851789, US_NPCC = 0.273336294,
+        US_RFC  = 0.5399024,   US_SERC = 0.532591155,
+        US_TRE  = 0.461607295, US_WECC = 0.376463424
       )
-      
-      return(list(
-        WaterCFC   = ifelse(any(factors$FactorName=="WaterCFC"),
-                            factors$Value[factors$FactorName=="WaterCFC"],
-                            defaults$WaterCFC),
-        NaturalGas = ifelse(any(factors$FactorName=="NaturalGas"),
-                            factors$Value[factors$FactorName=="NaturalGas"],
-                            defaults$NaturalGas),
-        Electricity = list(
-          US_ASCC = ifelse(any(factors$FactorName=="Electricity_US_ASCC"),
-                           factors$Value[factors$FactorName=="Electricity_US_ASCC"],
-                           defaults$Electricity$US_ASCC),
-          US_HICC = ifelse(any(factors$FactorName=="Electricity_US_HICC"),
-                           factors$Value[factors$FactorName=="Electricity_US_HICC"],
-                           defaults$Electricity$US_HICC),
-          US_MRO  = ifelse(any(factors$FactorName=="Electricity_US_MRO"),
-                           factors$Value[factors$FactorName=="Electricity_US_MRO"],
-                           defaults$Electricity$US_MRO),
-          US_NPCC = ifelse(any(factors$FactorName=="Electricity_US_NPCC"),
-                           factors$Value[factors$FactorName=="Electricity_US_NPCC"],
-                           defaults$Electricity$US_NPCC),
-          US_RFC  = ifelse(any(factors$FactorName=="Electricity_US_RFC"),
-                           factors$Value[factors$FactorName=="Electricity_US_RFC"],
-                           defaults$Electricity$US_RFC),
-          US_SERC = ifelse(any(factors$FactorName=="Electricity_US_SERC"),
-                           factors$Value[factors$FactorName=="Electricity_US_SERC"],
-                           defaults$Electricity$US_SERC),
-          US_TRE  = ifelse(any(factors$FactorName=="Electricity_US_TRE"),
-                           factors$Value[factors$FactorName=="Electricity_US_TRE"],
-                           defaults$Electricity$US_TRE),
-          US_WECC = ifelse(any(factors$FactorName=="Electricity_US_WECC"),
-                           factors$Value[factors$FactorName=="Electricity_US_WECC"],
-                           defaults$Electricity$US_WECC)
-        )
-      ))
-    }
+    )
     
-    # China: all NA, but keep structure
-    if (lookup_country == "China") {
-      return(list(
-        WaterCFC   = NA,
-        NaturalGas = NA,
-        Electricity = list(
-          Electricity_China_Group1 = NA,
-          Electricity_China_Group2 = NA,
-          Electricity_China_Group3 = NA
-        )
-      ))
-    }
-    
-    # European Union: all NA, but keep structure
-    if (lookup_country == "European Union") {
-      return(list(
-        WaterCFC   = NA,
-        NaturalGas = NA,
-        Electricity = list(
-          Electricity_EU_Group1 = NA,
-          Electricity_EU_Group2 = NA,
-          Electricity_EU_Group3 = NA
-        )
-      ))
-    }
-    
-    # Other (not US, China, EU): everything NA
+    return(list(
+      WaterCFC   = ifelse(any(factors$FactorName=="WaterCFC"),
+                          factors$Value[factors$FactorName=="WaterCFC"],
+                          defaults$WaterCFC),
+      NaturalGas = ifelse(any(factors$FactorName=="NaturalGas"),
+                          factors$Value[factors$FactorName=="NaturalGas"],
+                          defaults$NaturalGas),
+      Electricity = list(
+        US_ASCC = ifelse(any(factors$FactorName=="Electricity_US_ASCC"),
+                         factors$Value[factors$FactorName=="Electricity_US_ASCC"],
+                         defaults$Electricity$US_ASCC),
+        US_HICC = ifelse(any(factors$FactorName=="Electricity_US_HICC"),
+                         factors$Value[factors$FactorName=="Electricity_US_HICC"],
+                         defaults$Electricity$US_HICC),
+        US_MRO  = ifelse(any(factors$FactorName=="Electricity_US_MRO"),
+                         factors$Value[factors$FactorName=="Electricity_US_MRO"],
+                         defaults$Electricity$US_MRO),
+        US_NPCC = ifelse(any(factors$FactorName=="Electricity_US_NPCC"),
+                         factors$Value[factors$FactorName=="Electricity_US_NPCC"],
+                         defaults$Electricity$US_NPCC),
+        US_RFC  = ifelse(any(factors$FactorName=="Electricity_US_RFC"),
+                         factors$Value[factors$FactorName=="Electricity_US_RFC"],
+                         defaults$Electricity$US_RFC),
+        US_SERC = ifelse(any(factors$FactorName=="Electricity_US_SERC"),
+                         factors$Value[factors$FactorName=="Electricity_US_SERC"],
+                         defaults$Electricity$US_SERC),
+        US_TRE  = ifelse(any(factors$FactorName=="Electricity_US_TRE"),
+                         factors$Value[factors$FactorName=="Electricity_US_TRE"],
+                         defaults$Electricity$US_TRE),
+        US_WECC = ifelse(any(factors$FactorName=="Electricity_US_WECC"),
+                         factors$Value[factors$FactorName=="Electricity_US_WECC"],
+                         defaults$Electricity$US_WECC)
+      )
+    ))
+  }
+  
+  # China: all NA, but keep structure
+  if (lookup_country == "China") {
     return(list(
       WaterCFC   = NA,
       NaturalGas = NA,
-      Electricity = NA
+      Electricity = list(
+        Electricity_China_Group1 = NA,
+        Electricity_China_Group2 = NA,
+        Electricity_China_Group3 = NA
+      )
     ))
   }
+  
+  # European Union: all NA, but keep structure
+  if (lookup_country == "European Union") {
+    return(list(
+      WaterCFC   = NA,
+      NaturalGas = NA,
+      Electricity = list(
+        Electricity_EU_Group1 = NA,
+        Electricity_EU_Group2 = NA,
+        Electricity_EU_Group3 = NA
+      )
+    ))
+  }
+  
+  # Other (not US, China, EU): everything NA
+  return(list(
+    WaterCFC   = NA,
+    NaturalGas = NA,
+    Electricity = NA
+  ))
+}
 
 
 #' Calculate Housing Emissions
@@ -235,11 +235,19 @@ calc_housing_emissions <- function(df) {
       EH_03_ElectricityBil_1 = as.numeric(EH_03_ElectricityBil_1),
       EH_05_NaturalGasBill_1 = as.numeric(EH_05_NaturalGasBill_1),
       EH_06_NaturalGasBill_1= as.numeric(EH_06_NaturalGasBill_1),
+      EH_07_WaterBill = as.numeric(EH_07_WaterBill),
+      SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = as.numeric(SD_06_HouseholdSize_19),
       
       EH_02_ElectricityBil_1 = ifelse(is.na(EH_02_ElectricityBil_1), 0, EH_02_ElectricityBil_1),
       EH_03_ElectricityBil_1 = ifelse(is.na(EH_03_ElectricityBil_1), 0, EH_03_ElectricityBil_1),
       EH_05_NaturalGasBill_1 = ifelse(is.na(EH_05_NaturalGasBill_1), 0, EH_05_NaturalGasBill_1),
-      EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1)
+      EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1),
+      EH_07_WaterBill = ifelse(is.na(EH_07_WaterBill), 0, EH_07_WaterBill),
+      SD_06_HouseholdSize_17 = ifelse(is.na(SD_06_HouseholdSize_17), 0, SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = ifelse(is.na(SD_06_HouseholdSize_18), 0, SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = ifelse(is.na(SD_06_HouseholdSize_19), 0, SD_06_HouseholdSize_19)
     )
   
   # Define electricity prices by state (in cents per kWh)
@@ -265,28 +273,37 @@ calc_housing_emissions <- function(df) {
                                      (EH_02_ElectricityBil_1 * 100) / electricity_price,
                                      0),
       natural_gas_usage_m3 = EH_05_NaturalGasBill_1 / 0.353147, # Assuming $0.353147 per 1.0 m3 for simplicity
+      # 1) USD per m³ of water
+      price_per_m3 = 6.64 / (1000 * 0.00378541),
       
+      # 2) m³ used per month
+      water_m3_month = ifelse(price_per_m3 > 0,
+                              EH_07_WaterBill / price_per_m3,
+                              0),
+      HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
+      HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize),
       ElectricityEmissions = electricity_usage_kWh * 12 * electricity_emission_factor,
       NaturalGasEmissions = natural_gas_usage_m3 * 12 * emission_factors_housing$NaturalGas,
-      WaterEmissions = emission_factors_housing$WaterCFC,
+      WaterEmissions = water_m3_month * emission_factors_housing$WaterCFC*12,
       
       # Total housing emissions
-      HousingEmissions = ElectricityEmissions + NaturalGasEmissions + WaterEmissions
+      HousingEmissions_household = ElectricityEmissions + NaturalGasEmissions + WaterEmissions,
+      HousingEmissions=HousingEmissions_household/HouseholdSize
     )
   
-    df_housing <- df_housing %>% 
-    select(-state,-region,-electricity_emission_factor,-electricity_usage_kWh,-natural_gas_usage_m3,-ElectricityEmissions,-NaturalGasEmissions,-WaterEmissions,-electricity_price)
-    
-    # assign new df_housing to the user’s workspace
-    assign(new_name, df_housing, envir = parent.frame())
-    message(
-      paste0(
-        "✅ A new data frame '", new_name,
-        "' is now available in your R environment."
-      )
+  df_housing <- df_housing %>% 
+    select(-state,-region,-electricity_emission_factor,-electricity_usage_kWh,-price_per_m3,-natural_gas_usage_m3,-water_m3_month,-HouseholdSize,-ElectricityEmissions,-NaturalGasEmissions,-WaterEmissions,-electricity_price,-HousingEmissions_household)
+  
+  # assign new df_housing to the user’s workspace
+  assign(new_name, df_housing, envir = parent.frame())
+  message(
+    paste0(
+      "✅ A new data frame '", new_name,
+      "' is now available in your R environment."
     )
-    
-    
+  )
+  
+  
   
   return(df_housing)
 }
