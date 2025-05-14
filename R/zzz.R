@@ -33,8 +33,8 @@
     
     # Housing Emissions
     "EH_02_ElectricityBil_1", "EH_03_ElectricityBil_1", 
-    "EH_05_NaturalGasBill_1", "EH_06_NaturalGasBill_1", 
-    "ElectricityEmissions", "NaturalGasEmissions",
+    "EH_05_NaturalGasBill_1", "EH_06_NaturalGasBill_1", "EH_07_WaterBill",
+    "ElectricityEmissions", "NaturalGasEmissions","WaterEmissions",
     
     # Pet Emissions
     "PETS_4", "PETS_5",
