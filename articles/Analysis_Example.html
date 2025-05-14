@@ -93,7 +93,10 @@ carbon emissions.</li>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install the SECFC package from GitHub</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"jianing-d/SECFC"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; * checking for file ‘/tmp/RtmpzDQtSz/remotes1e072095b950/jianing-d-SECFC-a0f5f1c/DESCRIPTION’ ... OK</span></span>
+<span><span class="co">#&gt; cpp11       (NA -&gt; 0.5.2) [CRAN]</span></span>
+<span><span class="co">#&gt; prettyunits (NA -&gt; 1.2.0) [CRAN]</span></span>
+<span><span class="co">#&gt; progress    (NA -&gt; 1.2.3) [CRAN]</span></span>
+<span><span class="co">#&gt; * checking for file ‘/tmp/Rtmp4UkYuI/remotes1f8f6c2dcbc4/jianing-d-SECFC-482ff8c/DESCRIPTION’ ... OK</span></span>
 <span><span class="co">#&gt; * preparing ‘SECFC’:</span></span>
 <span><span class="co">#&gt; * checking DESCRIPTION meta-information ... OK</span></span>
 <span><span class="co">#&gt; * checking for LF line-endings in source and make files and shell scripts</span></span>
@@ -120,7 +123,7 @@ package).</p>
 <span></span>
 <span><span class="co"># Take a quick look at your data structure</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">questionnaire_example</span><span class="op">)</span></span>
-<span><span class="co">#&gt; tibble [50 × 34] (S3: tbl_df/tbl/data.frame)</span></span>
+<span><span class="co">#&gt; tibble [50 × 35] (S3: tbl_df/tbl/data.frame)</span></span>
 <span><span class="co">#&gt;  $ RecordedDate          : chr [1:50] "30/6/2024 22:38" "30/6/2024 22:39" "30/6/2024 22:40" "30/6/2024 22:40" ...</span></span>
 <span><span class="co">#&gt;  $ T_01_CarUsage         : num [1:50] 4 3 3 4 5 4 5 4 3 3 ...</span></span>
 <span><span class="co">#&gt;  $ T_02_CarType          : num [1:50] 3 3 2 3 3 3 3 3 2 3 ...</span></span>
@@ -135,6 +138,7 @@ package).</p>
 <span><span class="co">#&gt;  $ E1_Electricity Usage  : num [1:50] 2 2 2 1 1 1 1 4 1 1 ...</span></span>
 <span><span class="co">#&gt;  $ EH_02_ElectricityBil_1: num [1:50] 300 79 153 73 107 181 80 130 132 27 ...</span></span>
 <span><span class="co">#&gt;  $ EH_05_NaturalGasBill_1: num [1:50] 59 46 0 27 47 20 0 80 0 27 ...</span></span>
+<span><span class="co">#&gt;  $ EH_07_WaterBill       : num [1:50] 119 0 35 0 17 25 40 0 80 150 ...</span></span>
 <span><span class="co">#&gt;  $ F_01_DietaryHabits_5  : num [1:50] 12 8 6 9 10 1 7 8 13 8 ...</span></span>
 <span><span class="co">#&gt;  $ F_01_DietaryHabits_6  : num [1:50] 0 0 2 0 4 0 0 0 1 1 ...</span></span>
 <span><span class="co">#&gt;  $ F_01_DietaryHabits_7  : num [1:50] 0 2 0 1 4 0 5 0 5 2 ...</span></span>
@@ -167,7 +171,7 @@ TotalEmissions, the individual respondent’s overall estimated
 footprint.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_total_emissions.html">calc_total_emissions</a></span><span class="op">(</span><span class="va">questionnaire_example</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 50 × 40</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 50 × 41</span></span></span>
 <span><span class="co">#&gt;    RecordedDate T_01_CarUsage T_02_CarType T_03_CarDistance T_04_PublicTransport</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 30/6/2024 2…           5.5            3             10                      5</span></span>
@@ -181,16 +185,16 @@ footprint.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 30/6/2024 2…           3.5            2             51                      5</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 30/6/2024 2…           3.5            3             10                      4</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 40 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 35 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 36 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   T_07_AirTravelShort &lt;dbl&gt;, T_08_LongDistanceTra &lt;dbl&gt;, PETS_4 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   PETS_5 &lt;dbl&gt;, `E1_Electricity Usage` &lt;dbl&gt;, EH_02_ElectricityBil_1 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   EH_05_NaturalGasBill_1 &lt;dbl&gt;, F_01_DietaryHabits_5 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   F_01_DietaryHabits_6 &lt;dbl&gt;, F_01_DietaryHabits_7 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   F_01_DietaryHabits_4 &lt;dbl&gt;, CL_01_ClothingPurcha &lt;dbl&gt;, …</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   EH_05_NaturalGasBill_1 &lt;dbl&gt;, EH_07_WaterBill &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   F_01_DietaryHabits_5 &lt;dbl&gt;, F_01_DietaryHabits_6 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   F_01_DietaryHabits_7 &lt;dbl&gt;, F_01_DietaryHabits_4 &lt;dbl&gt;, …</span></span></span>
 <span></span>
 <span><span class="co"># Check the first few rows</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">questionnaire_example_total</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 40</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 41</span></span></span>
 <span><span class="co">#&gt;   RecordedDate  T_01_CarUsage T_02_CarType T_03_CarDistance T_04_PublicTransport</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 30/6/2024 22…           5.5            3             10                      5</span></span>
@@ -199,13 +203,13 @@ footprint.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 30/6/2024 22…           5.5            3             10                      4</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 30/6/2024 22…           7              3             10                      4</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 30/6/2024 22…           5.5            3             30.5                    5</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 35 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 36 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   T_07_AirTravelShort &lt;dbl&gt;, T_08_LongDistanceTra &lt;dbl&gt;, PETS_4 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   PETS_5 &lt;dbl&gt;, `E1_Electricity Usage` &lt;dbl&gt;, EH_02_ElectricityBil_1 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   EH_05_NaturalGasBill_1 &lt;dbl&gt;, F_01_DietaryHabits_5 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   F_01_DietaryHabits_6 &lt;dbl&gt;, F_01_DietaryHabits_7 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   F_01_DietaryHabits_4 &lt;dbl&gt;, CL_01_ClothingPurcha &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   CL_03_MonthlyEx_9 &lt;dbl&gt;, CL_03_MonthlyEx_10 &lt;dbl&gt;, …</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;">#   EH_05_NaturalGasBill_1 &lt;dbl&gt;, EH_07_WaterBill &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   F_01_DietaryHabits_5 &lt;dbl&gt;, F_01_DietaryHabits_6 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   F_01_DietaryHabits_7 &lt;dbl&gt;, F_01_DietaryHabits_4 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   CL_01_ClothingPurcha &lt;dbl&gt;, CL_03_MonthlyEx_9 &lt;dbl&gt;, …</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-5-run-a-linear-regression">Step 5: Run a linear regression<a class="anchor" aria-label="anchor" href="#step-5-run-a-linear-regression"></a>
@@ -224,18 +228,18 @@ carbon emissions. This is a basic linear model using the built-in
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Residuals:</span></span>
 <span><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></span>
-<span><span class="co">#&gt; -6303.6 -2107.0    40.9  3024.8  6997.5 </span></span>
+<span><span class="co">#&gt; -6357.8 -2142.3    52.1  3047.6  6820.1 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
 <span><span class="co">#&gt;              Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; (Intercept) 8.730e+03  1.115e+03   7.828 4.01e-10 ***</span></span>
-<span><span class="co">#&gt; income      4.933e-02  1.621e-02   3.044  0.00378 ** </span></span>
+<span><span class="co">#&gt; (Intercept) 8.919e+03  1.111e+03   8.026 2.01e-10 ***</span></span>
+<span><span class="co">#&gt; income      4.810e-02  1.615e-02   2.979  0.00453 ** </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Residual standard error: 3600 on 48 degrees of freedom</span></span>
-<span><span class="co">#&gt; Multiple R-squared:  0.1618, Adjusted R-squared:  0.1444 </span></span>
-<span><span class="co">#&gt; F-statistic: 9.267 on 1 and 48 DF,  p-value: 0.003779</span></span></code></pre></div>
+<span><span class="co">#&gt; Residual standard error: 3587 on 48 degrees of freedom</span></span>
+<span><span class="co">#&gt; Multiple R-squared:  0.156,  Adjusted R-squared:  0.1384 </span></span>
+<span><span class="co">#&gt; F-statistic: 8.874 on 1 and 48 DF,  p-value: 0.004527</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-6-create-a-plot">Step 6: Create a Plot<a class="anchor" aria-label="anchor" href="#step-6-create-a-plot"></a>
