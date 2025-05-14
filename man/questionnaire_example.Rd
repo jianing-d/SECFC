@@ -20,7 +20,8 @@ A tibble with 50 rows and 33 variables:
 \item{PETS_5}{dbl; Additional measure related to pet ownership.}
 \item{E1_Electricity Usage}{dbl; Self-reported electricity usage level.}
 \item{EH_02_ElectricityBil_1}{dbl; Electricity bill amount (first measurement).}
-\item{EH_05_NaturalGasBill_1}{dbl; Natural gas bill amount (first measurement).}
+\item{EH_05_NaturalGasBill_1}{dbl; Water bill amount (first measurement).}
+\item{EH_07_WaterBill}{dbl; Natural gas bill amount (first measurement).}
 \item{F_01_DietaryHabits_5}{dbl; Score or frequency related to a specific dietary habit.}
 \item{F_01_DietaryHabits_6}{dbl; Score or frequency for another dietary habit.}
 \item{F_01_DietaryHabits_7}{dbl; Score or frequency for another dietary habit.}

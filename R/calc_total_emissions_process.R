@@ -67,36 +67,15 @@ calc_total_emissions_process <- function(df) {
   # Get country-specific emission factors
   emission_factors_total <- get_total_emission_factors(unique(df_total_process$SD_07_Country))
   
-  # Convert household size columns to numeric and handle NA values
-  df_total_process <- df_total_process %>%
-    mutate(
-      SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
-      SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
-      SD_06_HouseholdSize_19 = as.numeric(SD_06_HouseholdSize_19),
-      SD_06_HouseholdSize_17 = ifelse(is.na(SD_06_HouseholdSize_17), 0, SD_06_HouseholdSize_17),
-      SD_06_HouseholdSize_18 = ifelse(is.na(SD_06_HouseholdSize_18), 0, SD_06_HouseholdSize_18),
-      SD_06_HouseholdSize_19 = ifelse(is.na(SD_06_HouseholdSize_19), 0, SD_06_HouseholdSize_19)
-    )
   
-  # Calculate total household size (minimum 1 to prevent division by zero)
-  df_total_process <- df_total_process %>%
-    mutate(
-      HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
-      HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize)
-    )
   
-  # Adjust housing emissions per capita
-  df_total_process <- df_total_process %>%
-    mutate(
-      HousingEmissionsPerCapita = HousingEmissions / HouseholdSize
-    )
   
   # Ensure all emission components exist and replace NA values
   df_total_process <- df_total_process %>%
     mutate(
       TransportEmissions = ifelse(is.na(TransportEmissions), 0, TransportEmissions) * emission_factors_total$Transport,
       PetEmissions = ifelse(is.na(PetEmissions), 0, PetEmissions) * emission_factors_total$Pet,
-      HousingEmissionsPerCapita = ifelse(is.na(HousingEmissionsPerCapita), 0, HousingEmissionsPerCapita) * emission_factors_total$Housing,
+      HousingEmissions = ifelse(is.na(HousingEmissions), 0, HousingEmissions) * emission_factors_total$Housing,
       FoodEmissions = ifelse(is.na(FoodEmissions), 0, FoodEmissions) * emission_factors_total$Food,
       ConsEmissions = ifelse(is.na(ConsEmissions), 0, ConsEmissions) * emission_factors_total$Consumption
     )
@@ -104,7 +83,7 @@ calc_total_emissions_process <- function(df) {
   # Calculate total emissions
   df_total_process <- df_total_process %>%
     mutate(
-      TotalEmissions = TransportEmissions + PetEmissions + HousingEmissionsPerCapita +
+      TotalEmissions = TransportEmissions + PetEmissions + HousingEmissions +
         FoodEmissions + ConsEmissions
     )
   

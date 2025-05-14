@@ -30,7 +30,7 @@ get_housing_emission_factors <- function(country) {
     factors <- housing_emission_factors %>% filter(Country == "United States")
     
     defaults <- list(
-      WaterCFC   = 26.5,
+      WaterCFC   = 0.84,
       NaturalGas = 0.573511218,
       Electricity = list(
         US_ASCC = 0.608418285, US_HICC = 0.823151786,
@@ -200,11 +200,19 @@ calc_housing_emissions_process <- function(df) {
       EH_03_ElectricityBil_1 = as.numeric(EH_03_ElectricityBil_1),
       EH_05_NaturalGasBill_1 = as.numeric(EH_05_NaturalGasBill_1),
       EH_06_NaturalGasBill_1= as.numeric(EH_06_NaturalGasBill_1),
+      EH_07_WaterBill = as.numeric(EH_07_WaterBill),
+      SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = as.numeric(SD_06_HouseholdSize_19),
       
       EH_02_ElectricityBil_1 = ifelse(is.na(EH_02_ElectricityBil_1), 0, EH_02_ElectricityBil_1),
       EH_03_ElectricityBil_1 = ifelse(is.na(EH_03_ElectricityBil_1), 0, EH_03_ElectricityBil_1),
       EH_05_NaturalGasBill_1 = ifelse(is.na(EH_05_NaturalGasBill_1), 0, EH_05_NaturalGasBill_1),
-      EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1)
+      EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1),
+      EH_07_WaterBill = ifelse(is.na(EH_07_WaterBill), 0, EH_07_WaterBill),
+      SD_06_HouseholdSize_17 = ifelse(is.na(SD_06_HouseholdSize_17), 0, SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = ifelse(is.na(SD_06_HouseholdSize_18), 0, SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = ifelse(is.na(SD_06_HouseholdSize_19), 0, SD_06_HouseholdSize_19)
     )
   
   # Define electricity prices by state (in cents per kWh)
@@ -230,13 +238,22 @@ calc_housing_emissions_process <- function(df) {
                                      (EH_02_ElectricityBil_1 * 100) / electricity_price,
                                      0),
       natural_gas_usage_m3 = EH_05_NaturalGasBill_1 / 0.353147, # Assuming $0.353147 per 1.0 m3 for simplicity
+      # 1) USD per m³ of water
+      price_per_m3 = 6.64 / (1000 * 0.00378541),
       
+      # 2) m³ used per month
+      water_m3_month = ifelse(price_per_m3 > 0,
+                              EH_07_WaterBill / price_per_m3,
+                              0),
+      HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
+      HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize),
       ElectricityEmissions = electricity_usage_kWh * 12 * electricity_emission_factor,
       NaturalGasEmissions = natural_gas_usage_m3 * 12 * emission_factors_housing$NaturalGas,
-      WaterEmissions = emission_factors_housing$WaterCFC,
+      WaterEmissions = water_m3_month * emission_factors_housing$WaterCFC*12,
       
       # Total housing emissions
-      HousingEmissions = ElectricityEmissions + NaturalGasEmissions + WaterEmissions
+      HousingEmissions_household = ElectricityEmissions + NaturalGasEmissions + WaterEmissions,
+      HousingEmissions=HousingEmissions_household/HouseholdSize
     )
   
 
