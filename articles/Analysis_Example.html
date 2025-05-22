@@ -93,7 +93,10 @@ carbon emissions.</li>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install the SECFC package from GitHub</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"jianing-d/SECFC"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; * checking for file ‘/tmp/RtmpAnVoMv/remotes1e5044a9ae8a/jianing-d-SECFC-c1f51cf/DESCRIPTION’ ... OK</span></span>
+<span><span class="co">#&gt; cpp11       (NA -&gt; 0.5.2) [CRAN]</span></span>
+<span><span class="co">#&gt; prettyunits (NA -&gt; 1.2.0) [CRAN]</span></span>
+<span><span class="co">#&gt; progress    (NA -&gt; 1.2.3) [CRAN]</span></span>
+<span><span class="co">#&gt; * checking for file ‘/tmp/Rtmpy4omqa/remotes1faa52b5d886/jianing-d-SECFC-3437c5c/DESCRIPTION’ ... OK</span></span>
 <span><span class="co">#&gt; * preparing ‘SECFC’:</span></span>
 <span><span class="co">#&gt; * checking DESCRIPTION meta-information ... OK</span></span>
 <span><span class="co">#&gt; * checking for LF line-endings in source and make files and shell scripts</span></span>
@@ -225,18 +228,18 @@ carbon emissions. This is a basic linear model using the built-in
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Residuals:</span></span>
 <span><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></span>
-<span><span class="co">#&gt; -6357.8 -2142.3    52.1  3047.6  6820.1 </span></span>
+<span><span class="co">#&gt; -430459 -216609  -39798  148779  641524 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
 <span><span class="co">#&gt;              Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; (Intercept) 8.919e+03  1.111e+03   8.026 2.01e-10 ***</span></span>
-<span><span class="co">#&gt; income      4.810e-02  1.615e-02   2.979  0.00453 ** </span></span>
+<span><span class="co">#&gt; (Intercept) 3.273e+05  8.945e+04   3.659 0.000629 ***</span></span>
+<span><span class="co">#&gt; income      3.598e+00  1.300e+00   2.769 0.007977 ** </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Residual standard error: 3587 on 48 degrees of freedom</span></span>
-<span><span class="co">#&gt; Multiple R-squared:  0.156,  Adjusted R-squared:  0.1384 </span></span>
-<span><span class="co">#&gt; F-statistic: 8.874 on 1 and 48 DF,  p-value: 0.004527</span></span></code></pre></div>
+<span><span class="co">#&gt; Residual standard error: 288700 on 48 degrees of freedom</span></span>
+<span><span class="co">#&gt; Multiple R-squared:  0.1377, Adjusted R-squared:  0.1197 </span></span>
+<span><span class="co">#&gt; F-statistic: 7.665 on 1 and 48 DF,  p-value: 0.007977</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-6-create-a-plot">Step 6: Create a Plot<a class="anchor" aria-label="anchor" href="#step-6-create-a-plot"></a>
