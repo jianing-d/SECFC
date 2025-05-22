@@ -7,7 +7,7 @@ food_emission_factors <- tibble::tibble(
   FactorName = c("MeatMeals", "VeganMeals", "VegetarianMeals", "DairyProducts",
                  "MeatMeals", "VeganMeals", "VegetarianMeals", "DairyProducts",
                  "MeatMeals", "VeganMeals", "VegetarianMeals", "DairyProducts"),
-  Value = c(3.07, 0.25, 0.68, 1.5423562,  
+  Value = c(3.07, 0.25, 0.68, 1542.3562,  
             NA, NA, NA, NA,
             NA, NA, NA, NA)
 )

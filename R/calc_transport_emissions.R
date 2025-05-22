@@ -4,12 +4,12 @@ transport_emission_factors <- tibble::tibble(
   Country = c("United States", "China", "European Union", "Other"),
   Gasoline_Vehicle = c(0.19129103, NA, NA, NA),
   Diesel_Vehicle = c(0.21185669, NA, NA, NA),
-  Electric_Vehicle = c(0.0, NA, NA, NA),  # Assumed zero
-  Hybrid_Vehicle = c(0.09564552, NA, NA, NA),  # Half of gasoline
-  Natural_Gas_Vehicle = c(0.00002971, NA, NA, NA),
+  Electric_Vehicle = c(0.10245428, NA, NA, NA),  # Assumed zero
+  Hybrid_Vehicle = c(0.095645515, NA, NA, NA),  # Half of gasoline
+  Natural_Gas_Vehicle = c(0.24105389, NA, NA, NA),
   Public_Transport = c(0.112114058, NA, NA, NA),
-  Flights = c(0.84671485, NA, NA, NA),  # kg CO2 per km
-  Long_Distance_Train = c(0.051598612, NA, NA, NA)  # kg CO2 per km
+  Flights = c(0.13400238, NA, NA, NA),  # kg CO2 per km
+  Long_Distance_Train = c(0.07625435, NA, NA, NA)  # kg CO2 per km
 )
 
 # Save the dataset as internal data

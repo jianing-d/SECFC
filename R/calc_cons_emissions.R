@@ -15,8 +15,8 @@ cons_emission_factors <- tibble::tibble(
                  "FoodDelivery", "DiningOut", "HotelStays", "TobaccoProducts", 
                  "AlcoholDrinks", "Entertainment", "Healthcare", "Clothing",
                  "Other"),
-  Value = c(0.349757961, 0.010974672, 0.016436699, 0.009542055, 
-            0.042726645, 0.009474576, 0.014611029, 0.018380588, NA, 
+  Value = c(0.349757961, 0.198559285, 0.16119859, 0.14516377, 
+            0.450885975, 0.150237261, 0.066070988, 0.15783379, NA, 
             NA, NA, NA, NA, NA, NA, NA, NA, NA,
             NA, NA, NA, NA, NA, NA, NA, NA, NA)
 )
