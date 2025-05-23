@@ -74,6 +74,9 @@ calc_food_emissions <- function(df) {
       F_01_DietaryHabits_4 = as.numeric(F_01_DietaryHabits_4)
     ) %>%
     replace(is.na(.), 0)
+ 
+  serving_volume_l    <- 0.5          # average dairy product per meal in liters
+  serving_volume_m3   <- serving_volume_l / 1000  
   
   # Calculate emissions for each food category
   df_food <- df_food %>%
@@ -81,7 +84,7 @@ calc_food_emissions <- function(df) {
       MeatEmissions = F_01_DietaryHabits_5 * 52 * emission_factors_food[["MeatMeals"]],
       VeganEmissions = F_01_DietaryHabits_6 * 52 * emission_factors_food[["VeganMeals"]],
       VegetarianEmissions = F_01_DietaryHabits_7 * 52 * emission_factors_food[["VegetarianMeals"]],
-      DairyEmissions = F_01_DietaryHabits_4 * 52 * emission_factors_food[["DairyProducts"]],
+      DairyEmissions = F_01_DietaryHabits_4 * 52 * serving_volume_m3 * emission_factors_food[["DairyProducts"]],    #1m3=1000L
       
       # Total food emissions
       FoodEmissions = rowSums(cbind(MeatEmissions, VeganEmissions, VegetarianEmissions, DairyEmissions), na.rm = TRUE)
