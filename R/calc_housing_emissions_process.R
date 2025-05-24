@@ -31,7 +31,7 @@ get_housing_emission_factors <- function(country) {
     
     defaults <- list(
       WaterCFC   = 0.84,
-      NaturalGas = 0.573511218,
+      NaturalGas = 2.49801121,
       Electricity = list(
         US_ASCC = 0.608418285, US_HICC = 0.823151786,
         US_MRO  = 0.543851789, US_NPCC = 0.273336294,

@@ -7,7 +7,7 @@ housing_emission_factors <- tibble::tibble(
   FactorName = c("WaterCFC", "NaturalGas", "Electricity_US_ASCC", "Electricity_US_HICC", "Electricity_US_MRO", "Electricity_US_NPCC","Electricity_US_RFC", "Electricity_US_SERC", "Electricity_TRE", "Electricity_WECC",
                  "WaterCFC", "NaturalGas", "Electricity_China_Group1", "Electricity_China_Group2", "Electricity_China_Group3",
                  "WaterCFC", "NaturalGas", "Electricity_EU_Group1", "Electricity_EU_Group2", "Electricity_EU_Group3"),
-  Value = c(0.84, 0.573511218, 0.608418285, 0.823151786, 0.543851789, 0.273336294, 0.5399024,0.532591155,0.461607295,0.376463424,
+  Value = c(0.84, 2.49801121, 0.608418285, 0.823151786, 0.543851789, 0.273336294, 0.5399024,0.532591155,0.461607295,0.376463424,
             NA, NA, NA, NA, NA,  
             NA, NA, NA, NA, NA)
 )
@@ -67,7 +67,7 @@ get_housing_emission_factors <- function(country) {
     
     defaults <- list(
       WaterCFC   = 0.84,
-      NaturalGas = 0.573511218,
+      NaturalGas = 2.49801121,
       Electricity = list(
         US_ASCC = 0.608418285, US_HICC = 0.823151786,
         US_MRO  = 0.543851789, US_NPCC = 0.273336294,
