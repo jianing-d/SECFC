@@ -30,7 +30,8 @@ get_transport_emission_factors <- function(country) {
       "Hybrid Vehicle" = NA,
       "Natural Gas Vehicle" = NA,
       "Public Transport" = NA,
-      "Flights" = NA,
+      "Flights_Short" = NA,
+      "Flights_Long" = NA,
       "Long Distance Train" = NA
     ))
   }
@@ -157,8 +158,11 @@ calc_transport_emissions_process <- function(df) {
   public_transport_factor <- ifelse(length(emission_factors_transport$Public_Transport) > 0,
                                     emission_factors_transport$Public_Transport, 0)
   
-  flights_factor <- ifelse(length(emission_factors_transport$Flights) > 0,
-                           emission_factors_transport$Flights, 0)
+  short_flights_factor <- ifelse(length(emission_factors_transport$Flights_Short) > 0,
+                                 emission_factors_transport$Flights_Short, 0)
+  
+  long_flights_factor <- ifelse(length(emission_factors_transport$Flights_Long) > 0,
+                                emission_factors_transport$Flights_Long, 0)
   
   train_factor <- ifelse(length(emission_factors_transport$Long_Distance_Train) > 0,
                          emission_factors_transport$Long_Distance_Train, 0)
@@ -168,8 +172,8 @@ calc_transport_emissions_process <- function(df) {
     mutate(
       CarEmissions = WeeklyCarDistance * car_emission_factor * 52,
       PublicTransportEmissions = PublicTransportDistance * public_transport_factor * 365 * public_transport_usage_factor,
-      AirTravelLongEmissions = T_06_AirTravelLong * 1609 * flights_factor,
-      AirTravelShortEmissions = T_07_AirTravelShort * 804.5 * flights_factor,
+      AirTravelLongEmissions = T_06_AirTravelLong * 1609 * long_flights_factor,
+      AirTravelShortEmissions = T_07_AirTravelShort * 804.5 * short_flights_factor,
       TrainEmissions = T_08_LongDistanceTra * 100 * 365 * train_factor,
       TransportEmissions = CarEmissions + PublicTransportEmissions + AirTravelLongEmissions + AirTravelShortEmissions + TrainEmissions
     )

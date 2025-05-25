@@ -8,7 +8,8 @@ transport_emission_factors <- tibble::tibble(
   Hybrid_Vehicle = c(0.23732183, NA, NA, NA),  # Half of gasoline
   Natural_Gas_Vehicle = c(0.24038709, NA, NA, NA),
   Public_Transport = c(0.12381866, NA, NA, NA),
-  Flights = c(0.13400238, NA, NA, NA),  # kg CO2 per km
+  Flights_Short       = c(0.17430491,  NA, NA, NA),  # short‐haul factor
+  Flights_Long        = c(0.11046002,  NA,  NA, NA),  # long‐haul factor
   Long_Distance_Train = c(0.072325206, NA, NA, NA)  # kg CO2 per km
 )
 
@@ -47,7 +48,8 @@ get_transport_emission_factors <- function(country) {
       "Hybrid Vehicle" = NA,
       "Natural Gas Vehicle" = NA,
       "Public Transport" = NA,
-      "Flights" = NA,
+      "Flights_Short" = NA,
+      "Flights_Long" = NA,
       "Long Distance Train" = NA
     ))
   }
@@ -172,9 +174,12 @@ calc_transport_emissions <- function(df) {
   public_transport_factor <- ifelse(length(emission_factors_transport$Public_Transport) > 0,
                                     emission_factors_transport$Public_Transport, 0)
   
-  flights_factor <- ifelse(length(emission_factors_transport$Flights) > 0,
-                           emission_factors_transport$Flights, 0)
+  short_flights_factor <- ifelse(length(emission_factors_transport$Flights_Short) > 0,
+                           emission_factors_transport$Flights_Short, 0)
 
+  long_flights_factor <- ifelse(length(emission_factors_transport$Flights_Long) > 0,
+                           emission_factors_transport$Flights_Long, 0)
+  
   train_factor <- ifelse(length(emission_factors_transport$Long_Distance_Train) > 0,
                          emission_factors_transport$Long_Distance_Train, 0)
 
@@ -183,8 +188,8 @@ calc_transport_emissions <- function(df) {
     mutate(
       CarEmissions = WeeklyCarDistance * car_emission_factor * 52,
       PublicTransportEmissions = PublicTransportDistance * public_transport_factor * 365 * public_transport_usage_factor,
-      AirTravelLongEmissions = T_06_AirTravelLong * 1609 * flights_factor,
-      AirTravelShortEmissions = T_07_AirTravelShort * 804.5 * flights_factor,
+      AirTravelLongEmissions = T_06_AirTravelLong * 1609 * long_flights_factor,
+      AirTravelShortEmissions = T_07_AirTravelShort * 804.5 * short_flights_factor,
       TrainEmissions = T_08_LongDistanceTra * 100 * 365 * train_factor,
       TransportEmissions = CarEmissions + PublicTransportEmissions + AirTravelLongEmissions + AirTravelShortEmissions + TrainEmissions
     )
