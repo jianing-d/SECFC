@@ -109,7 +109,7 @@ calc_food_emissions_process <- function(df,
       )
   } else {
     # Non-China: per-m^3 factor (your original approach)
-    df_food <- df_food %>%
+    df_food_process <- df_food_process %>%
       mutate(
         DairyEmissions = F_01_DietaryHabits_4 * 52 * serving_volume_m3 * ef[["DairyProducts"]]
       )
