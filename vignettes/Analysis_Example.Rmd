@@ -87,7 +87,7 @@ Finally, we can visualize the relationship between income and TotalEmissions usi
 - Points representing individual respondents
 - A linear regression line (and confidence interval)
 
-```{r warning=FALSE, message=FALSE}
+```{r message=FALSE, warning=FALSE, fig.alt="Scatter plot showing the relationship between income and total emissions with an OLS trend line and 95% CI."}
 # Load ggplot2
 library(ggplot2)
 

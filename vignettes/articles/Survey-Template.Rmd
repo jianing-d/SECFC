@@ -51,3 +51,4 @@ Below is a list of key columns expected by SECFC, along with their corresponding
 | SD_06_HouseholdSize_19        | Number of seniors in household                                              |
 | SD_07_Country                 | Country of residence                                                        |
 | SD_08_ZipCode                 | U.S. Zip code (for regional analysis)                                       |
+| SD_09_AdminCode               | Codes for the administrative divisions of the People's Republic of China    |
