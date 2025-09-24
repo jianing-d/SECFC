@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SECFC</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,12 +93,14 @@ carbon emissions.</li>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install the SECFC package from GitHub</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"jianing-d/SECFC"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; * checking for file ‘/tmp/RtmpmNbbJm/remotes1ecc44ad4aa3/jianing-d-SECFC-ddbce20/DESCRIPTION’ ... OK</span></span>
+<span><span class="co">#&gt; cpp11 (NA -&gt; 0.5.2) [CRAN]</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="color: #00BBBB;">R CMD build</span> <span style="color: #00BBBB;">─────────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt; * checking for file ‘/tmp/RtmpddaF92/remotes1ff75b0e108d/jianing-d-SECFC-2c7b04d/DESCRIPTION’ ... OK</span></span>
 <span><span class="co">#&gt; * preparing ‘SECFC’:</span></span>
 <span><span class="co">#&gt; * checking DESCRIPTION meta-information ... OK</span></span>
 <span><span class="co">#&gt; * checking for LF line-endings in source and make files and shell scripts</span></span>
 <span><span class="co">#&gt; * checking for empty or unneeded directories</span></span>
-<span><span class="co">#&gt; * building ‘SECFC_0.0.5.tar.gz’</span></span></code></pre></div>
+<span><span class="co">#&gt; * building ‘SECFC_0.1.0.tar.gz’</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-2-load-the-package">Step 2: Load the package<a class="anchor" aria-label="anchor" href="#step-2-load-the-package"></a>
@@ -118,12 +120,20 @@ package).</p>
 <code class="sourceCode R"><span><span class="co"># Replace the file path with your own dataset if necessary</span></span>
 <span><span class="va">questionnaire_example</span> <span class="op">&lt;-</span> <span class="fu">SECFC</span><span class="fu">::</span><span class="va"><a href="../reference/questionnaire_example.html">questionnaire_example</a></span></span>
 <span></span>
+<span><span class="va">required_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SD_09_AdminCode"</span><span class="op">)</span></span>
+<span><span class="va">missing_cols</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">required_cols</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">questionnaire_example</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">missing_cols</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Adding missing columns: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">missing_cols</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">questionnaire_example</span><span class="op">[</span><span class="va">missing_cols</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA_character_</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span></span>
 <span><span class="co"># Take a quick look at your data structure</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">questionnaire_example</span><span class="op">)</span></span>
-<span><span class="co">#&gt; tibble [50 × 35] (S3: tbl_df/tbl/data.frame)</span></span>
+<span><span class="co">#&gt; tibble [50 × 36] (S3: tbl_df/tbl/data.frame)</span></span>
 <span><span class="co">#&gt;  $ RecordedDate          : chr [1:50] "30/6/2024 22:38" "30/6/2024 22:39" "30/6/2024 22:40" "30/6/2024 22:40" ...</span></span>
 <span><span class="co">#&gt;  $ T_01_CarUsage         : num [1:50] 4 3 3 4 5 4 5 4 3 3 ...</span></span>
-<span><span class="co">#&gt;  $ T_02_CarType          : num [1:50] 3 3 2 3 3 3 3 3 2 3 ...</span></span>
+<span><span class="co">#&gt;  $ T_02_CarType          : chr [1:50] "Hybrid Vehicle" "Hybrid Vehicle" "Diesel Vehicle" "Hybrid Vehicle" ...</span></span>
 <span><span class="co">#&gt;  $ T_03_CarDistance      : num [1:50] 2 1 3 2 2 3 4 1 4 2 ...</span></span>
 <span><span class="co">#&gt;  $ T_04_PublicTransport  : num [1:50] 5 4 5 4 4 5 5 5 5 4 ...</span></span>
 <span><span class="co">#&gt;  $ T_05_PublicTransport  : num [1:50] 4 4 4 2 4 4 4 4 4 1 ...</span></span>
@@ -151,11 +161,12 @@ package).</p>
 <span><span class="co">#&gt;  $ SD_06_HouseholdSize_17: num [1:50] 4 1 1 2 4 4 1 2 2 1 ...</span></span>
 <span><span class="co">#&gt;  $ SD_06_HouseholdSize_18: num [1:50] 0 0 0 1 0 2 0 2 0 0 ...</span></span>
 <span><span class="co">#&gt;  $ SD_06_HouseholdSize_19: num [1:50] 0 0 0 0 2 2 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ SD_07_Country         : chr [1:50] "United States" "United States" "United States" "United States" ...</span></span>
-<span><span class="co">#&gt;  $ SD_08_ZipCode         : num [1:50] 85255 47905 30506 95843 95901 ...</span></span>
+<span><span class="co">#&gt;  $ SD_07_Country         : chr [1:50] "China" "China" "China" "China" ...</span></span>
+<span><span class="co">#&gt;  $ SD_08_ZipCode         : chr [1:50] NA NA NA NA ...</span></span>
 <span><span class="co">#&gt;  $ EH_03_ElectricityBil_1: num [1:50] 3600 948 1836 876 1284 ...</span></span>
 <span><span class="co">#&gt;  $ EH_06_NaturalGasBill_1: num [1:50] 708 552 0 324 564 240 0 960 0 324 ...</span></span>
-<span><span class="co">#&gt;  $ income                : num [1:50] 70011 42460 38100 55435 46043 ...</span></span></code></pre></div>
+<span><span class="co">#&gt;  $ income                : num [1:50] 70011 42460 38100 55435 46043 ...</span></span>
+<span><span class="co">#&gt;  $ SD_09_AdminCode       : chr [1:50] "410000" "320000" "110000" "370000" ...</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-4-calculate-total-carbon-emissions">Step 4: Calculate total carbon emissions<a class="anchor" aria-label="anchor" href="#step-4-calculate-total-carbon-emissions"></a>
@@ -168,21 +179,21 @@ TotalEmissions, the individual respondent’s overall estimated
 footprint.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_total_emissions.html">calc_total_emissions</a></span><span class="op">(</span><span class="va">questionnaire_example</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 50 × 41</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 50 × 45</span></span></span>
 <span><span class="co">#&gt;    RecordedDate T_01_CarUsage T_02_CarType T_03_CarDistance T_04_PublicTransport</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 30/6/2024 2…           5.5            3             10                      5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 30/6/2024 2…           3.5            3              5                      4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 30/6/2024 2…           3.5            2             30.5                    5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 30/6/2024 2…           5.5            3             10                      4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 30/6/2024 2…           7              3             10                      4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 30/6/2024 2…           5.5            3             30.5                    5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 30/6/2024 2…           7              3             51                      5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 30/6/2024 2…           5.5            3              5                      5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 30/6/2024 2…           3.5            2             51                      5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 30/6/2024 2…           3.5            3             10                      4</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 30/6/2024 2…           5.5 Hybrid Vehi…             10                      5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 30/6/2024 2…           3.5 Hybrid Vehi…              5                      4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 30/6/2024 2…           3.5 Diesel Vehi…             30.5                    5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 30/6/2024 2…           5.5 Hybrid Vehi…             10                      4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 30/6/2024 2…           7   Hybrid Vehi…             10                      4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 30/6/2024 2…           5.5 Hybrid Vehi…             30.5                    5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 30/6/2024 2…           7   Hybrid Vehi…             51                      5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 30/6/2024 2…           5.5 Hybrid Vehi…              5                      5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 30/6/2024 2…           3.5 Diesel Vehi…             51                      5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 30/6/2024 2…           3.5 Hybrid Vehi…             10                      4</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 40 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 36 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 40 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   T_07_AirTravelShort &lt;dbl&gt;, T_08_LongDistanceTra &lt;dbl&gt;, PETS_4 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   PETS_5 &lt;dbl&gt;, `E1_Electricity Usage` &lt;dbl&gt;, EH_02_ElectricityBil_1 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   EH_05_NaturalGasBill_1 &lt;dbl&gt;, EH_07_WaterBill &lt;dbl&gt;,</span></span></span>
@@ -191,16 +202,16 @@ footprint.</p>
 <span></span>
 <span><span class="co"># Check the first few rows</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">questionnaire_example_total</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 41</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 45</span></span></span>
 <span><span class="co">#&gt;   RecordedDate  T_01_CarUsage T_02_CarType T_03_CarDistance T_04_PublicTransport</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 30/6/2024 22…           5.5            3             10                      5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 30/6/2024 22…           3.5            3              5                      4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 30/6/2024 22…           3.5            2             30.5                    5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 30/6/2024 22…           5.5            3             10                      4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 30/6/2024 22…           7              3             10                      4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 30/6/2024 22…           5.5            3             30.5                    5</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 36 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 30/6/2024 22…           5.5 Hybrid Vehi…             10                      5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 30/6/2024 22…           3.5 Hybrid Vehi…              5                      4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 30/6/2024 22…           3.5 Diesel Vehi…             30.5                    5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 30/6/2024 22…           5.5 Hybrid Vehi…             10                      4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 30/6/2024 22…           7   Hybrid Vehi…             10                      4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 30/6/2024 22…           5.5 Hybrid Vehi…             30.5                    5</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 40 more variables: T_05_PublicTransport &lt;dbl&gt;, T_06_AirTravelLong &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   T_07_AirTravelShort &lt;dbl&gt;, T_08_LongDistanceTra &lt;dbl&gt;, PETS_4 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   PETS_5 &lt;dbl&gt;, `E1_Electricity Usage` &lt;dbl&gt;, EH_02_ElectricityBil_1 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   EH_05_NaturalGasBill_1 &lt;dbl&gt;, EH_07_WaterBill &lt;dbl&gt;,</span></span></span>
@@ -225,18 +236,18 @@ carbon emissions. This is a basic linear model using the built-in
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Residuals:</span></span>
 <span><span class="co">#&gt;     Min      1Q  Median      3Q     Max </span></span>
-<span><span class="co">#&gt; -3558.0 -1805.8   232.4  1330.9  5995.2 </span></span>
+<span><span class="co">#&gt; -3276.5 -1858.5   253.9  1718.2  3765.8 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
 <span><span class="co">#&gt;              Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; (Intercept) 7.203e+03  7.000e+02  10.290 9.84e-14 ***</span></span>
-<span><span class="co">#&gt; income      1.680e-02  1.017e-02   1.652    0.105    </span></span>
+<span><span class="co">#&gt; (Intercept) 7.441e+03  6.522e+02  11.409 2.84e-15 ***</span></span>
+<span><span class="co">#&gt; income      3.047e-02  9.477e-03   3.215  0.00234 ** </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Residual standard error: 2259 on 48 degrees of freedom</span></span>
-<span><span class="co">#&gt; Multiple R-squared:  0.05377,    Adjusted R-squared:  0.03406 </span></span>
-<span><span class="co">#&gt; F-statistic: 2.728 on 1 and 48 DF,  p-value: 0.1051</span></span></code></pre></div>
+<span><span class="co">#&gt; Residual standard error: 2105 on 48 degrees of freedom</span></span>
+<span><span class="co">#&gt; Multiple R-squared:  0.1772, Adjusted R-squared:   0.16 </span></span>
+<span><span class="co">#&gt; F-statistic: 10.34 on 1 and 48 DF,  p-value: 0.002336</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-6-create-a-plot">Step 6: Create a Plot<a class="anchor" aria-label="anchor" href="#step-6-create-a-plot"></a>
@@ -274,7 +285,7 @@ TotalEmissions using <code>ggplot2</code>. The plot below includes:</p>
 <span></span>
 <span><span class="co"># Print the plot</span></span>
 <span><span class="va">lm_plot</span></span></code></pre></div>
-<p><img src="Analysis_Example_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
+<p><img src="Analysis_Example_files/figure-html/unnamed-chunk-7-1.png" alt="Scatter plot showing the relationship between income and total emissions with an OLS trend line and 95% CI." width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

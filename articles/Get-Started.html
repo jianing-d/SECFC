@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SECFC</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -87,18 +87,7 @@ SECFC.</p>
 </h3>
 <p>After installation, load the package with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jianing-d.github.io/SECFC/" class="external-link">SECFC</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: tidyverse</span></span>
-<span><span class="co">#&gt; ── <span style="font-weight: bold;">Attaching core tidyverse packages</span> ──────────────────────── tidyverse 2.0.0 ──</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">dplyr    </span> 1.1.4     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">readr    </span> 2.1.5</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">forcats  </span> 1.0.0     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">stringr  </span> 1.5.1</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">ggplot2  </span> 3.5.2     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">tibble   </span> 3.2.1</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">lubridate</span> 1.9.4     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">tidyr    </span> 1.3.1</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">purrr    </span> 1.0.4     </span></span>
-<span><span class="co">#&gt; ── <span style="font-weight: bold;">Conflicts</span> ────────────────────────────────────────── tidyverse_conflicts() ──</span></span>
-<span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> <span style="color: #0000BB;">dplyr</span>::<span style="color: #00BB00;">filter()</span> masks <span style="color: #0000BB;">stats</span>::filter()</span></span>
-<span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> <span style="color: #0000BB;">dplyr</span>::<span style="color: #00BB00;">lag()</span>    masks <span style="color: #0000BB;">stats</span>::lag()</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Use the conflicted package (<span style="color: #0000BB; font-style: italic;">&lt;http://conflicted.r-lib.org/&gt;</span>) to force all conflicts to become errors</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jianing-d.github.io/SECFC/" class="external-link">SECFC</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="step-2-import-your-survey-dataset">Step 2: Import Your Survey Dataset<a class="anchor" aria-label="anchor" href="#step-2-import-your-survey-dataset"></a>
@@ -117,13 +106,13 @@ match exactly. Here is an example of the expected data structure:</p>
 <span>  <span class="op">~</span><span class="va">F_01_DietaryHabits_6</span>, <span class="op">~</span><span class="va">F_01_DietaryHabits_7</span>, <span class="op">~</span><span class="va">F_01_DietaryHabits_4</span>, <span class="op">~</span><span class="va">T_01_CarUsage</span>, <span class="op">~</span><span class="va">T_02_CarType</span>, <span class="op">~</span><span class="va">T_03_CarDistance</span>,</span>
 <span>  <span class="op">~</span><span class="va">T_04_PublicTransport</span>, <span class="op">~</span><span class="va">T_05_PublicTransport</span>, <span class="op">~</span><span class="va">T_06_AirTravelLong</span>, <span class="op">~</span><span class="va">T_07_AirTravelShort</span>, <span class="op">~</span><span class="va">T_08_LongDistanceTra</span>,</span>
 <span>  <span class="op">~</span><span class="va">EH_02_ElectricityBil_1</span>, <span class="op">~</span><span class="va">EH_03_ElectricityBil_1</span>, <span class="op">~</span><span class="va">EH_05_NaturalGasBill_1</span>, <span class="op">~</span><span class="va">EH_06_NaturalGasBill_1</span>, <span class="op">~</span><span class="va">EH_07_WaterBill</span>, <span class="op">~</span><span class="va">PETS_4</span>, <span class="op">~</span><span class="va">PETS_5</span>,</span>
-<span>  <span class="op">~</span><span class="va">SD_06_HouseholdSize_17</span>, <span class="op">~</span><span class="va">SD_06_HouseholdSize_18</span>, <span class="op">~</span><span class="va">SD_06_HouseholdSize_19</span>, <span class="op">~</span><span class="va">SD_07_Country</span>, <span class="op">~</span><span class="va">SD_08_ZipCode</span>,</span>
+<span>  <span class="op">~</span><span class="va">SD_06_HouseholdSize_17</span>, <span class="op">~</span><span class="va">SD_06_HouseholdSize_18</span>, <span class="op">~</span><span class="va">SD_06_HouseholdSize_19</span>, <span class="op">~</span><span class="va">SD_07_Country</span>, <span class="op">~</span><span class="va">SD_08_ZipCode</span>, <span class="op">~</span><span class="va">SD_09_AdminCode</span>,</span>
 <span>  </span>
 <span>  <span class="st">"3/20/25 9:43"</span>, <span class="st">"3/20/25 9:47"</span>, <span class="st">"IP Address"</span>, <span class="st">"111.187.123.25"</span>, <span class="fl">100</span>, <span class="fl">240</span>, <span class="cn">TRUE</span>, <span class="st">"3/20/25 9:47"</span>, <span class="st">"R_3lENNCNKNsOdbgd"</span>,</span>
 <span>  <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">31.2222</span>, <span class="fl">121.4581</span>, <span class="st">"anonymous"</span>, <span class="st">"EN"</span>, <span class="st">"Yes, I accept to proceed to the study"</span>,</span>
 <span>  <span class="st">"7-12 times (About every 1-2 months)"</span>, <span class="fl">30</span>, <span class="fl">250</span>, <span class="fl">50</span>, <span class="fl">0</span>, <span class="fl">50</span>, <span class="fl">100</span>, <span class="fl">200</span>, <span class="fl">7</span>, <span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">6</span>, <span class="st">"5-6 days"</span>,</span>
 <span>  <span class="st">"Gasoline Vehicle"</span>, <span class="st">"11-50 km or 6.2-31 miles"</span>, <span class="st">"Weekly"</span>, <span class="st">"5-10 km or 3.1-6.2 miles"</span>, <span class="st">"1-3 flights"</span>,</span>
-<span>  <span class="st">"1-3 flights"</span>, <span class="st">"Monthly"</span>, <span class="fl">120</span>, <span class="fl">1440</span>, <span class="fl">50</span>, <span class="fl">600</span>, <span class="fl">150</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span>, <span class="fl">0</span>, <span class="st">"United States"</span>, <span class="fl">10001</span></span>
+<span>  <span class="st">"1-3 flights"</span>, <span class="st">"Monthly"</span>, <span class="fl">120</span>, <span class="fl">1440</span>, <span class="fl">50</span>, <span class="fl">600</span>, <span class="fl">150</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span>, <span class="fl">0</span>, <span class="st">"United States"</span>, <span class="fl">10001</span>, <span class="cn">NA</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>✅ Note The following columns are automatically generated when you
 export responses from Qualtrics: ~StartDate, ~EndDate, ~Status,
@@ -146,12 +135,12 @@ process data.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_cons_emissions.html">calc_cons_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_cons' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 51</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 52</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 44 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 45 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
@@ -161,12 +150,12 @@ process data.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_cons_emissions_process.html">calc_cons_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_cons_process' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 60</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 61</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 53 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 54 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
@@ -180,14 +169,14 @@ process data.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_food_emissions.html">calc_food_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_food' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 51</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 52</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 44 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;dbl&gt;, RecipientFirstName &lt;dbl&gt;, RecipientEmail &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;dbl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 45 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   CL_01_ClothingPurcha &lt;chr&gt;, CL_03_MonthlyEx_9 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   CL_03_MonthlyEx_10 &lt;dbl&gt;, CL_03_MonthlyEx_11 &lt;dbl&gt;, …</span></span></span></code></pre></div>
@@ -195,14 +184,14 @@ process data.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_food_emissions_process.html">calc_food_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_food_process' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 55</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 56</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 48 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;dbl&gt;, RecipientFirstName &lt;dbl&gt;, RecipientEmail &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;dbl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 49 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   CL_01_ClothingPurcha &lt;chr&gt;, CL_03_MonthlyEx_9 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   CL_03_MonthlyEx_10 &lt;dbl&gt;, CL_03_MonthlyEx_11 &lt;dbl&gt;, …</span></span></span></code></pre></div>
@@ -214,12 +203,12 @@ process data.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_housing_emissions.html">calc_housing_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_housing' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 51</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 55</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 44 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 48 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
@@ -229,12 +218,12 @@ process data.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_housing_emissions_process.html">calc_housing_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_housing_process' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 64</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 71</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 57 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 64 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
@@ -248,12 +237,12 @@ process data.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_pet_emissions.html">calc_pet_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_pet' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 51</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 52</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 44 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 45 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
@@ -263,12 +252,12 @@ process data.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_pet_emissions_process.html">calc_pet_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_pet_process' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 53</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 54</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 46 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 47 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
@@ -283,12 +272,12 @@ transportation.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_transport_emissions.html">calc_transport_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_transport' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 51</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 52</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 44 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 45 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
@@ -298,12 +287,12 @@ transportation.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_transport_emissions_process.html">calc_transport_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_transport_process' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 61</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 62</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 54 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 55 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
@@ -317,14 +306,14 @@ transportation.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_total_emissions.html">calc_total_emissions</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_total' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 56</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 60</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 49 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;dbl&gt;, RecipientFirstName &lt;dbl&gt;, RecipientEmail &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;dbl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 53 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   CL_01_ClothingPurcha &lt;chr&gt;, CL_03_MonthlyEx_9 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   CL_03_MonthlyEx_10 &lt;dbl&gt;, CL_03_MonthlyEx_11 &lt;dbl&gt;, …</span></span></span></code></pre></div>
@@ -332,14 +321,14 @@ transportation.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calc_total_emissions_process.html">calc_total_emissions_process</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✅ A new data frame 'data_total_process' is now available in your R environment.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 94</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 101</span></span></span>
 <span><span class="co">#&gt;   StartDate    EndDate Status IPAddress Progress Duration (in seconds…¹ Finished</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3/20/25 9:43 3/20/2… IP Ad… 111.187.…      100                    240 TRUE    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​`Duration (in seconds)`</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 87 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;dbl&gt;, RecipientFirstName &lt;dbl&gt;, RecipientEmail &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;dbl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 94 more variables: RecordedDate &lt;chr&gt;, ResponseId &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   RecipientLastName &lt;lgl&gt;, RecipientFirstName &lt;lgl&gt;, RecipientEmail &lt;lgl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   ExternalReference &lt;lgl&gt;, LocationLatitude &lt;dbl&gt;, LocationLongitude &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   DistributionChannel &lt;chr&gt;, UserLanguage &lt;chr&gt;, Q39 &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   CL_01_ClothingPurcha &lt;chr&gt;, CL_03_MonthlyEx_9 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   CL_03_MonthlyEx_10 &lt;dbl&gt;, CL_03_MonthlyEx_11 &lt;dbl&gt;, …</span></span></span></code></pre></div>
