@@ -49,7 +49,13 @@
     "T_08_LongDistanceTra", "car_emission_factor", "WeeklyPublicTransportDistance","T_04_PublicTransport_usage","public_transport_usage_factor",
     
     # Emission Factor Functions
-    "Country", "FactorName", "Value", "pull","state","region"
+    "Country", "FactorName", "Value", "pull","state","region",
+    
+    "SD_09_AdminCode", "SD_07_Country", "state_us", "elec_price_us_cents",
+    "price_per_m3_us", "ElecPrice_RMB_per_kWh", "elec_price_cn_rmb", "GridName",
+    "HousingEmissions_household", "PublicTransportDistance", ".f_total",
+    "TotalFactor_Transport", "TotalFactor_Pet", "TotalFactor_Housing",
+    "TotalFactor_Food", "TotalFactor_Consumption", "Unit"
   ))
 }
 

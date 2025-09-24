@@ -3,29 +3,45 @@
 #'
 #' Returns a list of pet emission factors based on the country.
 #'
-#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
 #' @importFrom tidyr replace_na
 #' @importFrom stats setNames
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map map_df
 #' @importFrom tibble tibble
+#' @importFrom rlang .data
 #' @param country A character string representing the country.
 #' @return A list of pet emission factors.
 get_pet_emission_factors <- function(country) {
   
   # Ensure dataset exists
   if (!exists("pet_emission_factors")) stop("Error: pet_emission_factors dataset not found.")
+  # tolerate vectors: pick first non-NA value
+  if (length(country) > 1) {
+    country <- country[!is.na(country)]
+    country <- if (length(country)) country[[1]] else NA_character_
+  }
+  # normalize a few variants to "China"
+  norm <- function(x) {
+    x <- trimws(x)
+    if (is.na(x)) return(x)
+    x <- gsub("^PRC$|^CN$|^China \\(Mainland\\)$|^Mainland China$", "China", x, ignore.case = TRUE)
+    x
+  }
+  country <- norm(country)
   
   # Filter dataset for the given country
   factors <- pet_emission_factors %>% filter(Country == country)
   
-  # If no match, return NA values
+  # fallback to "Other" if no exact match
   if (nrow(factors) == 0) {
-    return(list("Dog" = NA, "Cat" = NA))
+    factors <- pet_emission_factors %>% filter(Country == "Other")
+    if (nrow(factors) == 0) return(list(Dog = NA_real_, Cat = NA_real_))
   }
-  
-  # Return as a list
-  return(list("Dog" = factors$Dog, "Cat" = factors$Cat))
+  list(
+    Dog = as.numeric(factors$Dog[[1]]),
+    Cat = as.numeric(factors$Cat[[1]])
+  )
 }
 
 #' Calculate Pet-Related Carbon Emissions with Process Data
@@ -60,11 +76,11 @@ calc_pet_emissions_process <- function(df) {
     )
   
   
-  # assign new df_pet_process to the user’s workspace
+  # assign new df_pet_process to the user's workspace
   assign(new_name, df_pet_process, envir = parent.frame())
   message(
     paste0(
-      "✅ A new data frame '", new_name,
+      "\u2705 A new data frame '", new_name,
       "' is now available in your R environment."
     )
   )

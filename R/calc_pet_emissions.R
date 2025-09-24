@@ -2,8 +2,8 @@
 # Create the built-in dataset for pet emission factors
 pet_emission_factors <- tibble::tibble(
   Country = c("United States", "China", "European Union", "Other"),
-  Dog = c(770, NA, NA, NA),  # kg CO2 per dog per year
-  Cat = c(335, NA, NA, NA)   # kg CO2 per cat per year
+  Dog = c(770, 770, NA, NA),  # kg CO2 per dog per year
+  Cat = c(335, 335, NA, NA)   # kg CO2 per cat per year
 )
 
 # Save as internal data 
@@ -14,12 +14,13 @@ library(tidyverse)
 #'
 #' Returns a list of pet emission factors based on the country.
 #'
-#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
 #' @importFrom tidyr replace_na
 #' @importFrom stats setNames
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map map_df
 #' @importFrom tibble tibble
+#' @importFrom rlang .data
 #' @param country A character string representing the country.
 #' @return A list of pet emission factors.
 get_pet_emission_factors <- function(country) {
@@ -27,16 +28,32 @@ get_pet_emission_factors <- function(country) {
   # Ensure dataset exists
   if (!exists("pet_emission_factors")) stop("Error: pet_emission_factors dataset not found.")
   
+  # tolerate vectors: pick first non-NA value
+  if (length(country) > 1) {
+    country <- country[!is.na(country)]
+    country <- if (length(country)) country[[1]] else NA_character_
+  }
+  # normalize a few variants to "China"
+  norm <- function(x) {
+    x <- trimws(x)
+    if (is.na(x)) return(x)
+    x <- gsub("^PRC$|^CN$|^China \\(Mainland\\)$|^Mainland China$", "China", x, ignore.case = TRUE)
+    x
+  }
+  country <- norm(country)
+  
   # Filter dataset for the given country
   factors <- pet_emission_factors %>% filter(Country == country)
   
   # If no match, return NA values
   if (nrow(factors) == 0) {
-    return(list("Dog" = NA, "Cat" = NA))
+    factors <- pet_emission_factors %>% filter(Country == "Other")
+    if (nrow(factors) == 0) return(list(Dog = NA_real_, Cat = NA_real_))
   }
-  
-  # Return as a list
-  return(list("Dog" = factors$Dog, "Cat" = factors$Cat))
+  list(
+    Dog = as.numeric(factors$Dog[[1]]),
+    Cat = as.numeric(factors$Cat[[1]])
+  )
 }
 
 #' Calculate Pet Emissions
@@ -69,19 +86,19 @@ calc_pet_emissions <- function(df) {
       PetEmissions = PetEmissions_Cat + PetEmissions_Dog
     )
   
-    df_pet <- df_pet %>% 
+  df_pet <- df_pet %>% 
     select(-PetEmissions_Cat,-PetEmissions_Dog)
-    
-    # assign new df_pet to the user’s workspace
-    assign(new_name, df_pet, envir = parent.frame())
-    message(
-      paste0(
-        "✅ A new data frame '", new_name,
-        "' is now available in your R environment."
-      )
+  
+  # assign new df_pet to the user's workspace
+  assign(new_name, df_pet, envir = parent.frame())
+  message(
+    paste0(
+      "\u2705 A new data frame '", new_name,
+      "' is now available in your R environment."
     )
-    
-    
+  )
+  
+  
   return(df_pet)
 }
 

@@ -2,15 +2,15 @@
 # Create the built-in dataset for transport emission factors
 transport_emission_factors <- tibble::tibble(
   Country = c("United States", "China", "European Union", "Other"),
-  Gasoline_Vehicle = c(0.37218938, NA, NA, NA),
-  Diesel_Vehicle = c(0.3461361, NA, NA, NA),
-  Electric_Vehicle = c(0.10245428, NA, NA, NA),  # Assumed zero
-  Hybrid_Vehicle = c(0.23732183, NA, NA, NA),  # Half of gasoline
-  Natural_Gas_Vehicle = c(0.24038709, NA, NA, NA),
-  Public_Transport = c(0.12381866, NA, NA, NA),
-  Flights_Short       = c(0.17430491,  NA, NA, NA),  # short‐haul factor
-  Flights_Long        = c(0.11046002,  NA,  NA, NA),  # long‐haul factor
-  Long_Distance_Train = c(0.072325206, NA, NA, NA)  # kg CO2 per km
+  Gasoline_Vehicle = c(0.37218938, 0.37218938, NA, NA),
+  Diesel_Vehicle = c(0.3461361, 0.3461361, NA, NA),
+  Electric_Vehicle = c(0.10245428, 0.10245428, NA, NA),  # Assumed zero
+  Hybrid_Vehicle = c(0.23732183, 0.23732183, NA, NA),  # Half of gasoline
+  Natural_Gas_Vehicle = c(0.24038709, 0.24038709, NA, NA),
+  Public_Transport = c(0.12381866, 0.12381866, NA, NA),
+  Flights_Short       = c(0.17430491,  0.17430491, NA, NA),  # short-haul factor
+  Flights_Long        = c(0.11046002,  0.11046002,  NA, NA),  # long-haul factor
+  Long_Distance_Train = c(0.072325206, 0.072325206, NA, NA)  # kg CO2 per km
 )
 
 # Save the dataset as internal data
@@ -21,12 +21,13 @@ library(tidyverse)
 #'
 #' Returns a list of transport emission factors based on the country.
 #'
-#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
 #' @importFrom tidyr replace_na
 #' @importFrom stats setNames
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map map_df
 #' @importFrom tibble tibble
+#' @importFrom rlang .data
 #' @param country A character string representing the country.
 #' @return A list of transport emission factors.
 get_transport_emission_factors <- function(country) {
@@ -36,26 +37,53 @@ get_transport_emission_factors <- function(country) {
     stop("Error: transport_emission_factors dataset not found.")
   }
   
-  # Filter the dataset for the given country
-  factors <- transport_emission_factors %>% filter(Country == country)
-  
-  # If no match, return NA values
-  if (nrow(factors) == 0) {
-    return(list(
-      "Gasoline Vehicle" = NA,
-      "Diesel Vehicle" = NA,
-      "Electric Vehicle" = NA,
-      "Hybrid Vehicle" = NA,
-      "Natural Gas Vehicle" = NA,
-      "Public Transport" = NA,
-      "Flights_Short" = NA,
-      "Flights_Long" = NA,
-      "Long Distance Train" = NA
-    ))
+  # tolerate vectors: pick first non-NA
+  if (length(country) > 1) {
+    country <- country[!is.na(country)]
+    country <- if (length(country)) country[[1]] else NA_character_
   }
   
-  # Convert row data to a list (excluding country column)
-  return(as.list(factors[-1]))
+  # normalize a few variants to "China"
+  norm <- function(x) {
+    x <- trimws(x)
+    if (is.na(x)) return(x)
+    gsub("^PRC$|^CN$|^China \\(Mainland\\)$|^Mainland China$", "China", x, ignore.case = TRUE)
+  }
+  country <- norm(country)
+  
+  
+  # try exact match; fallback to "Other"
+  row <- transport_emission_factors %>% filter(Country == country)
+  if (nrow(row) == 0) {
+    row <- transport_emission_factors %>% filter(Country == "Other")
+    if (nrow(row) == 0) {
+      # final fallback to zeros
+      return(list(
+        Gasoline_Vehicle    = NA_real_,
+        Diesel_Vehicle      = NA_real_,
+        Electric_Vehicle    = NA_real_,
+        Hybrid_Vehicle      = NA_real_,
+        Natural_Gas_Vehicle = NA_real_,
+        Public_Transport    = NA_real_,
+        Flights_Short       = NA_real_,
+        Flights_Long        = NA_real_,
+        Long_Distance_Train = NA_real_
+      ))
+    }
+  }
+  
+  
+  
+  # derive Hybrid if missing: average of gasoline and electric (only if both present)
+  vals <- as.list(row[-1])
+  if (is.na(vals$Hybrid_Vehicle) &&
+      !is.na(vals$Gasoline_Vehicle) && !is.na(vals$Electric_Vehicle)) {
+    vals$Hybrid_Vehicle <- mean(c(vals$Gasoline_Vehicle, vals$Electric_Vehicle))
+  }
+  
+  # ensure numerics
+  vals <- lapply(vals, function(x) as.numeric(x))
+  vals
 }
 
 #' Calculate Transport Emissions
@@ -73,7 +101,7 @@ calc_transport_emissions <- function(df) {
   
   # Ensure emission factors are not NULL or empty
   emission_factors_transport <- lapply(emission_factors_transport, function(x) ifelse(is.na(x) | length(x) == 0, 0, x))
-
+  
   # Define mappings for categorical values
   car_usage_map <- c(
     "0 days (I do not use a car)" = 0,
@@ -165,24 +193,24 @@ calc_transport_emissions <- function(df) {
       PublicTransportDistance = T_05_PublicTransport,
       public_transport_usage_factor = T_04_PublicTransport_usage
     )
-    
+  
   df_transport <- df_transport %>% 
     mutate(WeeklyCarDistance = as.numeric(WeeklyCarDistance),
-  PublicTransportDistance = as.numeric(PublicTransportDistance))
+           PublicTransportDistance = as.numeric(PublicTransportDistance))
   
   # Ensure emission factors are correctly assigned and avoid size 0 error
   public_transport_factor <- ifelse(length(emission_factors_transport$Public_Transport) > 0,
                                     emission_factors_transport$Public_Transport, 0)
   
   short_flights_factor <- ifelse(length(emission_factors_transport$Flights_Short) > 0,
-                           emission_factors_transport$Flights_Short, 0)
-
+                                 emission_factors_transport$Flights_Short, 0)
+  
   long_flights_factor <- ifelse(length(emission_factors_transport$Flights_Long) > 0,
-                           emission_factors_transport$Flights_Long, 0)
+                                emission_factors_transport$Flights_Long, 0)
   
   train_factor <- ifelse(length(emission_factors_transport$Long_Distance_Train) > 0,
                          emission_factors_transport$Long_Distance_Train, 0)
-
+  
   # Calculate annual emissions
   df_transport <- df_transport %>%
     mutate(
@@ -194,27 +222,27 @@ calc_transport_emissions <- function(df) {
       TransportEmissions = CarEmissions + PublicTransportEmissions + AirTravelLongEmissions + AirTravelShortEmissions + TrainEmissions
     )
   
-df_transport <- df_transport %>% 
-  mutate(    
-  CarEmissions = as.numeric(CarEmissions),
-    PublicTransportEmissions = as.numeric(PublicTransportEmissions),
-    AirTravelLongEmissions = as.numeric(AirTravelLongEmissions),
-    AirTravelShortEmissions = as.numeric(AirTravelShortEmissions),
-    TrainEmissions = as.numeric(TrainEmissions),
-    TransportEmissions = as.numeric(TransportEmissions))
-    
-    df_transport <- df_transport %>% 
-  select(-car_emission_factor,-WeeklyCarDistance,-PublicTransportDistance,-CarEmissions,-PublicTransportEmissions,-AirTravelLongEmissions,-AirTravelShortEmissions,-TrainEmissions,-T_04_PublicTransport_usage,-public_transport_usage_factor)
+  df_transport <- df_transport %>% 
+    mutate(    
+      CarEmissions = as.numeric(CarEmissions),
+      PublicTransportEmissions = as.numeric(PublicTransportEmissions),
+      AirTravelLongEmissions = as.numeric(AirTravelLongEmissions),
+      AirTravelShortEmissions = as.numeric(AirTravelShortEmissions),
+      TrainEmissions = as.numeric(TrainEmissions),
+      TransportEmissions = as.numeric(TransportEmissions))
   
-    # assign new df_transport to the user’s workspace
-    assign(new_name, df_transport, envir = parent.frame())
-    message(
-      paste0(
-        "✅ A new data frame '", new_name,
-        "' is now available in your R environment."
-      )
+  df_transport <- df_transport %>% 
+    select(-car_emission_factor,-WeeklyCarDistance,-PublicTransportDistance,-CarEmissions,-PublicTransportEmissions,-AirTravelLongEmissions,-AirTravelShortEmissions,-TrainEmissions,-T_04_PublicTransport_usage,-public_transport_usage_factor)
+  
+  # assign new df_transport to the user's workspace
+  assign(new_name, df_transport, envir = parent.frame())
+  message(
+    paste0(
+      "\u2705 A new data frame '", new_name,
+      "' is now available in your R environment."
     )
-    
+  )
+  
   
   return(df_transport)
 }

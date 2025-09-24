@@ -2,12 +2,13 @@
 #'
 #' Returns a list of transport emission factors based on the country.
 #'
-#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
 #' @importFrom tidyr replace_na
 #' @importFrom stats setNames
 #' @importFrom magrittr %>%
 #' @importFrom purrr map map_df
 #' @importFrom tibble tibble
+#' @importFrom rlang .data
 #'
 #' @param country A character string representing the country.
 #' @return A list of transport emission factors.
@@ -18,28 +19,51 @@ get_transport_emission_factors <- function(country) {
     stop("Error: transport_emission_factors dataset not found.")
   }
   
-  # Filter the dataset for the given country
-  factors <- transport_emission_factors %>% filter(Country == country)
-  
-  # If no match, return NA values
-  if (nrow(factors) == 0) {
-    return(list(
-      "Gasoline Vehicle" = NA,
-      "Diesel Vehicle" = NA,
-      "Electric Vehicle" = NA,
-      "Hybrid Vehicle" = NA,
-      "Natural Gas Vehicle" = NA,
-      "Public Transport" = NA,
-      "Flights_Short" = NA,
-      "Flights_Long" = NA,
-      "Long Distance Train" = NA
-    ))
+  # tolerate vectors: pick first non-NA
+  if (length(country) > 1) {
+    country <- country[!is.na(country)]
+    country <- if (length(country)) country[[1]] else NA_character_
   }
   
-  # Convert row data to a list (excluding country column)
-  return(as.list(factors[-1]))
+  # normalize a few variants to "China"
+  norm <- function(x) {
+    x <- trimws(x)
+    if (is.na(x)) return(x)
+    gsub("^PRC$|^CN$|^China \\(Mainland\\)$|^Mainland China$", "China", x, ignore.case = TRUE)
+  }
+  country <- norm(country)
+  
+  # try exact match; fallback to "Other"
+  row <- transport_emission_factors %>% filter(Country == country)
+  if (nrow(row) == 0) {
+    row <- transport_emission_factors %>% filter(Country == "Other")
+    if (nrow(row) == 0) {
+      # final fallback to zeros
+      return(list(
+        Gasoline_Vehicle    = NA_real_,
+        Diesel_Vehicle      = NA_real_,
+        Electric_Vehicle    = NA_real_,
+        Hybrid_Vehicle      = NA_real_,
+        Natural_Gas_Vehicle = NA_real_,
+        Public_Transport    = NA_real_,
+        Flights_Short       = NA_real_,
+        Flights_Long        = NA_real_,
+        Long_Distance_Train = NA_real_
+      ))
+    }
+  }
+  
+  # derive Hybrid if missing: average of gasoline and electric (only if both present)
+  vals <- as.list(row[-1])
+  if (is.na(vals$Hybrid_Vehicle) &&
+      !is.na(vals$Gasoline_Vehicle) && !is.na(vals$Electric_Vehicle)) {
+    vals$Hybrid_Vehicle <- mean(c(vals$Gasoline_Vehicle, vals$Electric_Vehicle))
+  }
+  
+  # ensure numerics
+  vals <- lapply(vals, function(x) as.numeric(x))
+  vals
 }
-
 
 #' Calculate Transport-Related Carbon Emissions with Process Data
 #'
@@ -187,11 +211,11 @@ calc_transport_emissions_process <- function(df) {
                TransportEmissions = as.numeric(TransportEmissions))
   
   
-  # assign new df_transport_process to the user’s workspace
+  # assign new df_transport_process to the user's workspace
   assign(new_name, df_transport_process, envir = parent.frame())
   message(
     paste0(
-      "✅ A new data frame '", new_name,
+      "\u2705 A new data frame '", new_name,
       "' is now available in your R environment."
     )
   )

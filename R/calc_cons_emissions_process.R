@@ -6,15 +6,30 @@ library(tidyverse)
 #'
 #' Fetches consumption emission factors from the dataset stored in the package.
 #'
-#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
 #' @importFrom tidyr replace_na
 #' @importFrom stats setNames
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map map_df
 #' @importFrom tibble tibble
+#' @importFrom rlang .data
 #' @param country A character string representing the country.
 #' @return A named list of consumption emission factors.
 get_cons_emission_factors <- function(country) {
+  # Handle vectors and NAs gracefully
+  if (length(country) > 1) {
+    country <- country[!is.na(country)]
+    country <- if (length(country)) country[[1]] else NA_character_
+  }
+  
+  # Normalize a few common variants
+  norm <- function(x) {
+    x <- trimws(x)
+    if (is.na(x)) return(x)
+    x <- gsub("^PRC$|^CN$|^China \\(Mainland\\)$|^Mainland China$", "China", x, ignore.case = TRUE)
+    x
+  }
+  country <- norm(country)
   
   # Filter the dataset for the given country
   factors <- cons_emission_factors %>%
@@ -36,6 +51,14 @@ get_cons_emission_factors <- function(country) {
       "Healthcare" = NA,  
       "Clothing" = NA  
     )
+  }
+  # Optional check: warn if any needed factor is NA
+  needed <- c("FoodDelivery","DiningOut","HotelStays","TobaccoProducts",
+              "AlcoholDrinks","Entertainment","Healthcare","Clothing")
+  missing_any <- any(is.na(unlist(emission_list[needed])))
+  if (missing_any) {
+    warning("Some factors are NA for country = ", country, 
+            ". Check `cons_emission_factors` entries.")
   }
   
   return(emission_list)
@@ -112,11 +135,11 @@ calc_cons_emissions_process <- function(df) {
       ConsEmissions = as.numeric(ConsEmissions)
     )
   
-  # assign new df_cons_process to the user’s workspace
+  # assign new df_cons_process to the user's workspace
   assign(new_name, df_cons_process, envir = parent.frame())
   message(
     paste0(
-      "✅ A new data frame '", new_name,
+      "\u2705 A new data frame '", new_name,
       "' is now available in your R environment."
     )
   )

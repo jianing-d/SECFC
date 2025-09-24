@@ -4,10 +4,18 @@
 \alias{calc_food_emissions_process}
 \title{Calculate Food-Related Carbon Emissions with Process Data}
 \usage{
-calc_food_emissions_process(df)
+calc_food_emissions_process(
+  df,
+  milk_price_rmb_per_l = 10,
+  serving_volume_l = 0.5
+)
 }
 \arguments{
 \item{df}{A data frame containing the food consumption data.}
+
+\item{milk_price_rmb_per_l}{numeric. Milk price per litre (RMB).}
+
+\item{serving_volume_l}{numeric. Serving volume in litres.}
 }
 \value{
 A data frame with a new column \code{FoodEmissions} representing total food-related emissions and additional process calculation results.

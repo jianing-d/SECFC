@@ -1,21 +1,23 @@
 
 .onLoad <- function(libname, pkgname) {
-  # Load package data into the global environment
   data_env <- globalenv()
   utils::data("zip_data", package = pkgname, envir = data_env)
   utils::data("housing_emission_factors", package = pkgname, envir = data_env)
+  utils::data("cn_admin_data", package = pkgname, envir = data_env)   # <- NEW
 }
+
 
 #' Get country-specific housing emission factors from dataset
 #'
 #' Returns a list of housing emission factors based on the country.
 #'
-#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull
+#' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
 #' @importFrom tidyr replace_na
 #' @importFrom stats setNames
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map map_df
 #' @importFrom tibble tibble
+#' @importFrom rlang .data
 #' @param country A character string representing the country.
 #' @return A list of housing emission factors.
 get_housing_emission_factors <- function(country) {
@@ -76,15 +78,35 @@ get_housing_emission_factors <- function(country) {
     ))
   }
   
-  # China: all NA, but keep structure
+  # China: return actual values and group by power grid company
   if (lookup_country == "China") {
+    if (!exists("housing_emission_factors", where = globalenv())) {
+      stop("Error: housing_emission_factors dataset not found.")
+    }
+    factors_cn <- housing_emission_factors %>% filter(Country == "China")
+    
+    # Extract water/natural gas (unit: kgCO2e per RMB)
+    water_v   <- factors_cn %>% filter(FactorName == "WaterCFC") %>% pull(Value) %>% {if(length(.)==0) NA_real_ else .}
+    gas_v     <- factors_cn %>% filter(FactorName == "NaturalGas") %>% pull(Value) %>% {if(length(.)==0) NA_real_ else .}
+    
+    # Electricity (unit: kg CO2-eq / kWh), values retrieved by power grid company name
+    get_elec <- function(name) {
+      v <- factors_cn %>% filter(FactorName == name) %>% pull(Value)
+      if (length(v) == 0) NA_real_ else v
+    }
+    
     return(list(
-      WaterCFC   = NA,
-      NaturalGas = NA,
+      WaterCFC   = water_v,
+      NaturalGas = gas_v,
       Electricity = list(
-        Electricity_China_Group1 = NA,
-        Electricity_China_Group2 = NA,
-        Electricity_China_Group3 = NA
+        `Electricity_中国南方电网` = get_elec("Electricity_中国南方电网"),
+        `Electricity_华东电网公司` = get_elec("Electricity_华东电网公司"),
+        `Electricity_华北电网公司` = get_elec("Electricity_华北电网公司"),
+        `Electricity_中国东北电网` = get_elec("Electricity_中国东北电网"),
+        `Electricity_西北电网`     = get_elec("Electricity_西北电网"),
+        `Electricity_西南电网`     = get_elec("Electricity_西南电网"),
+        `Electricity_华中电网`     = get_elec("Electricity_华中电网"),
+        `Electricity_Hong Kong`   = get_elec("Electricity_Hong Kong")
       )
     ))
   }
@@ -124,96 +146,40 @@ calc_housing_emissions_process <- function(df) {
   new_name      <- paste0(original_name, "_housing_process")
   # Ensure built-in datasets are available
   if (!exists("zip_data")) stop("Error: zip_data dataset not found.")
-  
+  if (!exists("cn_admin_data")) {
+    has_cn <- any(df$SD_07_Country %in% c("China","中国"), na.rm = TRUE)
+    if (has_cn) stop("Error: cn_admin_data dataset not found.")
+  }
   # Get country-specific housing emission factors
-  emission_factors_housing <- get_housing_emission_factors(unique(df$SD_07_Country))
-  
-  # Ensure ZIP code exists and is numeric
-  df_housing_process <- df %>%
-    mutate(SD_08_ZipCode = as.numeric(SD_08_ZipCode))
+  factors_us <- get_housing_emission_factors("United States")
+  factors_cn <- get_housing_emission_factors("China")
   
   # Define function to classify state based on ZIP code
   classify_state <- function(zip_code) {
-    matched_state <- zip_data %>%
-      filter(zip_code >= Zip_Min & zip_code <= Zip_Max) %>%
-      pull(ST)
-    
-    if (length(matched_state) == 1) {
-      return(matched_state)
-    } else {
-      return(NA)  # Return NA if no match or multiple matches found
-    }
+    if (is.na(zip_code)) return(NA_character_)
+    st <- zip_data %>% filter(zip_code >= Zip_Min & zip_code <= Zip_Max) %>% pull(ST)
+    if (length(st) == 1) st else NA_character_
   }
-  
-  # Define function to classify region based on state
   classify_zip_code <- function(zip_code) {
     state <- classify_state(zip_code)
-    
-    US_ASCC <- c("AK")
-    US_HICC <- c("HI")
+    US_ASCC <- c("AK"); US_HICC <- c("HI")
     US_MRO  <- c("IA","IL","KS","MI","MN","MO","MT","ND","NE","SD","WI")
     US_NPCC <- c("CT","MA","ME","NH","NY","RI","VT")
     US_RFC  <- c("DC","DE","IN","MD","NJ","OH","PA","VA","WV")
     US_SERC <- c("AL","AR","FL","GA","KY","LA","MS","NC","OK","SC","TN")
     US_TRE  <- c("TX")
     US_WECC <- c("AZ","CA","CO","ID","NM","NV","OR","UT","WA","WY")
-    
-    
-    if (is.na(state)) {
-      return(NA)
-    }
-    if      (state %in% US_ASCC) return("US_ASCC")
-    else if (state %in% US_HICC) return("US_HICC")
-    else if (state %in% US_MRO)  return("US_MRO")
-    else if (state %in% US_NPCC) return("US_NPCC")
-    else if (state %in% US_RFC)  return("US_RFC")
-    else if (state %in% US_SERC) return("US_SERC")
-    else if (state %in% US_TRE)  return("US_TRE")
-    else if (state %in% US_WECC) return("US_WECC")
-    # catch‑all
-    return(NA)
+    if (is.na(state)) return(NA_character_)
+    if      (state %in% US_ASCC) "US_ASCC"
+    else if (state %in% US_HICC) "US_HICC"
+    else if (state %in% US_MRO)  "US_MRO"
+    else if (state %in% US_NPCC) "US_NPCC"
+    else if (state %in% US_RFC)  "US_RFC"
+    else if (state %in% US_SERC) "US_SERC"
+    else if (state %in% US_TRE)  "US_TRE"
+    else if (state %in% US_WECC) "US_WECC"
+    else NA_character_
   }
-  
-  # Classify state, region, and select appropriate electricity emission factor
-  df_housing_process <- df_housing_process %>%
-    rowwise() %>%
-    mutate(
-      state = classify_state(SD_08_ZipCode),
-      region = classify_zip_code(SD_08_ZipCode),
-      electricity_emission_factor = case_when(
-        region == "US_ASCC" ~ emission_factors_housing$Electricity$US_ASCC,
-        region == "US_HICC" ~ emission_factors_housing$Electricity$US_HICC,
-        region == "US_MRO" ~ emission_factors_housing$Electricity$US_MRO,
-        region == "US_NPCC" ~ emission_factors_housing$Electricity$US_NPCC,
-        region == "US_RFC" ~ emission_factors_housing$Electricity$US_RFC,
-        region == "US_SERC" ~ emission_factors_housing$Electricity$US_SERC,
-        region == "US_TRE" ~ emission_factors_housing$Electricity$US_TRE,
-        region == "US_WECC" ~ emission_factors_housing$Electricity$US_WECC
-      )
-    ) %>%
-    ungroup()
-  
-  # Handle missing values for energy bills
-  df_housing_process <- df_housing_process %>%
-    mutate(
-      EH_02_ElectricityBil_1 = as.numeric(EH_02_ElectricityBil_1),
-      EH_03_ElectricityBil_1 = as.numeric(EH_03_ElectricityBil_1),
-      EH_05_NaturalGasBill_1 = as.numeric(EH_05_NaturalGasBill_1),
-      EH_06_NaturalGasBill_1= as.numeric(EH_06_NaturalGasBill_1),
-      EH_07_WaterBill = as.numeric(EH_07_WaterBill),
-      SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
-      SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
-      SD_06_HouseholdSize_19 = as.numeric(SD_06_HouseholdSize_19),
-      
-      EH_02_ElectricityBil_1 = ifelse(is.na(EH_02_ElectricityBil_1), 0, EH_02_ElectricityBil_1),
-      EH_03_ElectricityBil_1 = ifelse(is.na(EH_03_ElectricityBil_1), 0, EH_03_ElectricityBil_1),
-      EH_05_NaturalGasBill_1 = ifelse(is.na(EH_05_NaturalGasBill_1), 0, EH_05_NaturalGasBill_1),
-      EH_06_NaturalGasBill_1= ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1),
-      EH_07_WaterBill = ifelse(is.na(EH_07_WaterBill), 0, EH_07_WaterBill),
-      SD_06_HouseholdSize_17 = ifelse(is.na(SD_06_HouseholdSize_17), 0, SD_06_HouseholdSize_17),
-      SD_06_HouseholdSize_18 = ifelse(is.na(SD_06_HouseholdSize_18), 0, SD_06_HouseholdSize_18),
-      SD_06_HouseholdSize_19 = ifelse(is.na(SD_06_HouseholdSize_19), 0, SD_06_HouseholdSize_19)
-    )
   
   # Define electricity prices by state (in cents per kWh)
   electricity_prices <- data.frame(
@@ -230,38 +196,120 @@ calc_housing_emissions_process <- function(df) {
               12.91, 12.39, 10.79, 11.36, 10.63, 18.50, 12.40, 9.79, 11.57, 14.28, 
               12.30)
   )
-  # Calculate annual emissions using specific user-selected values
-  df_housing_process <- df_housing_process %>%
+  
+  
+  
+  # Classify state, region, and select appropriate electricity emission factor
+  df_housing_process <- df %>%
     mutate(
-      electricity_price = as.numeric(electricity_prices$price[match(state, electricity_prices$state)]),
-      electricity_usage_kWh = ifelse(electricity_price > 0,
-                                     (EH_02_ElectricityBil_1 * 100) / electricity_price,
-                                     0),
-      natural_gas_usage_m3 = EH_05_NaturalGasBill_1 / 0.353147, # Assuming $0.353147 per 1.0 m3 for simplicity
-      # 1) USD per m³ of water
-      price_per_m3 = 6.64 / (1000 * 0.00378541),
-      
-      # 2) m³ used per month
-      water_m3_month = ifelse(price_per_m3 > 0,
-                              EH_07_WaterBill / price_per_m3,
-                              0),
-      HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
-      HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize),
-      ElectricityEmissions = electricity_usage_kWh * 12 * electricity_emission_factor,
-      NaturalGasEmissions = natural_gas_usage_m3 * 12 * emission_factors_housing$NaturalGas,
-      WaterEmissions = water_m3_month * emission_factors_housing$WaterCFC*12,
-      
-      # Total housing emissions
-      HousingEmissions_household = ElectricityEmissions + NaturalGasEmissions + WaterEmissions,
-      HousingEmissions=HousingEmissions_household/HouseholdSize
+      SD_08_ZipCode   = suppressWarnings(as.numeric(SD_08_ZipCode)),
+      SD_09_AdminCode = suppressWarnings(as.numeric(SD_09_AdminCode)),
+      EH_02_ElectricityBil_1 = as.numeric(EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = as.numeric(EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = as.numeric(EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1 = as.numeric(EH_06_NaturalGasBill_1),
+      EH_07_WaterBill        = as.numeric(EH_07_WaterBill),
+      SD_06_HouseholdSize_17 = as.numeric(SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = as.numeric(SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = as.numeric(SD_06_HouseholdSize_19),
+      EH_02_ElectricityBil_1 = ifelse(is.na(EH_02_ElectricityBil_1), 0, EH_02_ElectricityBil_1),
+      EH_03_ElectricityBil_1 = ifelse(is.na(EH_03_ElectricityBil_1), 0, EH_03_ElectricityBil_1),
+      EH_05_NaturalGasBill_1 = ifelse(is.na(EH_05_NaturalGasBill_1), 0, EH_05_NaturalGasBill_1),
+      EH_06_NaturalGasBill_1 = ifelse(is.na(EH_06_NaturalGasBill_1), 0, EH_06_NaturalGasBill_1),
+      EH_07_WaterBill        = ifelse(is.na(EH_07_WaterBill),        0, EH_07_WaterBill),
+      SD_06_HouseholdSize_17 = ifelse(is.na(SD_06_HouseholdSize_17), 0, SD_06_HouseholdSize_17),
+      SD_06_HouseholdSize_18 = ifelse(is.na(SD_06_HouseholdSize_18), 0, SD_06_HouseholdSize_18),
+      SD_06_HouseholdSize_19 = ifelse(is.na(SD_06_HouseholdSize_19), 0, SD_06_HouseholdSize_19)
     )
   
-
-  # assign new df_housing_process to the user’s workspace
+  # Subsidy to China Bank and provincial electricity price/grid companies
+  if (exists("cn_admin_data")) {
+    df_housing_process <- df_housing_process %>%
+      left_join(cn_admin_data, by = c("SD_09_AdminCode" = "AdminCode"))
+  }
+  
+  # Calculate annual emissions using specific user-selected values
+  df_housing_process <- df_housing_process %>%
+    rowwise() %>%
+    mutate(
+      HouseholdSize = SD_06_HouseholdSize_17 + SD_06_HouseholdSize_18 + SD_06_HouseholdSize_19,
+      HouseholdSize = ifelse(HouseholdSize == 0, 1, HouseholdSize),
+      
+      #US path: ZIP → state/region/electricity factor; reverse-calculate electricity consumption from bills and state electricity prices.
+      state_us  = ifelse(SD_07_Country == "United States", classify_state(SD_08_ZipCode), NA_character_),
+      region_us = ifelse(SD_07_Country == "United States", classify_zip_code(SD_08_ZipCode), NA_character_),
+      elec_price_us_cents = ifelse(SD_07_Country == "United States",
+                                   as.numeric(electricity_prices$price[match(state_us, electricity_prices$state)]),
+                                   NA_real_),
+      elec_factor_us = ifelse(SD_07_Country == "United States",
+                              dplyr::case_when(
+                                region_us == "US_ASCC" ~ factors_us$Electricity$US_ASCC,
+                                region_us == "US_HICC" ~ factors_us$Electricity$US_HICC,
+                                region_us == "US_MRO"  ~ factors_us$Electricity$US_MRO,
+                                region_us == "US_NPCC" ~ factors_us$Electricity$US_NPCC,
+                                region_us == "US_RFC"  ~ factors_us$Electricity$US_RFC,
+                                region_us == "US_SERC" ~ factors_us$Electricity$US_SERC,
+                                region_us == "US_TRE"  ~ factors_us$Electricity$US_TRE,
+                                region_us == "US_WECC" ~ factors_us$Electricity$US_WECC,
+                                TRUE ~ NA_real_
+                              ),
+                              NA_real_),
+      electricity_usage_kWh_us = ifelse(SD_07_Country == "United States" &
+                                          !is.na(elec_price_us_cents) & elec_price_us_cents > 0,
+                                        (EH_02_ElectricityBil_1 * 100) / elec_price_us_cents, 0),
+      #Natural gas/tap water (USA) is simplified as follows: price → usage (m³), then multiply by a factor (kgCO2/m³)
+      natural_gas_usage_m3_us = ifelse(SD_07_Country == "United States", EH_05_NaturalGasBill_1 / 0.353147, 0),
+      price_per_m3_us         = ifelse(SD_07_Country == "United States", 6.64 / (1000 * 0.00378541), NA_real_),
+      water_m3_month_us       = ifelse(SD_07_Country == "United States" & !is.na(price_per_m3_us) & price_per_m3_us > 0,
+                                       EH_07_WaterBill / price_per_m3_us, 0),
+      
+      #China's path: Provincial electricity prices (RMB/kWh) directly infer electricity consumption; water/gas are calculated using the "emission factor per RMB"
+      elec_price_cn_rmb = ifelse(SD_07_Country == "China", ElecPrice_RMB_per_kWh, NA_real_),
+      electricity_usage_kWh_cn = ifelse(SD_07_Country == "China" &
+                                          !is.na(elec_price_cn_rmb) & elec_price_cn_rmb > 0,
+                                        EH_02_ElectricityBil_1 / elec_price_cn_rmb, 0),
+      elec_factor_cn = ifelse(SD_07_Country == "China" & !is.null(factors_cn$Electricity),
+                              {
+                                nm <- as.character(GridName)
+                                if (!is.na(nm) && nm %in% names(factors_cn$Electricity)) {
+                                  as.numeric(factors_cn$Electricity[[nm]])
+                                } else NA_real_
+                              }, NA_real_),
+      #  Electricity emissions by country
+      ElectricityEmissions = dplyr::case_when(
+        SD_07_Country == "United States" ~ electricity_usage_kWh_us * 12 * elec_factor_us,
+        SD_07_Country == "China"         ~ electricity_usage_kWh_cn * 12 * elec_factor_cn,
+        TRUE ~ NA_real_
+      ),
+      
+      # -- Natural gas emissions by country --
+      NaturalGasEmissions = dplyr::case_when(
+        SD_07_Country == "United States" ~ natural_gas_usage_m3_us * 12 * factors_us$NaturalGas,
+        SD_07_Country == "China"         ~ EH_05_NaturalGasBill_1   * 12 * factors_cn$NaturalGas,  # Unit: kgCO2e_per_RMB
+        TRUE ~ NA_real_
+      ),
+      
+      # -- Tap water discharge by country --
+      WaterEmissions = dplyr::case_when(
+        SD_07_Country == "United States" ~ water_m3_month_us * 12 * factors_us$WaterCFC,
+        SD_07_Country == "China"         ~ EH_07_WaterBill  * 12 * factors_cn$WaterCFC,            # Unit: kgCO2e_per_RMB
+        TRUE ~ NA_real_
+      ),
+      
+      HousingEmissions_household = rowSums(cbind(ElectricityEmissions, NaturalGasEmissions, WaterEmissions), na.rm = TRUE),
+      HousingEmissions = HousingEmissions_household / HouseholdSize
+    ) %>% 
+    ungroup()
+  
+  
+  
+  
+  
+  # assign new df_housing_process to the user's workspace
   assign(new_name, df_housing_process, envir = parent.frame())
   message(
     paste0(
-      "✅ A new data frame '", new_name,
+      "\u2705 A new data frame '", new_name,
       "' is now available in your R environment."
     )
   )

@@ -9,6 +9,7 @@ A data frame with columns:
 \describe{
 \item{Country}{Country name}
 \item{FactorName}{Type of food emission factor (e.g., Dairy, Meat, Vegan, Vegetarian)}
+\item{Unit}{character}  # e.g., "kg CO2e / kg"
 \item{Value}{Emission value for the given factor}
 }
 }

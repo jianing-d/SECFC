@@ -4,10 +4,14 @@
 \alias{calc_food_emissions}
 \title{Calculate Food-Based Emissions using internal dataset}
 \usage{
-calc_food_emissions(df)
+calc_food_emissions(df, milk_price_rmb_per_l = 10, serving_volume_l = 0.5)
 }
 \arguments{
 \item{df}{A data frame containing the food consumption data.}
+
+\item{milk_price_rmb_per_l}{numeric. Milk price per litre (RMB).}
+
+\item{serving_volume_l}{numeric. Serving volume in litres.}
 }
 \value{
 A data frame with a new column \code{FoodEmissions} representing total food emissions.
