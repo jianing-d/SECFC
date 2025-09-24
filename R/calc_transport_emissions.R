@@ -14,15 +14,16 @@ transport_emission_factors <- tibble::tibble(
 )
 
 # Save the dataset as internal data
+if (interactive()) {
 usethis::use_data(transport_emission_factors, overwrite = TRUE)
-library(dplyr)
-library(tidyverse)
+}
+  
 #' Get country-specific transport emission factors
 #'
 #' Returns a list of transport emission factors based on the country.
 #'
 #' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
-#' @importFrom tidyr replace_na
+#' @importFrom tidyr replace_na pivot_wider
 #' @importFrom stats setNames
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map map_df

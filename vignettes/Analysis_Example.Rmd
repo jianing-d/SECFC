@@ -49,6 +49,14 @@ For demonstration, we assume you are use questionnaire_sample.rds that contains 
 # Replace the file path with your own dataset if necessary
 questionnaire_example <- SECFC::questionnaire_example
 
+required_cols <- c("SD_09_AdminCode")
+missing_cols  <- setdiff(required_cols, names(questionnaire_example))
+if (length(missing_cols)) {
+  message("Adding missing columns: ", paste(missing_cols, collapse = ", "))
+  questionnaire_example[missing_cols] <- NA_character_
+}
+
+
 # Take a quick look at your data structure
 str(questionnaire_example)
 ```

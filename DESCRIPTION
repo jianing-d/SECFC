@@ -22,7 +22,9 @@ Imports:
     purrr,
     tibble,
     tidyr,
-    rlang
+    rlang,
+    stats,
+    utils
 Depends: 
     R (>= 3.5)
 LazyData: true
@@ -35,5 +37,6 @@ Suggests:
     rmarkdown,
     ggplot2,
     remotes,
-    usethis
+    usethis,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr

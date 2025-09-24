@@ -25,16 +25,16 @@ food_emission_factors <- tibble::tibble(
 )
 
 # Save as an R dataset inside the package
+if (interactive()) {
 usethis::use_data(food_emission_factors, overwrite = TRUE)
-library(dplyr)
-library(tidyverse)
+}
 
 #' Get country-specific food emission factors from the built-in dataset
 #'
 #' Fetches food emission factors from the dataset stored in the package.
 #'
 #' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
-#' @importFrom tidyr replace_na
+#' @importFrom tidyr replace_na pivot_wider
 #' @importFrom stats setNames
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map map_df

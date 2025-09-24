@@ -1,47 +1,49 @@
 #' Questionnaire Example Data
 #'
-#' A sample dataset containing responses from a global questionnaire.
-#' This demo data is provided for playing with our calculator and represents
-#' typical survey data that we expect you to have. It includes responses on
-#' transportation, energy usage, dietary habits, clothing consumption, household
-#' demographics, and other lifestyle factors.
+#' A small, realistic demo dataset with responses from a global lifestyle/footprint questionnaire.
+#' It’s intended for testing the SECFC calculator and mirrors typical variables you might collect:
+#' transportation, energy, diet, clothing, and sociodemographics.
 #'
-#' @format A tibble with 50 rows and 33 variables:
+#' @format A tibble with 50 rows and 36 variables:
 #' \describe{
-#'   \item{RecordedDate}{chr; Date and time when the response was recorded, in the format "dd/mm/yyyy HH:MM".}
-#'   \item{T_01_CarUsage}{dbl; Self-reported level of car usage.}
-#'   \item{T_02_CarType}{dbl; Categorical indicator of the type of car owned or used.}
-#'   \item{T_03_CarDistance}{dbl; Reported distance travelled by car.}
-#'   \item{T_04_PublicTransport}{dbl; Frequency or rating of public transport usage.}
-#'   \item{T_05_PublicTransport}{dbl; Secondary measure of public transport usage.}
-#'   \item{T_06_AirTravelLong}{dbl; Frequency or extent of long-distance air travel.}
-#'   \item{T_07_AirTravelShort}{chr; Categorical description of short-distance air travel (e.g., "7-10 flights", "More than 10 flights").}
-#'   \item{T_08_LongDistanceTra}{dbl; Measure of long-distance travel by other means.}
-#'   \item{PETS_4}{dbl; Count or rating related to pet ownership (e.g., number of pets).}
-#'   \item{PETS_5}{dbl; Additional measure related to pet ownership.}
-#'   \item{E1_Electricity Usage}{dbl; Self-reported electricity usage level.}
-#'   \item{EH_02_ElectricityBil_1}{dbl; Electricity bill amount (first measurement).}
-#'   \item{EH_05_NaturalGasBill_1}{dbl; Water bill amount (first measurement).}
-#'   \item{EH_07_WaterBill}{dbl; Natural gas bill amount (first measurement).}
-#'   \item{F_01_DietaryHabits_5}{dbl; Score or frequency related to a specific dietary habit.}
-#'   \item{F_01_DietaryHabits_6}{dbl; Score or frequency for another dietary habit.}
-#'   \item{F_01_DietaryHabits_7}{dbl; Score or frequency for another dietary habit.}
-#'   \item{F_01_DietaryHabits_4}{dbl; Score or frequency for another dietary habit.}
-#'   \item{CL_01_ClothingPurcha}{dbl; Frequency or quantity of clothing purchases.}
-#'   \item{CL_03_MonthlyEx_9}{dbl; Monthly expenditure on clothing (item 9).}
-#'   \item{CL_03_MonthlyEx_10}{dbl; Monthly expenditure on clothing (item 10).}
-#'   \item{CL_03_MonthlyEx_11}{dbl; Monthly expenditure on clothing (item 11).}
-#'   \item{CL_03_MonthlyEx_12}{dbl; Monthly expenditure on clothing (item 12).}
-#'   \item{CL_03_MonthlyEx_13}{dbl; Monthly expenditure on clothing (item 13).}
-#'   \item{CL_03_MonthlyEx_14}{dbl; Monthly expenditure on clothing (item 14).}
-#'   \item{CL_03_MonthlyEx_15}{dbl; Monthly expenditure on clothing (item 15).}
-#'   \item{SD_06_HouseholdSize_17}{dbl; Primary measure of household size.}
-#'   \item{SD_06_HouseholdSize_18}{dbl; Secondary measure of household size.}
-#'   \item{SD_06_HouseholdSize_19}{dbl; Tertiary measure of household size.}
-#'   \item{SD_07_Country}{chr; Country of the respondent.}
-#'   \item{SD_08_ZipCode}{dbl; Zip code of the respondent.}
-#'   \item{EH_03_ElectricityBil_1}{dbl; Additional measure of electricity billing amount.}
-#'   \item{EH_06_NaturalGasBill_1}{dbl; Additional measure of natural gas billing amount.}
+#'   \item{RecordedDate}{chr; timestamp when the response was recorded, format "dd/mm/yyyy HH:MM".}
+#'   \item{T_01_CarUsage}{dbl; self-reported car use intensity or frequency (numeric scale).}
+#'   \item{T_02_CarType}{chr; car type category (e.g., "Hybrid Vehicle", "Diesel Vehicle").}
+#'   \item{T_03_CarDistance}{dbl; relative distance travelled by car (numeric scale).}
+#'   \item{T_04_PublicTransport}{dbl; public transport use (primary measure; numeric scale).}
+#'   \item{T_05_PublicTransport}{dbl; public transport use (secondary measure; numeric scale).}
+#'   \item{T_06_AirTravelLong}{dbl; long-haul air travel frequency/intensity (numeric scale).}
+#'   \item{T_07_AirTravelShort}{chr; short-haul air travel category (e.g., "4-6 flights").}
+#'   \item{T_08_LongDistanceTra}{dbl; other long-distance travel activity (numeric scale).}
+#'   \item{PETS_4}{dbl; pet-related count/score (e.g., number of pets).}
+#'   \item{PETS_5}{dbl; additional pet-related measure.}
+#'   \item{`E1_Electricity Usage`}{dbl; self-reported household electricity usage level (numeric scale).}
+#'   \item{EH_02_ElectricityBil_1}{dbl; monthly electricity bill (first/primary entry), in local currency units.}
+#'   \item{EH_05_NaturalGasBill_1}{dbl; monthly natural gas bill (first/primary entry), in local currency units.}
+#'   \item{EH_07_WaterBill}{dbl; monthly water bill, in local currency units.}
+#'   \item{F_01_DietaryHabits_5}{dbl; dietary habit indicator (numeric frequency/score).}
+#'   \item{F_01_DietaryHabits_6}{dbl; dietary habit indicator (numeric frequency/score).}
+#'   \item{F_01_DietaryHabits_7}{dbl; dietary habit indicator (numeric frequency/score).}
+#'   \item{F_01_DietaryHabits_4}{dbl; dietary habit indicator (numeric frequency/score).}
+#'   \item{CL_01_ClothingPurcha}{dbl; clothing purchase frequency/quantity (numeric scale).}
+#'   \item{CL_03_MonthlyEx_9}{dbl; clothing monthly expenditure (bucket 9), currency units.}
+#'   \item{CL_03_MonthlyEx_10}{dbl; clothing monthly expenditure (bucket 10), currency units.}
+#'   \item{CL_03_MonthlyEx_11}{dbl; clothing monthly expenditure (bucket 11), currency units.}
+#'   \item{CL_03_MonthlyEx_12}{dbl; clothing monthly expenditure (bucket 12), currency units.}
+#'   \item{CL_03_MonthlyEx_13}{dbl; clothing monthly expenditure (bucket 13), currency units.}
+#'   \item{CL_03_MonthlyEx_14}{dbl; clothing monthly expenditure (bucket 14), currency units.}
+#'   \item{CL_03_MonthlyEx_15}{dbl; clothing monthly expenditure (bucket 15), currency units.}
+#'   \item{SD_06_HouseholdSize_17}{dbl; household size component (e.g., adults).}
+#'   \item{SD_06_HouseholdSize_18}{dbl; household size component (e.g., teens).}
+#'   \item{SD_06_HouseholdSize_19}{dbl; household size component (e.g., children/others).}
+#'   \item{SD_07_Country}{chr; respondent country.}
+#'   \item{SD_08_ZipCode}{chr; postal/zip code (character; may include leading zeros or be missing).}
+#'   \item{EH_03_ElectricityBil_1}{dbl; derived/period electricity bill total (e.g., annualized), currency units.}
+#'   \item{EH_06_NaturalGasBill_1}{dbl; derived/period natural gas bill total (e.g., annualized), currency units.}
+#'   \item{income}{dbl; household or personal income (numeric, currency units).}
+#'   \item{SD_09_AdminCode}{chr; administrative code (e.g., province/prefecture code).}
 #' }
-#' @source Demo data generated for use with the SECFC calculator. This data reflects typical survey responses collected globally.
+#'
+#'
+#' @source Demo data generated for use with the SECFC calculator; reflects typical global survey responses.
 "questionnaire_example"

@@ -35,9 +35,7 @@ cons_emission_factors <- tibble::tibble(
 
 # Save as an R dataset
 usethis::use_data(cons_emission_factors, overwrite = TRUE)
-library(dplyr)
-library(tidyverse)
-library(rlang)
+
 
 
 #' Get country-specific emission factors from the built-in dataset
@@ -45,7 +43,7 @@ library(rlang)
 #' Fetches consumption emission factors from the dataset stored in the package.
 #'
 #' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
-#' @importFrom tidyr replace_na
+#' @importFrom tidyr replace_na pivot_wider
 #' @importFrom stats setNames
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map map_df

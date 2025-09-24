@@ -13,13 +13,11 @@ housing_emission_factors <- tibble::tibble(
 )
 
 # Save as an internal dataset inside the package
+if (interactive()) {
 usethis::use_data_raw("housing_emission_factors", open = FALSE)
 usethis::use_data(housing_emission_factors, overwrite = TRUE)
+}
 
-# Load required package
-library(tibble)
-library(dplyr)
-library(tidyverse)
 
 # Create the zip_data dataset
 zip_data <- tibble::tibble(
@@ -31,8 +29,10 @@ zip_data <- tibble::tibble(
 )
 
 # Save it as an internal dataset inside the package
+if (interactive()) {
 usethis::use_data(zip_data, overwrite = TRUE)
-
+}
+  
 # Create the cn_admin_data dataset (China admin code → province, grid, price RMB/kWh)
 cn_admin_data <- tibble::tibble(
   AdminCode = c(110000,120000,130000,140000,150000,210000,220000,230000,310000,320000,330000,340000,350000,360000,370000,410000,420000,430000,440000,450000,460000,500000,510000,520000,530000,540000,610000,620000,630000,640000,650000,810000,820000),
@@ -49,11 +49,11 @@ cn_admin_data <- tibble::tibble(
 )
 
 # Save it as an internal dataset inside the package
+if (interactive()) {
 usethis::use_data_raw("cn_admin_data", open = FALSE)
 usethis::use_data(cn_admin_data, overwrite = TRUE)
+}
 
-library(dplyr)
-library(tidyverse)
 
 .onLoad <- function(libname, pkgname) {
   data_env <- globalenv()
@@ -68,7 +68,7 @@ library(tidyverse)
 #' Returns a list of housing emission factors based on the country.
 #'
 #' @importFrom dplyr filter mutate select case_when rowwise ungroup pull across left_join all_of
-#' @importFrom tidyr replace_na
+#' @importFrom tidyr replace_na pivot_wider
 #' @importFrom stats setNames
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map map_df
