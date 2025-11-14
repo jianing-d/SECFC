@@ -1,21 +1,26 @@
 
 # Create a built-in dataset for housing emission factors
 housing_emission_factors <- tibble::tibble(
-  Country = c("United States", "United States", "United States", "United States", "United States", "United States","United States", "United States", "United States", "United States",
-              "China", "China", "China", "China", "China","China", "China", "China", "China", "China",
-              "European Union", "European Union", "European Union", "European Union", "European Union"),
+  Country = c(rep("United States", 10),
+              rep("China", 33),
+              rep("European Union", 5)),
   FactorName = c("WaterCFC", "NaturalGas", "Electricity_US_ASCC", "Electricity_US_HICC", "Electricity_US_MRO", "Electricity_US_NPCC","Electricity_US_RFC", "Electricity_US_SERC", "Electricity_TRE", "Electricity_WECC",
-                 "WaterCFC", "NaturalGas", "Electricity_中国南方电网","Electricity_华东电网公司","Electricity_华北电网公司","Electricity_中国东北电网","Electricity_西北电网","Electricity_西南电网","Electricity_华中电网","Electricity_Hong Kong",
+                 "WaterCFC", "NaturalGas", "Electricity_北京", "Electricity_天津", "Electricity_河北", "Electricity_山西", "Electricity_内蒙古", "Electricity_辽宁", "Electricity_吉林", "Electricity_黑龙江", 
+                 "Electricity_上海", "Electricity_江苏", "Electricity_浙江", "Electricity_安徽", "Electricity_福建", "Electricity_江西", "Electricity_山东", "Electricity_河南", "Electricity_湖北", "Electricity_湖南", 
+                 "Electricity_广东", "Electricity_广西", "Electricity_海南", "Electricity_重庆", "Electricity_四川", "Electricity_贵州", "Electricity_云南", "Electricity_西藏", "Electricity_陕西", "Electricity_甘肃", "Electricity_青海", 
+                 "Electricity_宁夏", "Electricity_新疆", 
                  "WaterCFC", "NaturalGas", "Electricity_EU_Group1", "Electricity_EU_Group2", "Electricity_EU_Group3"),
   Value = c(0.84, 2.49801121, 0.608418285, 0.823151786, 0.543851789, 0.273336294, 0.5399024,0.532591155,0.461607295,0.376463424,
-            0.801548088, 5.676877175, 0.606058558,0.784460835,1.052715703,1.23154963,0.875964414,0.364927425,0.870897537,0.867604857,  
+            0.801548088, 5.676877175, 0.558, 0.7041, 0.7252, 0.7096, 0.6849, 0.5626, 0.4932, 0.5368, 0.5849,
+            0.5978, 0.5153, 0.6782, 0.4092, 0.5752, 0.641, 0.6058, 0.4364, 0.49, 0.4403, 0.4044,
+            0.4184, 0.5227, 0.1404, 0.4989, 0.1073, 0.5199, 0.6558, 0.4772, 0.1567, 0.6423, 0.6231,  
             NA, NA, NA, NA, NA)
 )
 
 # Save as an internal dataset inside the package
 if (interactive()) {
-usethis::use_data_raw("housing_emission_factors", open = FALSE)
-usethis::use_data(housing_emission_factors, overwrite = TRUE)
+  usethis::use_data_raw("housing_emission_factors", open = FALSE)
+  usethis::use_data(housing_emission_factors, overwrite = TRUE)
 }
 
 
@@ -30,28 +35,24 @@ zip_data <- tibble::tibble(
 
 # Save it as an internal dataset inside the package
 if (interactive()) {
-usethis::use_data(zip_data, overwrite = TRUE)
+  usethis::use_data(zip_data, overwrite = TRUE)
 }
-  
+
 # Create the cn_admin_data dataset (China admin code → province, grid, price RMB/kWh)
 cn_admin_data <- tibble::tibble(
-  AdminCode = c(110000,120000,130000,140000,150000,210000,220000,230000,310000,320000,330000,340000,350000,360000,370000,410000,420000,430000,440000,450000,460000,500000,510000,520000,530000,540000,610000,620000,630000,640000,650000,810000,820000),
-  Province  = c("北京市","天津市","河北省","山西省","内蒙古自治区","辽宁省","吉林省","黑龙江省","上海市","江苏省","浙江省","安徽省","福建省","江西省","山东省","河南省","湖北省","湖南省","广东省","广西壮族自治区","海南省","重庆市","四川省","贵州省","云南省","西藏自治区","陕西省","甘肃省","青海省","宁夏回族自治区","新疆维吾尔自治区","香港特别行政区","澳门特别行政区"),
-  GridName  = c("Electricity_华北电网公司","Electricity_华北电网公司","Electricity_华北电网公司","Electricity_华北电网公司","Electricity_华北电网公司",
-                "Electricity_中国东北电网","Electricity_中国东北电网","Electricity_中国东北电网",
-                "Electricity_华东电网公司","Electricity_华东电网公司","Electricity_华东电网公司","Electricity_华东电网公司","Electricity_华东电网公司",
-                "Electricity_华中电网","Electricity_华北电网公司","Electricity_华中电网","Electricity_华中电网","Electricity_华中电网",
-                "Electricity_中国南方电网","Electricity_中国南方电网","Electricity_中国南方电网",
-                "Electricity_西南电网","Electricity_西南电网","Electricity_中国南方电网","Electricity_中国南方电网","Electricity_西南电网",
-                "Electricity_西北电网","Electricity_西北电网","Electricity_西北电网","Electricity_西北电网","Electricity_西北电网",
-                "Electricity_Hong Kong","Electricity_中国南方电网"),
-  ElecPrice_RMB_per_kWh = c(0.4883,0.49,0.52,0.477,0.415,0.5,0.525,0.51,0.617,0.5283,0.538,0.5653,0.4983,0.6,0.5469,0.56,0.558,0.588,0.589,0.5283,0.6083,0.52,0.5224,0.4556,0.36,0.49,0.4983,0.51,0.3771,0.4486,0.49,1.424,1.167)
+  AdminCode = c(110000,120000,130000,140000,150000,210000,220000,230000,310000,320000,330000,340000,350000,360000,370000,410000,420000,430000,440000,450000,460000,500000,510000,520000,530000,540000,610000,620000,630000,640000,650000),
+  Province  = c("北京市","天津市","河北省","山西省","内蒙古自治区","辽宁省","吉林省","黑龙江省","上海市","江苏省","浙江省","安徽省","福建省","江西省","山东省","河南省","湖北省","湖南省","广东省","广西壮族自治区","海南省","重庆市","四川省","贵州省","云南省","西藏自治区","陕西省","甘肃省","青海省","宁夏回族自治区","新疆维吾尔自治区"),
+  GridName  = c("Electricity_北京", "Electricity_天津", "Electricity_河北", "Electricity_山西", "Electricity_内蒙古", "Electricity_辽宁", "Electricity_吉林", "Electricity_黑龙江", 
+                "Electricity_上海", "Electricity_江苏", "Electricity_浙江", "Electricity_安徽", "Electricity_福建", "Electricity_江西", "Electricity_山东", "Electricity_河南", "Electricity_湖北", "Electricity_湖南", 
+                "Electricity_广东", "Electricity_广西", "Electricity_海南", "Electricity_重庆", "Electricity_四川", "Electricity_贵州", "Electricity_云南", "Electricity_西藏", "Electricity_陕西", "Electricity_甘肃", "Electricity_青海", 
+                "Electricity_宁夏", "Electricity_新疆"),
+  ElecPrice_RMB_per_kWh = c(0.4883,0.49,0.52,0.477,0.415,0.5,0.525,0.51,0.617,0.5283,0.538,0.5653,0.4983,0.6,0.5469,0.56,0.558,0.588,0.589,0.5283,0.6083,0.52,0.5224,0.4556,0.36,0.49,0.4983,0.51,0.3771,0.4486,0.49)
 )
 
 # Save it as an internal dataset inside the package
 if (interactive()) {
-usethis::use_data_raw("cn_admin_data", open = FALSE)
-usethis::use_data(cn_admin_data, overwrite = TRUE)
+  usethis::use_data_raw("cn_admin_data", open = FALSE)
+  usethis::use_data(cn_admin_data, overwrite = TRUE)
 }
 
 
@@ -155,14 +156,37 @@ get_housing_emission_factors <- function(country) {
       WaterCFC   = water_v,
       NaturalGas = gas_v,
       Electricity = list(
-        `Electricity_中国南方电网` = get_elec("Electricity_中国南方电网"),
-        `Electricity_华东电网公司` = get_elec("Electricity_华东电网公司"),
-        `Electricity_华北电网公司` = get_elec("Electricity_华北电网公司"),
-        `Electricity_中国东北电网` = get_elec("Electricity_中国东北电网"),
-        `Electricity_西北电网`     = get_elec("Electricity_西北电网"),
-        `Electricity_西南电网`     = get_elec("Electricity_西南电网"),
-        `Electricity_华中电网`     = get_elec("Electricity_华中电网"),
-        `Electricity_Hong Kong`   = get_elec("Electricity_Hong Kong")
+        `Electricity_北京`     = get_elec("Electricity_北京"),
+        `Electricity_天津`     = get_elec("Electricity_天津"),
+        `Electricity_河北`     = get_elec("Electricity_河北"),
+        `Electricity_山西`     = get_elec("Electricity_山西"),
+        `Electricity_内蒙古`   = get_elec("Electricity_内蒙古"),
+        `Electricity_辽宁`     = get_elec("Electricity_辽宁"),
+        `Electricity_吉林`     = get_elec("Electricity_吉林"),
+        `Electricity_黑龙江`   = get_elec("Electricity_黑龙江"),
+        `Electricity_上海`     = get_elec("Electricity_上海"),
+        `Electricity_江苏`     = get_elec("Electricity_江苏"),
+        `Electricity_浙江`     = get_elec("Electricity_浙江"),
+        `Electricity_安徽`     = get_elec("Electricity_安徽"),
+        `Electricity_福建`     = get_elec("Electricity_福建"),
+        `Electricity_江西`     = get_elec("Electricity_江西"),
+        `Electricity_山东`     = get_elec("Electricity_山东"),
+        `Electricity_河南`     = get_elec("Electricity_河南"),
+        `Electricity_湖北`     = get_elec("Electricity_湖北"),
+        `Electricity_湖南`     = get_elec("Electricity_湖南"),
+        `Electricity_广东`     = get_elec("Electricity_广东"),
+        `Electricity_广西`     = get_elec("Electricity_广西"),
+        `Electricity_海南`     = get_elec("Electricity_海南"),
+        `Electricity_重庆`     = get_elec("Electricity_重庆"),
+        `Electricity_四川`     = get_elec("Electricity_四川"),
+        `Electricity_贵州`     = get_elec("Electricity_贵州"),
+        `Electricity_云南`     = get_elec("Electricity_云南"),
+        `Electricity_西藏`     = get_elec("Electricity_西藏"),
+        `Electricity_陕西`     = get_elec("Electricity_陕西"),
+        `Electricity_甘肃`     = get_elec("Electricity_甘肃"),
+        `Electricity_青海`     = get_elec("Electricity_青海"),
+        `Electricity_宁夏`     = get_elec("Electricity_宁夏"),
+        `Electricity_新疆`     = get_elec("Electricity_新疆")
       )
     ))
   }
