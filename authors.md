@@ -16,14 +16,14 @@
 
 ## Citation
 
-Ding J, Xia Z, Xie J, Lam K, Geiger N (2025). *SECFC: The
+Ding J, Xia Z, Xie J, Lam K, Geiger N (2026). *SECFC: The
 Survey-Embedded Carbon Footprint Calculator (SECFC)*. R package version
 0.1.0, <https://jianing-d.github.io/SECFC/>.
 
     @Manual{,
       title = {SECFC: The Survey-Embedded Carbon Footprint Calculator (SECFC)},
       author = {Jianing Ding and Ziqian Xia and Jinliang Xie and Ka Leung Lam and Nathaniel Geiger},
-      year = {2025},
+      year = {2026},
       note = {R package version 0.1.0},
       url = {https://jianing-d.github.io/SECFC/},
     }

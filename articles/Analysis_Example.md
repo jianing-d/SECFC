@@ -22,7 +22,7 @@ First, we need to install the package from GitHub. If you do not have
 remotes::install_github("jianing-d/SECFC")
 #> cpp11 (NA -> 0.5.2) [CRAN]
 #> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/tmp/RtmpBsDwtz/remotes1b596296ce3a/jianing-d-SECFC-ecd1e8d/DESCRIPTION’ ... OK
+#> * checking for file ‘/tmp/Rtmpr3OQU9/remotes1e1b4622ace4/jianing-d-SECFC-94a4a1b/DESCRIPTION’ ... OK
 #> * preparing ‘SECFC’:
 #> * checking DESCRIPTION meta-information ... OK
 #> * checking for LF line-endings in source and make files and shell scripts
@@ -168,18 +168,18 @@ summary(model)
 #> 
 #> Residuals:
 #>     Min      1Q  Median      3Q     Max 
-#> -3681.4 -1829.0   171.2  1823.4  4032.0 
+#> -3659.6 -1830.3   164.3  1833.5  4017.5 
 #> 
 #> Coefficients:
 #>              Estimate Std. Error t value Pr(>|t|)    
-#> (Intercept) 7.091e+03  6.486e+02   10.93 1.26e-14 ***
-#> income      3.223e-02  9.424e-03    3.42  0.00129 ** 
+#> (Intercept) 7.076e+03  6.484e+02  10.912 1.35e-14 ***
+#> income      3.191e-02  9.422e-03   3.387  0.00142 ** 
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Residual standard error: 2093 on 48 degrees of freedom
-#> Multiple R-squared:  0.1959, Adjusted R-squared:  0.1792 
-#> F-statistic:  11.7 on 1 and 48 DF,  p-value: 0.001286
+#> Multiple R-squared:  0.1929, Adjusted R-squared:  0.176 
+#> F-statistic: 11.47 on 1 and 48 DF,  p-value: 0.00142
 ```
 
 ## Step 6: Create a Plot
