@@ -127,7 +127,7 @@ calc_cons_emissions <- function(df) {
   
   df_cons <- df_cons %>%
     mutate(
-      annual_clothing_spending = clothing_spending_map[CL_01_ClothingPurcha],
+      annual_clothing_spending = clothing_spending_map[as.character(CL_01_ClothingPurcha)],
       annual_clothing_spending = ifelse(is.na(annual_clothing_spending), 0, annual_clothing_spending),
       
       ClothingEm = annual_clothing_spending * emission_factors_cons[["Clothing"]]
