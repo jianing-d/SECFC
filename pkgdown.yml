@@ -1,8 +1,8 @@
-pandoc: 3.1.11
-pkgdown: 2.2.0
+pandoc: 3.8.3
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   Analysis_Example: Analysis_Example.html
   articles/Get-Started: Get-Started.html
   articles/Survey-Template: Survey-Template.html
-last_built: 2026-01-13T17:34Z
+last_built: 2026-10-06T13:34Z

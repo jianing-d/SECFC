@@ -5,6 +5,7 @@
 Install the package
 
 ``` r
+
 #install.packages("remotes")
 remotes::install_github("jianing-d/SECFC")
 ```
@@ -19,6 +20,7 @@ SECFC.
 After installation, load the package with:
 
 ``` r
+
 library(SECFC)
 ```
 
@@ -29,6 +31,7 @@ using the Qualtrics template we provided, ensure that variable names
 match exactly. Here is an example of the expected data structure:
 
 ``` r
+
 library(tibble)
 
 data <- tribble(
@@ -68,6 +71,7 @@ data.
 Calculate the carbon footprint from general consumption.
 
 ``` r
+
 calc_cons_emissions(data)
 #> ✅ A new data frame 'data_cons' is now available in your R environment.
 #> # A tibble: 1 × 52
@@ -86,6 +90,7 @@ calc_cons_emissions(data)
 With process details:
 
 ``` r
+
 calc_cons_emissions_process(data)
 #> ✅ A new data frame 'data_cons_process' is now available in your R environment.
 #> # A tibble: 1 × 61
@@ -106,6 +111,7 @@ calc_cons_emissions_process(data)
 Calculate the carbon footprint from food consumption.
 
 ``` r
+
 calc_food_emissions(data)
 #> ✅ A new data frame 'data_food' is now available in your R environment.
 #> # A tibble: 1 × 52
@@ -124,6 +130,7 @@ calc_food_emissions(data)
 With process details:
 
 ``` r
+
 calc_food_emissions_process(data)
 #> ✅ A new data frame 'data_food_process' is now available in your R environment.
 #> # A tibble: 1 × 56
@@ -144,6 +151,7 @@ calc_food_emissions_process(data)
 Calculate the carbon footprint from housing energy use.
 
 ``` r
+
 calc_housing_emissions(data)
 #> ✅ A new data frame 'data_housing' is now available in your R environment.
 #> # A tibble: 1 × 55
@@ -162,6 +170,7 @@ calc_housing_emissions(data)
 With process details:
 
 ``` r
+
 calc_housing_emissions_process(data)
 #> ✅ A new data frame 'data_housing_process' is now available in your R environment.
 #> # A tibble: 1 × 71
@@ -182,6 +191,7 @@ calc_housing_emissions_process(data)
 Calculate the carbon footprint from pet ownership.
 
 ``` r
+
 calc_pet_emissions(data)
 #> ✅ A new data frame 'data_pet' is now available in your R environment.
 #> # A tibble: 1 × 52
@@ -200,6 +210,7 @@ calc_pet_emissions(data)
 With process details:
 
 ``` r
+
 calc_pet_emissions_process(data)
 #> ✅ A new data frame 'data_pet_process' is now available in your R environment.
 #> # A tibble: 1 × 54
@@ -221,6 +232,7 @@ Calculate the carbon footprint from daily and long-distance
 transportation.
 
 ``` r
+
 calc_transport_emissions(data)
 #> ✅ A new data frame 'data_transport' is now available in your R environment.
 #> # A tibble: 1 × 52
@@ -239,6 +251,7 @@ calc_transport_emissions(data)
 With process details:
 
 ``` r
+
 calc_transport_emissions_process(data)
 #> ✅ A new data frame 'data_transport_process' is now available in your R environment.
 #> # A tibble: 1 × 62
@@ -259,6 +272,7 @@ calc_transport_emissions_process(data)
 Calculate the total carbon footprint across all domains.
 
 ``` r
+
 calc_total_emissions(data)
 #> ✅ A new data frame 'data_total' is now available in your R environment.
 #> # A tibble: 1 × 60
@@ -277,6 +291,7 @@ calc_total_emissions(data)
 With process details:
 
 ``` r
+
 calc_total_emissions_process(data)
 #> ✅ A new data frame 'data_total_process' is now available in your R environment.
 #> # A tibble: 1 × 101

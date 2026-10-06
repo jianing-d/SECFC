@@ -18,11 +18,12 @@ First, we need to install the package from GitHub. If you do not have
 `remotes` installed yet, run `install.packages("remotes")` beforehand.
 
 ``` r
+
 # Install the SECFC package from GitHub
 remotes::install_github("jianing-d/SECFC")
-#> cpp11 (NA -> 0.5.2) [CRAN]
+#> cpp11 (NA -> 0.5.5) [CRAN]
 #> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/tmp/Rtmpr3OQU9/remotes1e1b4622ace4/jianing-d-SECFC-94a4a1b/DESCRIPTION’ ... OK
+#> * checking for file ‘/tmp/RtmpwY5VWg/remotes1c4b4fce7295/jianing-d-SECFC-94a4a1b/DESCRIPTION’ ... OK
 #> * preparing ‘SECFC’:
 #> * checking DESCRIPTION meta-information ... OK
 #> * checking for LF line-endings in source and make files and shell scripts
@@ -37,6 +38,7 @@ Load the SECFC package, which provides the
 function among others.
 
 ``` r
+
 library(SECFC)
 ```
 
@@ -46,6 +48,7 @@ For demonstration, we assume you are use questionnaire_sample.rds that
 contains survey responses (provided and pre-loaded in our package).
 
 ``` r
+
 # Replace the file path with your own dataset if necessary
 questionnaire_example <- SECFC::questionnaire_example
 
@@ -109,6 +112,7 @@ has several new variables, including TotalEmissions, the individual
 respondent’s overall estimated footprint.
 
 ``` r
+
 calc_total_emissions(questionnaire_example)
 #> # A tibble: 50 × 45
 #>    RecordedDate T_01_CarUsage T_02_CarType T_03_CarDistance T_04_PublicTransport
@@ -158,6 +162,7 @@ carbon emissions. This is a basic linear model using the built-in
 [`lm()`](https://rdrr.io/r/stats/lm.html) function.
 
 ``` r
+
 model <- lm(TotalEmissions ~ income, data = questionnaire_example_total)
 
 # Display summary statistics of the regression
@@ -191,6 +196,7 @@ TotalEmissions using `ggplot2`. The plot below includes:
 - A linear regression line (and confidence interval)
 
 ``` r
+
 # Load ggplot2
 library(ggplot2)
 

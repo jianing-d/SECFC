@@ -93,6 +93,7 @@ Each function:
 Here’s a simple example of how to use the **SECFC** package in practice:
 
 ``` r
+
 # Step 1: Load the package
 library(SECFC)
 
